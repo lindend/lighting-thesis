@@ -1,0 +1,89 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrazeEngine", "source\CrazeEngine\CrazeEngine.vcxproj", "{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphics2Test", "source\Graphics2Test\Graphics2Test.vcxproj", "{5E948C44-6392-437C-8926-566E742B447D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrazeMath", "source\CrazeMath\CrazeMath.vcxproj", "{D19C121F-F825-47E7-9DA9-47D3F12467FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrazeGraphics", "source\CrazeGraphics\CrazeGraphics.vcxproj", "{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrazeCore", "source\CrazeCore\CrazeCore.vcxproj", "{4FE68EFA-1894-48D8-8444-6D09E238CE00}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrazeMeshConverter", "source\CrazeMeshConverter\CrazeMeshConverter.vcxproj", "{0F42447B-26ED-4238-BC53-0B7605AD4DB6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_DLL|Win32 = Debug_DLL|Win32
+		Debug_Profiling|Win32 = Debug_Profiling|Win32
+		Debug|Win32 = Debug|Win32
+		Release_DLL|Win32 = Release_DLL|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug_DLL|Win32.ActiveCfg = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug_DLL|Win32.Build.0 = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug_Profiling|Win32.ActiveCfg = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug_Profiling|Win32.Build.0 = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Debug|Win32.Build.0 = Debug|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Release_DLL|Win32.Build.0 = Release|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Release|Win32.ActiveCfg = Release|Win32
+		{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}.Release|Win32.Build.0 = Release|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug_DLL|Win32.ActiveCfg = Debug_Profiling|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug_DLL|Win32.Build.0 = Debug_Profiling|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug_Profiling|Win32.ActiveCfg = Debug_Profiling|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug_Profiling|Win32.Build.0 = Debug_Profiling|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Debug|Win32.Build.0 = Debug|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Release_DLL|Win32.Build.0 = Release|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Release|Win32.ActiveCfg = Release|Win32
+		{5E948C44-6392-437C-8926-566E742B447D}.Release|Win32.Build.0 = Release|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug_DLL|Win32.ActiveCfg = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug_DLL|Win32.Build.0 = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug_Profiling|Win32.ActiveCfg = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug_Profiling|Win32.Build.0 = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Debug|Win32.Build.0 = Debug|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Release_DLL|Win32.Build.0 = Release|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Release|Win32.ActiveCfg = Release|Win32
+		{D19C121F-F825-47E7-9DA9-47D3F12467FF}.Release|Win32.Build.0 = Release|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug_DLL|Win32.ActiveCfg = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug_DLL|Win32.Build.0 = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug_Profiling|Win32.ActiveCfg = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug_Profiling|Win32.Build.0 = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Debug|Win32.Build.0 = Debug|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Release_DLL|Win32.Build.0 = Release|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Release|Win32.ActiveCfg = Release|Win32
+		{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}.Release|Win32.Build.0 = Release|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug_DLL|Win32.ActiveCfg = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug_DLL|Win32.Build.0 = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug_Profiling|Win32.ActiveCfg = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug_Profiling|Win32.Build.0 = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Debug|Win32.Build.0 = Debug|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Release_DLL|Win32.Build.0 = Release|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Release|Win32.ActiveCfg = Release|Win32
+		{4FE68EFA-1894-48D8-8444-6D09E238CE00}.Release|Win32.Build.0 = Release|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug_DLL|Win32.ActiveCfg = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug_DLL|Win32.Build.0 = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug_Profiling|Win32.ActiveCfg = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug_Profiling|Win32.Build.0 = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Debug|Win32.Build.0 = Debug|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Release_DLL|Win32.ActiveCfg = Release|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Release_DLL|Win32.Build.0 = Release|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Release|Win32.ActiveCfg = Release|Win32
+		{0F42447B-26ED-4238-BC53-0B7605AD4DB6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,12 @@
+#ifndef PHOTON_RAY_INCL_
+#define PHOTON_RAY_INCL
+
+struct PhotonRay
+{
+	float3 origin;
+	float3 dir;
+	float3 power;
+	//float density; //According to ISPM, examine!
+};
+
+#endif

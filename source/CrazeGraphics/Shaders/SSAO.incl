@@ -1,0 +1,117 @@
+
+static float GetRandom(float2 uv)
+{
+	return frac(uv.x / (InvResolution.x * 2.0f)) * 0.25f + frac(uv.y / (InvResolution.y * 2.0f)) * 0.75f;
+}
+
+static float3 GetPosition(float2 uv)
+{
+	return NormalRough.Sample(PointBorder, uv).rgb;
+	/*float depth = Depth.Sample(PointBorder, uv).r;
+
+	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
+	return (worldPos / worldPos.w).xyz;*/
+}
+
+float CalcAO(float3 pos, float depth, float2 screenUv, float3 normal)
+{
+	const float3 kernel[8] = 
+	{
+		float3(1.0f, 1.0f, -1.0f), float3(1.0f, -1.0f, -1.0f),
+		float3(1.0f, 1.0f, 1.0f), float3(1.0f, -1.0f, 1.0f),
+		float3(-1.0f, 1.0f, -1.0f), float3(-1.0f, -1.0f, -1.0f),
+		float3(-1.0f, 1.0f, 1.0f), float3(-1.0f, -1.0f, 1.0f)
+	};
+	
+	const float3 random = Random.Sample(Point, screenUv * 10.f * pos.z).xyz;
+	const float radius = 1.f / pos.z;
+	
+	float occlusion = 0.0f;
+
+	[unroll(2)]
+	for (int i = 0; i < 2; ++i)
+	{
+		const float3 coord0 = reflect(kernel[0 + i * 4], random) * radius;
+		const float3 coord1 = reflect(kernel[1 + i * 4], random) * radius;
+		const float3 coord2 = reflect(kernel[2 + i * 4], random) * radius;
+		const float3 coord3 = reflect(kernel[3 + i * 4], random) * radius;
+				
+		const float3 diff0 = GetPosition(screenUv + coord0.xy) - pos.xyz;
+		const float3 diff1 = GetPosition(screenUv + coord1.xy) - pos.xyz;
+		const float3 diff2 = GetPosition(screenUv + coord2.xy) - pos.xyz;
+		const float3 diff3 = GetPosition(screenUv + coord3.xy) - pos.xyz;
+
+		const float4 occl = float4(	dot(diff0, diff0), 
+									dot(diff1, diff1),
+									dot(diff2, diff2),
+									dot(diff3, diff3));
+
+		const float4 dp = float4(	dot(normal, diff0),
+									dot(normal, diff1),
+									dot(normal, diff2),
+									dot(normal, diff3)) * rsqrt(occl);
+		                                   
+		occlusion += dot(max(0.f.xxxx, dp), 5.f / (1.f + occl));
+	}
+
+// Approximately 92 instruction slots used
+// Approximately 142 instruction slots used
+//Loop: 1.63
+//Unroll: 1.44
+
+	
+	/*for (int i = 0; i < 8; ++i)
+	{
+		const float3 coord = reflect(kernel[i] * radius, random);
+		
+		const float3 diff = GetPosition(screenUv + coord.xy) - pos;
+		const float3 dir = normalize(diff);
+		const float sqlen = dot(diff, diff);
+		
+		occlusion += max(0.0f, dot(normal, dir)) * (2.f / (1.0f + sqlen));
+	}*/
+
+// Approximately 44 instruction slots used
+// Approximately 177 instruction slots used
+//Loop: 1.29
+//Unroll: 1.82
+
+/*
+	for (int i = 0; i < 2; ++i)
+	{
+		const float3 coord0 = reflect(kernel[0 + i * 4] * radius, random);
+		const float3 coord1 = reflect(kernel[1 + i * 4] * radius, random);
+		const float3 coord2 = reflect(kernel[2 + i * 4] * radius, random);
+		const float3 coord3 = reflect(kernel[3 + i * 4] * radius, random);
+				
+		const float3 diff0 = GetPosition(screenUv + coord0.xy) - pos.xyz;
+		const float3 diff1 = GetPosition(screenUv + coord1.xy) - pos.xyz;
+		const float3 diff2 = GetPosition(screenUv + coord2.xy) - pos.xyz;
+		const float3 diff3 = GetPosition(screenUv + coord3.xy) - pos.xyz;
+
+		const float4 occl = float4(	dot(diff0, diff0), 
+									dot(diff1, diff1),
+									dot(diff2, diff2),
+									dot(diff3, diff3));
+
+		const float3 dir0 = normalize(diff0);
+		const float3 dir1 = normalize(diff1);
+		const float3 dir2 = normalize(diff2);
+		const float3 dir3 = normalize(diff3);
+
+		const float4 dp = float4(	dot(normal, dir0),
+									dot(normal, dir1),
+									dot(normal, dir2),
+									dot(normal, dir3));
+		
+		occlusion += dot(max(0, dp), 2.f / (1.f + occl));
+	}*/
+
+// Approximately 95 instruction slots used
+// Approximately 148 instruction slots used
+// Items / Clock 5770
+//Loop: 1.67
+//Unroll: 1.50
+
+	return occlusion / 8.0f;
+}

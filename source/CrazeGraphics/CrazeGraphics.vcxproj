@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F9D7F4BD-A5D2-46C8-AB36-5F9CA69F450A}</ProjectGuid>
+    <RootNamespace>CrazeGraphics</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\CrazeShader.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)/lib/CrazeGraphics/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/symbols/CrazeGraphics/$(Configuration)\</IntDir>
+    <IncludePath>$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)/lib/CrazeGraphics/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/symbols/CrazeGraphics/$(Configuration)\</IntDir>
+    <IncludePath>$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include/;$(SolutionDir)/source/CrazeCore/;$(SolutionDir)/source/CrazeGraphics/;$(SolutionDir)/source/CrazeMath/;$(SolutionDir)/include/boost_1_44_0/;$(SolutionDir)/include/freetype/;$(DXSDK_DIR)Include</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>CrazeGraphicsPCH.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>NOMINMAX;CRAZEGFX;CEGUI_STATIC=1;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Copying shaders</Message>
+      <Outputs>$(SolutionDir)bin\Shaders\GBuffers.vsh;$(SolutionDir)bin\Shaders\Shading.vsh;$(SolutionDir)bin\Shaders\Shading.psh;$(SolutionDir)bin\Shaders\LightAccPS_Spot.psh;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;$(SolutionDir)/lib/gwen/gwend_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>CrazeGraphicsPCH.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include/;$(SolutionDir)/source/CrazeCore/;$(SolutionDir)/source/CrazeGraphics/;$(SolutionDir)/source/CrazeMath/;$(SolutionDir)/include/boost_1_44_0/;$(SolutionDir)/include/freetype/;$(DXSDK_DIR)Include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;CRAZEGFX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>xcopy "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Copying shaders</Message>
+      <Outputs>$(SolutionDir)bin\Shaders\GBuffers.vsh;$(SolutionDir)bin\Shaders\Shading.vsh;$(SolutionDir)bin\Shaders\Shading.psh;$(SolutionDir)bin\Shaders\LightAccPS_Spot.psh;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/freetype;$(SolutionDir)/lib/cegui;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib;CEGUIBase.lib;CEGUILuaScriptModule.lib;CEGUIDirect3D11Renderer_Static.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Buffer\Buffer.h" />
+    <ClInclude Include="CrazeGraphicsPCH.h" />
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="Effect\AmbientLighting.h" />
+    <ClInclude Include="EffectUtil\CBufferHelper.hpp" />
+    <ClInclude Include="EffectUtil\CBufferManager.h" />
+    <ClInclude Include="EffectUtil\EffectHelper.h" />
+    <ClInclude Include="Effect\CopyToBackBuffer.h" />
+    <ClInclude Include="Effect\DebugDrawEffect.h" />
+    <ClInclude Include="Effect\CSLighting.h" />
+    <ClInclude Include="EffectUtil\shaderresource.h" />
+    <ClInclude Include="EffectUtil\ShaderResourceHandler.h" />
+    <ClInclude Include="Effect\LightingEffect.h" />
+    <ClInclude Include="Effect\LightVolumeEffects.h" />
+    <ClInclude Include="Effect\NullEffect.h" />
+    <ClInclude Include="Effect\PosMapEffect.h" />
+    <ClInclude Include="Effect\ShadowEffect.h" />
+    <ClInclude Include="Effect\FontEffect.h" />
+    <ClInclude Include="Effect\GBufferEffect.h" />
+    <ClInclude Include="Effect\IEffect.h" />
+    <ClInclude Include="Font\FontVertex.h" />
+    <ClInclude Include="LayoutManager.h" />
+    <ClInclude Include="Effect\LightAccumulationEffect.h" />
+    <ClInclude Include="Effect\Shaders.h" />
+    <ClInclude Include="Effect\ShadingEffect.h" />
+    <ClInclude Include="Font\FontManager.h" />
+    <ClInclude Include="Geometry\MeshTools.h" />
+    <ClInclude Include="Geometry\TerrainChunk.h" />
+    <ClInclude Include="GfxExport.h" />
+    <ClInclude Include="Geometry\InputLayout.h" />
+    <ClInclude Include="Geometry\MeshData.h" />
+    <ClInclude Include="Graphics.h" />
+    <ClInclude Include="kdTree\kdTree.h" />
+    <ClInclude Include="kdTree\kdTreeRayTrace.h" />
+    <ClInclude Include="Lighting\LightmapUvProject.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Renderer\LightVolumeInjector.h" />
+    <ClInclude Include="Scene\ModelNode.h" />
+    <ClInclude Include="VertexStreams.h" />
+    <ClInclude Include="Light\DirectionalLight.h" />
+    <ClInclude Include="Light\ILight.h" />
+    <ClInclude Include="Light\Light.h" />
+    <ClInclude Include="Light\PointLight.h" />
+    <ClInclude Include="Light\ProjectedLight.h" />
+    <ClInclude Include="Light\SpotLight.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Renderer\Renderer.h" />
+    <ClInclude Include="DrawList.h" />
+    <ClInclude Include="Lighting\SkyVisibility.h" />
+    <ClInclude Include="RenderQueue.h" />
+    <ClInclude Include="Scene\Camera.h" />
+    <ClInclude Include="Scene\ISceneNode.h" />
+    <ClInclude Include="Scene\LightNode.h" />
+    <ClInclude Include="Scene\MeshInstance.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\TerrainNode.h" />
+    <ClInclude Include="Texture\DepthStencil.h" />
+    <ClInclude Include="Texture\DynamicTexture.h" />
+    <ClInclude Include="Texture\RenderTarget.h" />
+    <ClInclude Include="Texture\Texture.h" />
+    <ClInclude Include="Texture\TextureArray.h" />
+    <ClInclude Include="UI\CrazeGwenRenderer.h" />
+    <ClInclude Include="UI\UISystem.h" />
+    <ClInclude Include="UI\Wrappers.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Buffer\Buffer.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="EffectUtil\CBufferManager.cpp" />
+    <ClCompile Include="EffectUtil\ShaderResource.cpp" />
+    <ClCompile Include="Effect\CopyToBackBuffer.cpp" />
+    <ClCompile Include="Effect\CSLighting.cpp" />
+    <ClCompile Include="EffectUtil\EffectHelper.cpp" />
+    <ClCompile Include="Effect\DebugDrawEffect.cpp" />
+    <ClCompile Include="Effect\FontEffect.cpp" />
+    <ClCompile Include="Effect\GBufferEffect.cpp" />
+    <ClCompile Include="Effect\IEffect.cpp" />
+    <ClCompile Include="Effect\LightingEffect.cpp" />
+    <ClCompile Include="Effect\LightVolumeEffects.cpp" />
+    <ClCompile Include="LayoutManager.cpp" />
+    <ClCompile Include="Effect\LightAccumulationEffect.cpp" />
+    <ClCompile Include="EffectUtil\ShaderResourceHandler.cpp" />
+    <ClCompile Include="Effect\ShadingEffect.cpp" />
+    <ClCompile Include="Effect\ShadowEffect.cpp" />
+    <ClCompile Include="Font\FontManager.cpp" />
+    <ClCompile Include="Geometry\InputLayout.cpp" />
+    <ClCompile Include="Geometry\MeshData.cpp" />
+    <ClCompile Include="Geometry\MeshTools.cpp" />
+    <ClCompile Include="Graphics.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Lighting\LightmapUvProject.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Renderer\LightVolumeInjector.cpp" />
+    <ClCompile Include="Scene\ModelNode.cpp" />
+    <ClCompile Include="VertexStreams.cpp" />
+    <ClCompile Include="UI\CrazeGwenRenderer.cpp" />
+    <ClCompile Include="UI\UISystem.cpp" />
+    <ClInclude Include="kdTree\kdTree.inl">
+      <FileType>CppCode</FileType>
+    </ClInclude>
+    <ClCompile Include="kdTree\kdTree.cpp" />
+    <ClCompile Include="kdTree\kdTreeRayTrace.cpp" />
+    <ClCompile Include="Lighting\SkyVisibility.cpp" />
+    <ClCompile Include="Light\DirectionalLight.cpp" />
+    <ClCompile Include="Light\Light.cpp" />
+    <ClCompile Include="Light\SpotLight.cpp" />
+    <ClCompile Include="Renderer\Renderer.cpp" />
+    <ClCompile Include="Scene\Camera.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Texture\DepthStencil.cpp" />
+    <ClCompile Include="Texture\DynamicTexture.cpp" />
+    <ClCompile Include="Texture\RenderTarget.cpp" />
+    <ClCompile Include="Texture\Texture.cpp" />
+    <ClCompile Include="Texture\TextureArray.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <VertexShader Include="Shaders\DefaultMesh.vsh" />
+    <VertexShader Include="Shaders\ESM_Mesh.vsh" />
+    <VertexShader Include="Shaders\Font.vsh" />
+    <VertexShader Include="Shaders\PosMap.vsh" />
+    <VertexShader Include="Shaders\ScreenQuad.vsh" />
+    <VertexShader Include="Shaders\Terrain.vsh" />
+    <VertexShader Include="Shaders\UI.vsh" />
+  </ItemGroup>
+  <ItemGroup>
+    <PixelShaders Include="Shaders\AmbientLighting.psh" />
+    <PixelShaders Include="Shaders\DebugDraw.psh" />
+    <PixelShaders Include="Shaders\DefaultMeshShading.psh" />
+    <PixelShaders Include="Shaders\DirLight.psh" />
+    <PixelShaders Include="Shaders\ESM.psh" />
+    <PixelShaders Include="Shaders\Font.psh" />
+    <PixelShaders Include="Shaders\GBuffers.psh" />
+    <None Include="Shaders\Lighting.csh">
+      <FileType>Document</FileType>
+    </None>
+    <PixelShaders Include="Shaders\PosMap.psh" />
+    <None Include="Shaders\RayTracing\LineTess.tess" />
+    <None Include="Shaders\RayTracing\PhotonRay.incl" />
+    <None Include="Shaders\RayTracing\RayTrace.csh" />
+    <None Include="Shaders\RayTracing\triangleRayIntersection.incl" />
+    <None Include="Shaders\SkyOcclusion.csh">
+      <FileType>Document</FileType>
+    </None>
+    <PixelShaders Include="Shaders\RayTracing\FirstBounce.psh" />
+    <PixelShaders Include="Shaders\Simple.psh" />
+    <PixelShaders Include="Shaders\TerrainShading.psh" />
+    <PixelShaders Include="Shaders\UI.psh" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\globals.incl" />
+    <None Include="Shaders\Light.incl" />
+    <None Include="Shaders\NormalCompression.incl" />
+    <None Include="Shaders\SHMath.incl" />
+    <None Include="Shaders\SSAO.incl" />
+  </ItemGroup>
+  <ItemGroup>
+    <GeometryShaders Include="Shaders\Font.gsh" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\CrazeShader.targets" />
+  </ImportGroup>
+</Project>

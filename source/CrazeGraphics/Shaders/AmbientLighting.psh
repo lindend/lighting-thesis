@@ -1,0 +1,27 @@
+#include "globals.incl"
+
+struct PS_INPUT
+{
+	float2 uv : TEXCOORD0;
+	float4 pos : SV_POSITION;
+};
+
+Texture2D tmp : register(t4);
+Texture2D tmp2 : register(t5);
+
+float4 main(PS_INPUT input) : SV_Target
+{
+	float2 uv = input.uv;
+	//const float3 color = ColorSpec.Sample(Bilinear, uv).xyz * AmbientLight;
+	/*uint2 size;
+	lightmap.GetDimensions(size.x, size.y);
+	const uint color = lightmap.Load(uint3(uv * size, 0)).r;
+	return float4(color & 0xFF0000 >> 16, color & 0xFF00 >> 8, color & 0xFF, 0.f) / 255.f;*/
+
+	//return tmp2.Sample(Point, uv) * 0.001f;
+	const float3 SkyLight = float3(0.4f, 0.8f, 1.f) * 0.2f;
+	const float3 SceneAmbient = 0.01f.xxx;
+	const float4 indirect = LightMap.Sample(Point, uv);
+	const float3 totalAmbient = 1.f.xxx;//indirect.xyz + indirect.w * SkyLight;// + SceneAmbient;
+	return float4(ColorSpec.Sample(Point, uv).xyz * totalAmbient, 1.f);
+}

@@ -1,0 +1,138 @@
+Code for doing the terrain update calculations in SIMD. However, this approach did not go very well with how the rest of the
+terrain works. Also, since the situations where this code would be used is very limited and only occur in editor situations,
+I decided to scrap it and just run the old code. Was fun to write it though. :]
+
+
+struct normalRes
+{
+	__m128 p1;
+	__m128 p2;
+	__m128 p3;
+	__m128 p4;
+};
+
+normalRes calcNormals(__m128 height, __m128 lHeight, __m128 rHeight, __m128 uHeight, __m128 dHeight, __m128 dx, __m128 dy)
+{
+	__declspec(align(16))float minusOne = 1.0f;
+	__m128 neg = _mm_load_ps1(&minusOne);
+
+	__m128 dirXy = _mm_sub_ps(rHeight, lHeight);
+
+	//Normalize the vector indicating the slope in the x-direction
+	__m128 length = _mm_rsqrt_ps(_mm_add_ps(_mm_mul_ps(dirXy, dirXy), dx));
+	__m128 ndx = _mm_mul_ps(dx, length);
+	dirXy = _mm_mul_ps(dirXy, length);
+
+	//Do the same for the vector in the y-direction
+	__m128 dirYy = _mm_sub_ps(uHeight, dHeight);
+	length = _mm_rsqrt_ps(_mm_add_ps(_mm_mul_ps(dirYy, dirYy), dy));
+	__m128 ndy = _mm_mul_ps(dy, length);
+	dirYy = _mm_mul_ps(dirYy, length);
+
+	//Calculate the cross product of both vectors
+	__m128 normalY = _mm_mul_ps(ndx, ndy);
+	__m128 normalX = _mm_mul_ps(_mm_mul_ps(dirXy, ndy), neg);
+	__m128 normalZ = _mm_mul_ps(_mm_mul_ps(dirYy, ndx), neg);
+
+	//Shuffle the data to the correct order
+	__m128 xxyy = _mm_shuffle_ps(normalY, normalX, _MM_SHUFFLE(1, 0, 1, 0));
+	__m128 zzhh = _mm_shuffle_ps(height, normalZ, _MM_SHUFFLE(1, 0, 1, 0));
+
+	normalRes r;
+	r.p1 = _mm_shuffle_ps(zzhh, xxyy, _MM_SHUFFLE(2, 0, 2, 0));
+	r.p2 = _mm_shuffle_ps(zzhh, xxyy, _MM_SHUFFLE(3, 1, 3, 1));
+
+	xxyy = _mm_shuffle_ps(normalY, normalX, _MM_SHUFFLE(3, 2, 3, 2));
+	zzhh = _mm_shuffle_ps(height, normalZ, _MM_SHUFFLE(3, 2, 3, 2));
+
+	r.p3 = _mm_shuffle_ps(zzhh, xxyy, _MM_SHUFFLE(2, 0, 2, 0));
+	r.p4 = _mm_shuffle_ps(zzhh, xxyy, _MM_SHUFFLE(3, 1, 3, 1));
+
+	return r;
+}
+
+void EditableTerrain::UpdateLine(TextureLock* pLock, __m128 dy, float* delta, unsigned int x, unsigned int y, unsigned int prevY, unsigned int nextY)
+{
+	__m128 dx = _mm_load_ps1(delta);
+	__m128 dbldx = _mm_add_ps(dx, dx);
+
+	dx = _mm_mul_ps(dx, dx);
+	dbldx = _mm_mul_ps(dx, dx);
+
+	__m128 uHeight = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x, prevY)]);
+	__m128 rHeight = _mm_loadu_ps(&m_pTerrainHeightData[GetArrayIndex(x + 1, y)]);
+	__m128 dHeight = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x, nextY)]);
+	__m128 lHeight = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x, y)]);
+	__m128 height;
+
+	normalRes res = calcNormals(lHeight, lHeight, rHeight, uHeight, dHeight, dx, dy);
+
+	dx = _mm_add_ps(dx, dx);
+
+	_mm_storeu_ps(pLock->GetPixel<float>(x, y), res.p1);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + 1, y), res.p2);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + 2, y), res.p3);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + 3, y), res.p4);
+
+	for (unsigned int j = 4; j < m_VertsPerSegment - 4; j += 4)
+	{
+		lHeight = _mm_loadu_ps(&m_pTerrainHeightData[GetArrayIndex(j + x - 1, y)]);
+		rHeight = _mm_loadu_ps(&m_pTerrainHeightData[GetArrayIndex(j + x + 1, y)]);
+		dHeight = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(j + x, nextY)]);
+		uHeight = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(j + x, prevY)]);
+		height = _mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(j + x, y)]);
+
+		res = calcNormals(height, lHeight, rHeight, uHeight, dHeight, dx, dy);
+
+		_mm_storeu_ps(pLock->GetPixel<float>(x + j, y), res.p1);
+		_mm_storeu_ps(pLock->GetPixel<float>(x + j + 1, y), res.p2);
+		_mm_storeu_ps(pLock->GetPixel<float>(x + j + 2, y), res.p3);
+		_mm_storeu_ps(pLock->GetPixel<float>(x + j + 3, y), res.p4);
+	}
+	
+	lHeight =	_mm_loadu_ps(&m_pTerrainHeightData[GetArrayIndex(x + m_VertsPerSegment - 4 - 1, y)]);
+	rHeight =	_mm_loadu_ps(&m_pTerrainHeightData[GetArrayIndex(x + m_VertsPerSegment - 4 + 1, y)]);
+	dHeight =	_mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x + m_VertsPerSegment - 4, nextY)]);
+	uHeight =	_mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x + m_VertsPerSegment - 4, prevY)]);
+	height =	_mm_load_ps(&m_pTerrainHeightData[GetArrayIndex(x + m_VertsPerSegment - 4, y)]);
+
+	res = calcNormals(height, lHeight, rHeight, uHeight, dHeight, dx, dy);
+
+	dy = _mm_add_ps(dy, dy);
+
+	_mm_storeu_ps(pLock->GetPixel<float>(x + m_VertsPerSegment - 4, y), res.p1);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + m_VertsPerSegment - 4 + 1, y), res.p2);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + m_VertsPerSegment - 4 + 2, y), res.p3);
+	_mm_storeu_ps(pLock->GetPixel<float>(x + m_VertsPerSegment - 4 + 3, y), res.p4);
+
+
+}
+
+void EditableTerrain::UpdateHeightSegment(unsigned int x, unsigned int y)
+{
+	PROFILE("EditableTerrain::UpdateHeightSegment");
+
+	TextureLock* pLock = m_EditHeightTextures[x + y * m_WidthSegments]->Lock();
+
+	float vps = m_VertsPerSegment;
+	unsigned int firstVertX = (m_VertsPerSegment - 1)* x;
+	unsigned int firstVertY = (m_VertsPerSegment - 1)* y;
+
+	__declspec(align(16)) float delta = m_SegmentSize / vps;
+
+	__m128 dy = _mm_load_ps1(&delta);
+	__m128 dbldy = _mm_add_ps(dy, dy);
+	dy = _mm_mul_ps(dy, dy);
+	dbldy = _mm_mul_ps(dbldy, dbldy);
+
+	UpdateLine(pLock, dy, &delta, firstVertX, firstVertY, firstVertY, firstVertY + 1);
+
+	for (unsigned int i = 1; i < m_VertsPerSegment - 1; ++i)
+	{
+		UpdateLine(pLock, dbldy, &delta, firstVertX, firstVertY + i, firstVertY + i - 1, firstVertY + i + 1);
+	}
+
+	UpdateLine(pLock, dy, &delta, firstVertX, firstVertY + m_VertsPerSegment - 1, firstVertY + m_VertsPerSegment - 2, firstVertY + m_VertsPerSegment - 1);
+
+	pLock->Unlock();
+}

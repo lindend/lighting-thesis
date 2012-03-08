@@ -1,0 +1,16 @@
+#include "globals.incl"
+
+float4 main(float2 depth : NORMAL0) : SV_Target0
+{
+	float4 color;
+
+	if (UseESM)
+	{
+		color = exp(depth.y * INVFar * ESMc);
+	} else
+	{
+		color = depth.y;
+	}
+
+	return color;
+}

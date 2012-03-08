@@ -1,0 +1,38 @@
+Network system
+
+Intended use:
+Not so scalable network system for up to 10 players.
+(Connected to my ultra fast Voidlands server using IOCP that can handle up to 6000 clients!!!! maybe)
+
+.Socket.
+SendData
+ReceiveData
+HasIncomingData
+
+.IPacket.
+FromByteStream
+ToByteStream
+GetType
+
+->.PlayerMovePacket. (t.ex.)
+Or I might just give it a shot to use the event system. I haven't really decided quite yet.
+
+.ISocketListener.
+OnPacket
+OnConnected
+OnDisconnect
+
+Idea:
+All packets are sent with 4 byte headers. 
+Byte 1-2: 0xFFFF to help locate new packets. 
+Byte 3-4: size of the packet (not including the 4 byte header).
+
+This way the network system will know how big all packets are. The event system then only cares about the ID and that it gets
+all the data.
+
+Implementation: Messages are sent to the network system by ByteStreams. To send a message it preferably needs to be continuous data
+in memory (unless you want to do several calls to send). There are a few options:
+1. Just write the header and then copy the message byte stream in the end. Memory is fast, and this is very small amounts of data.
+2. Write an awesome packet system that has reserved data in the beginning of a bytestream and just let all the
+serializers write into an already defined bytestream. Nice idea, but I'm going to get lazy and use the first.
+

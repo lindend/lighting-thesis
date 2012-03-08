@@ -1,0 +1,77 @@
+#include "globals.incl"
+
+struct PS_INPUT
+{
+	float2 uv : TEXCOORD0;
+	float3 normal : NORMAL0;
+	float4 pos : SV_POSITION;
+	float4 wsPos : POS_WS;
+	float4 textureWeights : NORMAL2;
+};
+
+float4 main(PS_INPUT input) : SV_Target
+{
+	float4 slopeFactor = smoothstep(0.4f, 0.85f, input.normal.y);
+
+	float4 color_0 = (TerrainDecal.Sample(Bilinear, float3(input.uv, 0.0f)) * slopeFactor +
+					  TerrainDecal.Sample(Bilinear, float3(input.uv, 4.0f)) * (1.0f - slopeFactor)) * input.textureWeights.x;
+	float4 color_1 = (TerrainDecal.Sample(Bilinear, float3(input.uv, 1.0f)) * slopeFactor +
+					  TerrainDecal.Sample(Bilinear, float3(input.uv, 5.0f)) * (1.0f - slopeFactor)) * input.textureWeights.y;
+	float4 color_2 = (TerrainDecal.Sample(Bilinear, float3(input.uv, 2.0f)) * slopeFactor +
+					  TerrainDecal.Sample(Bilinear, float3(input.uv, 6.0f)) * (1.0f - slopeFactor)) * input.textureWeights.z;
+	float4 color_3 = (TerrainDecal.Sample(Bilinear, float3(input.uv, 3.0f)) * slopeFactor +
+					  TerrainDecal.Sample(Bilinear, float3(input.uv, 7.0f)) * (1.0f - slopeFactor)) * input.textureWeights.w;
+
+	float4 color = color_0 + color_1 + color_2 + color_3;
+
+	float2 screen = input.pos.xy * InvResolution;
+
+	const float4 lighting = LightAcc.Sample(Point, screen) + float4(AmbientLight, 0.0f);
+
+	return float4((lighting.xyz) * color.xyz /*+ lighting.w*/, 1.0f);
+}
+
+
+/*   1. // Determine the blend weights for the 3 planar projections.  
+   2. // N_orig is the vertex-interpolated normal vector.  
+   3. float3 blend_weights = abs( N_orig.xyz );   // Tighten up the blending zone:  
+   4. blend_weights = (blend_weights - 0.2) * 7;  
+   5. blend_weights = max(blend_weights, 0);      // Force weights to sum to 1.0 (very important!)  
+   6. blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ).xxx;   
+   7. // Now determine a color value and bump vector for each of the 3  
+   8. // projections, blend them, and store blended results in these two  
+   9. // vectors:  
+  10. float4 blended_color; // .w hold spec value  
+  11. float3 blended_bump_vec;  
+  12. {  
+  13. // Compute the UV coords for each of the 3 planar projections.  
+  14. // tex_scale (default ~ 1.0) determines how big the textures appear.  
+  15. float2 coord1 = v2f.wsCoord.yz * tex_scale;  
+  16. float2 coord2 = v2f.wsCoord.zx * tex_scale;  
+  17. float2 coord3 = v2f.wsCoord.xy * tex_scale;  
+  18. // This is where you would apply conditional displacement mapping.  
+  19. //if (blend_weights.x > 0) coord1 = . . .  
+  20. //if (blend_weights.y > 0) coord2 = . . .  
+  21. //if (blend_weights.z > 0) coord3 = . . .  
+  22. // Sample color maps for each projection, at those UV coords.  
+  23. float4 col1 = colorTex1.Sample(coord1);  
+  24. float4 col2 = colorTex2.Sample(coord2);  
+  25. float4 col3 = colorTex3.Sample(coord3);  
+  26. // Sample bump maps too, and generate bump vectors.  
+  27. // (Note: this uses an oversimplified tangent basis.)  
+  28. float2 bumpFetch1 = bumpTex1.Sample(coord1).xy - 0.5;  
+  29. float2 bumpFetch2 = bumpTex2.Sample(coord2).xy - 0.5;  
+  30.  float2 bumpFetch3 = bumpTex3.Sample(coord3).xy - 0.5;  
+  31.  float3 bump1 = float3(0, bumpFetch1.x, bumpFetch1.y);  
+  32.  float3 bump2 = float3(bumpFetch2.y, 0, bumpFetch2.x);  
+  33.  float3 bump3 = float3(bumpFetch3.x, bumpFetch3.y, 0);  
+  34.  // Finally, blend the results of the 3 planar projections.  
+  35. blended_color = col1.xyzw * blend_weights.xxxx +  
+  36.                 col2.xyzw * blend_weights.yyyy +  
+  37.                 col3.xyzw * blend_weights.zzzz;  
+  38. blended_bump_vec = bump1.xyz * blend_weights.xxx +  
+  39.                    bump2.xyz * blend_weights.yyy +  
+  40.                    bump3.xyz * blend_weights.zzz;  
+  41. }  
+  42. // Apply bump vector to vertex-interpolated normal vector.  
+  43. float3 N_for_lighting = normalize(N_orig + blended_bump);  */
