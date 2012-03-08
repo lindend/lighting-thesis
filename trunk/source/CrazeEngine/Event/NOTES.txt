@@ -1,0 +1,3 @@
+Spana in eventsystemet från voidlands och se om inte det skulle
+passa rätt så bra här. Delvis ska samma events användas och det är jobbigt
+att skriva dubbla uppsättningar...

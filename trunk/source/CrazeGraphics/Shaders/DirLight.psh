@@ -1,0 +1,14 @@
+#include "globals.incl"
+
+float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
+{
+	
+	float4 color = ColorSpec.Sample(Point, uv);
+	float4 normRough = NormalRough.Sample(Point, uv);
+	float3 normal = normRough.xyz;
+	float roughness = normRough.w;
+
+	float shading = saturate(dot(normalize(LightDir), normalize(-normal))) + 0.1f;
+
+	return float4(color.xyz * shading, 1.f);
+}

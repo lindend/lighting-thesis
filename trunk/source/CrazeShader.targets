@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="PixelShaders">
+      <Targets>_PixelShaders</Targets>
+    </AvailableItemName>
+    <AvailableItemName
+      Include="VertexShader">
+      <Targets>_VertexShader</Targets>
+    </AvailableItemName>
+    <AvailableItemName
+      Include="GeometryShaders">
+      <Targets>_GeometryShaders</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="PixelShaders"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <UsingTask
+    TaskName="VertexShader"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <UsingTask
+    TaskName="GeometryShaders"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_PixelShaders"
+    BeforeTargets="$(PixelShadersBeforeTargets)"
+    AfterTargets="$(PixelShadersAfterTargets)"
+    Condition="'@(PixelShaders)' != ''"
+    DependsOnTargets="$(PixelShadersDependsOn);ComputePixelShadersOutput"
+    Outputs="@(PixelShaders-&gt;'%(Outputs)')"
+    Inputs="@(PixelShaders);%(PixelShaders.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <PixelShaders
+        Remove="@(PixelShaders)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <PixelShaders_tlog
+        Include="%(PixelShaders.Outputs)"
+        Condition="'%(PixelShaders.Outputs)' != '' and '%(PixelShaders.ExcludedFromBuild)' != 'true'">
+        <Source>@(PixelShaders, '|')</Source>
+      </PixelShaders_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(PixelShaders.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(PixelShaders_tlog)' != '' and '%(PixelShaders_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(PixelShaders_tlog.Source);@(PixelShaders_tlog-&gt;'%(Fullpath)')" />
+    <PixelShaders
+      Condition="'@(PixelShaders)' != '' and '%(PixelShaders.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(PixelShaders.CommandLineTemplate)"
+      AdditionalOptions="%(PixelShaders.AdditionalOptions)"
+      Inputs="@(PixelShaders)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputePixelShadersOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputePixelShadersOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputePixelShadersOutput"
+    Condition="'@(PixelShaders)' != ''">
+    <ItemGroup>
+      <PixelShadersDirsToMake
+        Condition="'@(PixelShaders)' != '' and '%(PixelShaders.ExcludedFromBuild)' != 'true'"
+        Include="%(PixelShaders.Outputs)" />
+      <Link
+        Include="%(PixelShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(PixelShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(PixelShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(PixelShadersDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+  <Target
+    Name="_VertexShader"
+    BeforeTargets="$(VertexShaderBeforeTargets)"
+    AfterTargets="$(VertexShaderAfterTargets)"
+    Condition="'@(VertexShader)' != ''"
+    DependsOnTargets="$(VertexShaderDependsOn);ComputeVertexShaderOutput"
+    Outputs="@(VertexShader-&gt;'%(Outputs)')"
+    Inputs="@(VertexShader);%(VertexShader.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <VertexShader
+        Remove="@(VertexShader)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <VertexShader_tlog
+        Include="%(VertexShader.Outputs)"
+        Condition="'%(VertexShader.Outputs)' != '' and '%(VertexShader.ExcludedFromBuild)' != 'true'">
+        <Source>@(VertexShader, '|')</Source>
+      </VertexShader_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(VertexShader.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(VertexShader_tlog)' != '' and '%(VertexShader_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(VertexShader_tlog.Source);@(VertexShader_tlog-&gt;'%(Fullpath)')" />
+    <VertexShader
+      Condition="'@(VertexShader)' != '' and '%(VertexShader.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(VertexShader.CommandLineTemplate)"
+      AdditionalOptions="%(VertexShader.AdditionalOptions)"
+      Inputs="@(VertexShader)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeVertexShaderOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeVertexShaderOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeVertexShaderOutput"
+    Condition="'@(VertexShader)' != ''">
+    <ItemGroup>
+      <VertexShaderDirsToMake
+        Condition="'@(VertexShader)' != '' and '%(VertexShader.ExcludedFromBuild)' != 'true'"
+        Include="%(VertexShader.Outputs)" />
+      <Link
+        Include="%(VertexShaderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(VertexShaderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(VertexShaderDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(VertexShaderDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+  <Target
+    Name="_GeometryShaders"
+    BeforeTargets="$(GeometryShadersBeforeTargets)"
+    AfterTargets="$(GeometryShadersAfterTargets)"
+    Condition="'@(GeometryShaders)' != ''"
+    DependsOnTargets="$(GeometryShadersDependsOn);ComputeGeometryShadersOutput"
+    Outputs="@(GeometryShaders-&gt;'%(Outputs)')"
+    Inputs="@(GeometryShaders);%(GeometryShaders.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <GeometryShaders
+        Remove="@(GeometryShaders)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <GeometryShaders_tlog
+        Include="%(GeometryShaders.Outputs)"
+        Condition="'%(GeometryShaders.Outputs)' != '' and '%(GeometryShaders.ExcludedFromBuild)' != 'true'">
+        <Source>@(GeometryShaders, '|')</Source>
+      </GeometryShaders_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(GeometryShaders.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(GeometryShaders_tlog)' != '' and '%(GeometryShaders_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(GeometryShaders_tlog.Source);@(GeometryShaders_tlog-&gt;'%(Fullpath)')" />
+    <GeometryShaders
+      Condition="'@(GeometryShaders)' != '' and '%(GeometryShaders.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(GeometryShaders.CommandLineTemplate)"
+      AdditionalOptions="%(GeometryShaders.AdditionalOptions)"
+      Inputs="@(GeometryShaders)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeGeometryShadersOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeGeometryShadersOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeGeometryShadersOutput"
+    Condition="'@(GeometryShaders)' != ''">
+    <ItemGroup>
+      <GeometryShadersDirsToMake
+        Condition="'@(GeometryShaders)' != '' and '%(GeometryShaders.ExcludedFromBuild)' != 'true'"
+        Include="%(GeometryShaders.Outputs)" />
+      <Link
+        Include="%(GeometryShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(GeometryShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(GeometryShadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(GeometryShadersDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

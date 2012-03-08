@@ -1,0 +1,38 @@
+#define SHNorm0 0.2820947917738781f
+#define SHNorm1 0.4886025119029199f
+
+//0.8862269f
+//1.02332665f
+#define Lobe0 0.25f
+#define Lobe1 0.6f
+
+
+float4 RotateZH(float3 dir, float2 zh)
+{
+	float4 SH;
+	SH.x = zh.x;
+	SH.y = zh.y * -dir.y;
+	SH.z = zh.y * dir.z;
+	SH.w = zh.y * -dir.x;
+
+	return SH;
+}
+
+
+float4 CreateLobe(float3 dir)
+{
+    return float4(Lobe0, float3(-Lobe1 * dir.y, Lobe1 * dir.z, -Lobe1 * dir.x));
+}
+
+float4 EvalSH(float3 dir)
+{
+	return float4(SHNorm0, -SHNorm1 * dir.y, SHNorm1 * dir.z, -SHNorm1 * dir.x);
+}
+
+static inline float EvalSH(float4 SH, float3 dir)
+{
+	return	 SHNorm0 * SH.x +
+			-SHNorm1 * dir.y * SH.y +
+			 SHNorm1 * dir.z * SH.z +
+			-SHNorm1 * dir.x * SH.w;
+}

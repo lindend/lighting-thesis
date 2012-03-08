@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(PixelShadersBeforeTargets)' == '' and '$(PixelShadersAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <PixelShadersBeforeTargets>Midl</PixelShadersBeforeTargets>
+    <PixelShadersAfterTargets>CustomBuild</PixelShadersAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PixelShadersDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(PixelShadersDependsOn)</PixelShadersDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PixelShaders>
+      <CommandLineTemplate>"$(DXSDK_DIR)Utilities\bin\x64\fxc" /T ps_5_0 /Od /nologo /Ges /I "$(ProjectDir)Shaders" /Fo "%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf" "%(FullPath)"</CommandLineTemplate>
+      <Outputs>%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf</Outputs>
+      <ExecutionDescription>Compiling shader %(Filename)</ExecutionDescription>
+    </PixelShaders>
+  </ItemDefinitionGroup>
+  <PropertyGroup
+    Condition="'$(VertexShaderBeforeTargets)' == '' and '$(VertexShaderAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <VertexShaderBeforeTargets>Midl</VertexShaderBeforeTargets>
+    <VertexShaderAfterTargets>CustomBuild</VertexShaderAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VertexShaderDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(VertexShaderDependsOn)</VertexShaderDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <VertexShader>
+      <CommandLineTemplate>"$(DXSDK_DIR)Utilities\bin\x64\fxc" /T vs_5_0 /Od /nologo /Ges /I "$(ProjectDir)Shaders" /Fo "%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf" "%(FullPath)"</CommandLineTemplate>
+      <Outputs>%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf</Outputs>
+      <ExecutionDescription>Compiling shader %(Filename)</ExecutionDescription>
+    </VertexShader>
+  </ItemDefinitionGroup>
+  <PropertyGroup
+    Condition="'$(GeometryShadersBeforeTargets)' == '' and '$(GeometryShadersAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <GeometryShadersBeforeTargets>Midl</GeometryShadersBeforeTargets>
+    <GeometryShadersAfterTargets>CustomBuild</GeometryShadersAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GeometryShadersDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(GeometryShadersDependsOn)</GeometryShadersDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <GeometryShaders>
+      <CommandLineTemplate>"$(DXSDK_DIR)Utilities\bin\x64\fxc" /T gs_5_0 /Od /nologo /Ges /I "$(ProjectDir)Shaders" /Fo "%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf" "%(FullPath)"</CommandLineTemplate>
+      <Outputs>%(RootDir)%(Directory)bin\%(Filename)%(Extension).csf</Outputs>
+      <ExecutionDescription>Compiling %(Filename)</ExecutionDescription>
+    </GeometryShaders>
+  </ItemDefinitionGroup>
+</Project>

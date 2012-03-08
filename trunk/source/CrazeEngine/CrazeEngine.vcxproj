@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9BC57188-93DF-4BBA-A1AE-755392DC7CF9}</ProjectGuid>
+    <RootNamespace>CrazeEngine</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)/lib/CrazeEngine/$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)/symbols/CrazeEngine/$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)/lib/CrazeEngine/$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)/symbols/CrazeEngine/$(Configuration)\</IntDir>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Command>xcopy "$(SolutionDir)/source/CrazeEngine/Graphics2/Shaders" "$(SolutionDir)bin\Shaders\" /Y
+</Command>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include/;$(SolutionDir)/source/;$(SolutionDir)/source/CrazeGraphics/;$(SolutionDir)/source/CrazeMath/;$(SolutionDir)/source/CrazeCore/;$(SolutionDir)/source/CrazeEngine/;$(SolutionDir)/include/lua;$(SolutionDir)/include/boost_1_44_0/;$(SolutionDir)/include/freetype/;$(SolutionDir)/include/havok/;$(SolutionDir)/include/tolua++/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;CRAZEENGINE_DLL;_DEBUG;D3D_DEBUG_INFO;_CONSOLE;CENEW=new(_NORMAL_BLOCK,__FILE__,__LINE__);CRAZE_PROFILING;CRAZE_DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>CrazeEngine.h</PrecompiledHeaderFile>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)lib/havok/debug_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;hkBase.lib;hkSerialize.lib;hkSceneData.lib;hkInternal.lib;hkGeometryUtilities.lib;hkVisualize.lib;hkCompat.lib;hkpCollide.lib;hkpConstraintSolver.lib;hkpDynamics.lib;hkpInternal.lib;hkpUtilities.lib;hkpVehicle.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>lua5.1.lib;Recastd.lib;Detourd.lib;luabind_d.lib</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib/luabind;$(SolutionDir)lib/lua;$(SolutionDir)lib/recastDetour</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <TargetMachine>
+      </TargetMachine>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include/;$(SolutionDir)/source/;$(SolutionDir)/source/CrazeGraphics/;$(SolutionDir)/source/CrazeMath/;$(SolutionDir)/source/CrazeCore/;$(SolutionDir)/source/CrazeEngine/;$(SolutionDir)/include/lua;$(SolutionDir)/include/boost_1_44_0/;$(SolutionDir)/include/freetype/;$(SolutionDir)/include/havok/;$(SolutionDir)/include/tolua++/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;CRAZEENGINE_DLL;CENEW=new;CRAZE_DX9;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>CrazeEngine.h</PrecompiledHeaderFile>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+    </ClCompile>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)lib/havok/release_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;hkBase.lib;hkSerialize.lib;hkSceneData.lib;hkInternal.lib;hkGeometryUtilities.lib;hkVisualize.lib;hkCompat.lib;hkpCollide.lib;hkpConstraintSolver.lib;hkpDynamics.lib;hkpInternal.lib;hkpUtilities.lib;hkpVehicle.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>lua5.1.lib;Recast.lib;Detour.lib;luabind.lib</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib/luabind;$(SolutionDir)lib/lua;$(SolutionDir)lib/recastDetour</AdditionalLibraryDirectories>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CameraController\FreeFlyCamera.h" />
+    <ClInclude Include="CameraController\ICameraController.h" />
+    <ClInclude Include="CrazeEngine.h" />
+    <ClInclude Include="EngineExport.h" />
+    <ClInclude Include="Event2\GlobalEvent.h" />
+    <ClInclude Include="Event2\InputEvents.h" />
+    <ClInclude Include="Game\Components\ComponentFactory.h" />
+    <ClInclude Include="Game\Components\NavMeshComponent.h" />
+    <ClInclude Include="Game\Components\CoreComponents.h" />
+    <ClInclude Include="Game\Components\GraphicsComponents.h" />
+    <ClInclude Include="Game\Components\ScriptComponent.h" />
+    <ClInclude Include="Game\GameObject.h" />
+    <ClInclude Include="Game\Components\IGameComponent.h" />
+    <ClInclude Include="Game\ScriptGame.h" />
+    <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="Intersection\Plane.h" />
+    <ClInclude Include="Intersection\Ray.h" />
+    <ClInclude Include="Level\LevelFile.h" />
+    <ClInclude Include="level\map.h" />
+    <ClInclude Include="Level\ScriptLevel.h" />
+    <ClInclude Include="Object\Actor.h" />
+    <ClInclude Include="Pathfinding\NavigationScene.h" />
+    <ClInclude Include="Pathfinding\NavInputMesh.h" />
+    <ClInclude Include="Pathfinding\Path.h" />
+    <ClInclude Include="Process\IProcess.h" />
+    <ClInclude Include="Process\ProcessManager.h" />
+    <ClInclude Include="Script\GameObjectAPI.hpp" />
+    <ClInclude Include="Script\Script.h" />
+    <ClInclude Include="Script\ScriptFunctorProxy.h" />
+    <ClInclude Include="Script\ScriptManager.h" />
+    <ClInclude Include="Script\Export\UIWrappers.h" />
+    <ClInclude Include="Level\Terrain.h" />
+    <ClInclude Include="Graphics2\UI\UserInterface.h" />
+    <ClInclude Include="Intersection\BoundingBox.h" />
+    <ClInclude Include="Intersection\Frustum.h" />
+    <ClInclude Include="Util\AgeMap.hpp" />
+    <ClInclude Include="BaseManager\BaseManager.h" />
+    <ClInclude Include="BaseManager\BaseObject.h" />
+    <ClInclude Include="Util\ByteBuffer.hpp" />
+    <ClInclude Include="Util\bytestream.hpp" />
+    <ClInclude Include="Util\CrazeArray.hpp" />
+    <ClInclude Include="State\DefaultGameState.h" />
+    <ClInclude Include="Dialog\DialogGraph.h" />
+    <ClInclude Include="Event\EventManager.h" />
+    <ClInclude Include="Event\EventTypes.h" />
+    <ClInclude Include="Game\Game.h" />
+    <ClInclude Include="Event\GameEvents.h" />
+    <ClInclude Include="State\GameStateManager.h" />
+    <ClInclude Include="application\Application.h" />
+    <ClInclude Include="Profiling\IClock.h" />
+    <ClInclude Include="Event\IEvent.h" />
+    <ClInclude Include="Event\IEventHook.h" />
+    <ClInclude Include="State\IGameState.h" />
+    <ClInclude Include="Event\InputEvents.h" />
+    <ClInclude Include="Threading\IRunable.h" />
+    <ClInclude Include="Stream\IStreamHandler.h" />
+    <ClInclude Include="Threading\IThread.h" />
+    <ClInclude Include="Threading\IThreadManager.h" />
+    <ClInclude Include="Util\CrazeHash.hpp" />
+    <ClInclude Include="Util\lockable.hpp" />
+    <ClInclude Include="State\MenuGameState.h" />
+    <ClInclude Include="Util\MersenneTwister.h" />
+    <ClInclude Include="Util\multibuffer.hpp" />
+    <ClInclude Include="Util\optional.hpp" />
+    <ClInclude Include="Game\PlayerManager.h" />
+    <ClInclude Include="State\PlayGameState.h" />
+    <ClInclude Include="Profiling\ProfilerNode.h" />
+    <ClInclude Include="Properties\PropertyManager.h" />
+    <ClInclude Include="Threading\SingleThreadManager.h" />
+    <ClInclude Include="Util\stack.hpp" />
+    <ClInclude Include="Stream\Stream.h" />
+    <ClInclude Include="Stream\StreamManager.h" />
+    <ClInclude Include="BaseManager\StringNameManager.h" />
+    <ClInclude Include="Util\Type\Type.h" />
+    <ClInclude Include="Profiling\UnixClock.h" />
+    <ClInclude Include="Profiling\Win32Clock.h" />
+    <ClInclude Include="Input\Win32KeyMapper.h" />
+    <ClInclude Include="Timer\Win32Timer.h" />
+    <ClInclude Include="Threading\WinThreadManager.h" />
+    <ClInclude Include="Level\Level.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CameraController\FreeFlyCamera.cpp" />
+    <ClCompile Include="Game\Components\ComponentFactory.cpp" />
+    <ClCompile Include="Game\Components\CoreComponents.cpp" />
+    <ClCompile Include="Game\Components\GraphicsComponents.cpp" />
+    <ClCompile Include="Game\Components\NavMeshComponent.cpp" />
+    <ClCompile Include="Game\GameObject.cpp" />
+    <ClCompile Include="Game\ScriptGame.cpp" />
+    <ClCompile Include="Level\LevelFile.cpp" />
+    <ClCompile Include="Level\Map.cpp" />
+    <ClCompile Include="Event\EventManager.cpp" />
+    <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Event\GameEvents.cpp" />
+    <ClCompile Include="Level\ScriptLevel.cpp" />
+    <ClCompile Include="Pathfinding\NavigationScene.cpp" />
+    <ClCompile Include="Pathfinding\NavInputMesh.cpp" />
+    <ClCompile Include="Process\ProcessManager.cpp" />
+    <ClCompile Include="Script\Export\ExportEvent.cpp" />
+    <ClCompile Include="Script\Export\ExportGame.cpp" />
+    <ClCompile Include="Script\Export\ExportCore.cpp" />
+    <ClCompile Include="Script\Export\ExportGraphics.cpp" />
+    <ClCompile Include="Script\Export\ExportUI.cpp" />
+    <ClCompile Include="Script\Script.cpp" />
+    <ClCompile Include="Script\ScriptManager.cpp" />
+    <ClCompile Include="State\GameStateManger.cpp" />
+    <ClCompile Include="Application\Application.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Event\InputEvents.cpp" />
+    <ClCompile Include="State\MenuGameState.cpp" />
+    <ClCompile Include="State\PlayGameState.cpp" />
+    <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="Input\Win32KeyMapper.cpp" />
+    <ClCompile Include="Timer\Win32Timer.cpp" />
+    <ClCompile Include="Level\Terrain.cpp" />
+    <ClCompile Include="Level\Level.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Level\Terrain_SIMD.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

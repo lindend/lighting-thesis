@@ -1,0 +1,81 @@
+#ifndef GLOBALS__INCLUDED
+#define GLOBALS__INCLUDED
+
+#define LIGHT_SPOT 0
+#define LIGHT_DIR 1
+#define ESMc 120.f
+#define INVFar (1.f / 4000.f)
+
+cbuffer cbPerObject : register(b0)
+{
+	row_major matrix ObjTransform :		packoffset(c0);
+	row_major float3x3 NormalTfm :		packoffset(c4);
+	float specularFactor :				packoffset(c6.w);
+	uint LightMapIndex :                packoffset(c7.x);
+};
+
+cbuffer cbPerLight : register (b2)
+{
+	row_major matrix LightViewProj :	packoffset(c0);
+	row_major matrix LightWorld :		packoffset(c4);
+	float3 LightColor :					packoffset(c8);
+	float LightSpecular :				packoffset(c8.w);
+	float3 LightPos :					packoffset(c9);
+	float LightRange :					packoffset(c9.w);
+	float3 LightDir :					packoffset(c10);
+	float LightAngle :					packoffset(c10.w);
+	int LightType	:					packoffset(c11);
+	float TexelSize :					packoffset(c11.y);
+	float2 InvLightMapRes :				packoffset(c11.z);
+};
+
+cbuffer cbPerFrame : register(b3)
+{
+	float4 CameraPos :					packoffset(c0);
+	row_major matrix ViewProj :			packoffset(c1);
+	row_major matrix InvViewProj :		packoffset(c5);
+	float2 InvResolution :				packoffset(c9);
+	float3 AmbientLight :				packoffset(c10);
+	float LPVNumCells :					packoffset(c10.w);
+	float3 LPV0Start :					packoffset(c11);
+	float LPV0Size :					packoffset(c11.w);
+	float3 LPV1Start :					packoffset(c12);
+	float LPV1Size :					packoffset(c12.w);
+	float3 LPV2Start :					packoffset(c13);
+	float LPV2Size :					packoffset(c13.w);
+	bool DisableDirect :				packoffset(c14.x);
+	bool DisableAO :					packoffset(c14.y);
+	bool DisableIndirect :				packoffset(c14.z);
+	bool DisableAmbient :				packoffset(c14.w);
+	bool UseESM :						packoffset(c15.x);
+	uint NumObjects :					packoffset(c15.y);
+}
+
+//All shading
+Texture2D LightAcc :					register(t4);
+
+//Terrain rendering
+Texture2DArray TerrainDecal :			register(t0);
+Texture2DArray TerrainBump :			register(t1);
+Texture2DArray TerrainSpec :			register(t2);
+Texture2D HeightMap :					register(t7);
+Texture2D TextureWeights0 :				register(t8);
+
+//Deferred rendering
+Texture2D ColorSpec :					register(t0);
+Texture2D NormalRough :					register(t1);
+Texture2D LightMap :					register(t2);
+Texture2D Depth :						register(t3);
+//Texture2D ShadowMap :					register(t7);
+//Texture2DArray ShadowCascades :		register(t6);
+
+Texture2D Random :						register(t4);
+
+
+SamplerState Bilinear :					register(s0);
+SamplerState Trilinear :				register(s1);
+SamplerState BilinearBorder :			register(s2);
+SamplerState Point :					register(s3);
+SamplerState PointBorder :				register(s4);
+
+#endif

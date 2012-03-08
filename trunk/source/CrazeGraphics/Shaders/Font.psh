@@ -1,0 +1,9 @@
+#include "globals.incl"
+
+Texture2D GlyphMap : register(t0);
+
+float4 main(float2 uv : TEXCOORD0) : SV_Target0
+{
+	float v = GlyphMap.Sample(Bilinear, uv).r;
+	return float4(0.f, 0.f, 0.f, v);
+}

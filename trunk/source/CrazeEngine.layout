@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="Battlecraze\BattlecrazePlayState.cpp" open="0" top="0" tabpos="24">
+		<Cursor position="7588" topLine="236" />
+	</File>
+	<File name="CrazEd\CrazEdApplication.cpp" open="1" top="0" tabpos="10">
+		<Cursor position="535" topLine="2" />
+	</File>
+	<File name="CrazEd\CrazEdGame.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="CrazEd\ScriptExport.cpp" open="1" top="0" tabpos="9">
+		<Cursor position="59" topLine="0" />
+	</File>
+	<File name="CrazEd\script\CrazEdGame.lua" open="0" top="0" tabpos="15">
+		<Cursor position="79" topLine="0" />
+	</File>
+	<File name="CrazEd\script\projectFile.lua" open="0" top="0" tabpos="0">
+		<Cursor position="107" topLine="0" />
+	</File>
+	<File name="CrazeCore\Resource\FileDataLoader.cpp" open="0" top="0" tabpos="21">
+		<Cursor position="1577" topLine="6" />
+	</File>
+	<File name="CrazeCore\Resource\FileDataLoader.h" open="0" top="0" tabpos="20">
+		<Cursor position="288" topLine="1" />
+	</File>
+	<File name="CrazeCore\Resource\ResEventHandler.h" open="0" top="0" tabpos="8">
+		<Cursor position="1193" topLine="1" />
+	</File>
+	<File name="CrazeCore\Resource\Resource.cpp" open="0" top="0" tabpos="16">
+		<Cursor position="179" topLine="1" />
+	</File>
+	<File name="CrazeCore\Resource\Resource.h" open="0" top="0" tabpos="2">
+		<Cursor position="2239" topLine="80" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceData.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="74" topLine="0" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceData.h" open="0" top="0" tabpos="15">
+		<Cursor position="413" topLine="4" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceDataLoader.h" open="0" top="0" tabpos="19">
+		<Cursor position="125" topLine="0" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceEventHandler.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="239" topLine="0" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceEventHandler.h" open="0" top="0" tabpos="23">
+		<Cursor position="673" topLine="0" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceManager.cpp" open="0" top="0" tabpos="18">
+		<Cursor position="2175" topLine="59" />
+	</File>
+	<File name="CrazeCore\Resource\ResourceManager.h" open="0" top="0" tabpos="17">
+		<Cursor position="2513" topLine="60" />
+	</File>
+	<File name="CrazeCore\SystemInfo\SystemInfo.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="127" topLine="2" />
+	</File>
+	<File name="CrazeCore\SystemInfo\SystemInfo.h" open="0" top="0" tabpos="0">
+		<Cursor position="177" topLine="0" />
+	</File>
+	<File name="CrazeCore\Threading\ThreadUtil.hpp" open="0" top="0" tabpos="0">
+		<Cursor position="1403" topLine="67" />
+	</File>
+	<File name="CrazeCore\Util\CrazeHash.cpp" open="0" top="0" tabpos="14">
+		<Cursor position="492" topLine="0" />
+	</File>
+	<File name="CrazeCore\Util\CrazeHash.h" open="0" top="0" tabpos="13">
+		<Cursor position="144" topLine="0" />
+	</File>
+	<File name="CrazeEngine\Application\Application.cpp" open="1" top="0" tabpos="6">
+		<Cursor position="2975" topLine="127" />
+	</File>
+	<File name="CrazeEngine\Application\Win32Application.cpp" open="1" top="0" tabpos="5">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="CrazeEngine\Game\GameObject.h" open="0" top="0" tabpos="25">
+		<Cursor position="397" topLine="8" />
+	</File>
+	<File name="CrazeEngine\Level\ScriptLevel.cpp" open="1" top="1" tabpos="12">
+		<Cursor position="1430" topLine="19" />
+	</File>
+	<File name="CrazeEngine\Script\Export\ExportCore.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="49" topLine="0" />
+	</File>
+	<File name="CrazeEngine\Script\Export\ExportGame.cpp" open="1" top="0" tabpos="11">
+		<Cursor position="683" topLine="106" />
+	</File>
+	<File name="CrazeEngine\Script\Script.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Effect\CSLighting.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="2550" topLine="63" />
+	</File>
+	<File name="CrazeGraphics\Effect\CSLighting.h" open="0" top="0" tabpos="0">
+		<Cursor position="483" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Effect\GBufferEffect.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="386" topLine="9" />
+	</File>
+	<File name="CrazeGraphics\Effect\IEffect.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="638" topLine="47" />
+	</File>
+	<File name="CrazeGraphics\Effect\IEffect.h" open="0" top="0" tabpos="0">
+		<Cursor position="809" topLine="11" />
+	</File>
+	<File name="CrazeGraphics\Effect\ISPMEffects.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="456" topLine="64" />
+	</File>
+	<File name="CrazeGraphics\Effect\ISPMEffects.h" open="0" top="0" tabpos="0">
+		<Cursor position="545" topLine="1" />
+	</File>
+	<File name="CrazeGraphics\Effect\LPVInjectRSMEffect.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="2409" topLine="52" />
+	</File>
+	<File name="CrazeGraphics\Geometry\Mesh.cpp" open="0" top="0" tabpos="8">
+		<Cursor position="502" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Geometry\Mesh.h" open="0" top="0" tabpos="7">
+		<Cursor position="308" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Geometry\MeshData.cpp" open="0" top="0" tabpos="9">
+		<Cursor position="207" topLine="4" />
+	</File>
+	<File name="CrazeGraphics\Geometry\Model.cpp" open="0" top="0" tabpos="8">
+		<Cursor position="325" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Geometry\Model.h" open="0" top="0" tabpos="9">
+		<Cursor position="133" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Graphics.cpp" open="0" top="0" tabpos="12">
+		<Cursor position="596" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\LayoutManager.cpp" open="0" top="0" tabpos="10">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Lighting\DynamicGISystem.h" open="0" top="0" tabpos="8">
+		<Cursor position="1552" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Material.h" open="0" top="0" tabpos="11">
+		<Cursor position="602" topLine="10" />
+	</File>
+	<File name="CrazeGraphics\Mesh.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="3157" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Mesh.h" open="0" top="0" tabpos="4">
+		<Cursor position="306" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Model.cpp" open="0" top="0" tabpos="7">
+		<Cursor position="493" topLine="88" />
+	</File>
+	<File name="CrazeGraphics\Model.h" open="0" top="0" tabpos="6">
+		<Cursor position="1173" topLine="10" />
+	</File>
+	<File name="CrazeGraphics\Renderer\ISPMRenderer.cpp" open="0" top="0" tabpos="1">
+		<Cursor position="2378" topLine="95" />
+	</File>
+	<File name="CrazeGraphics\Renderer\LPVRenderer.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="508" topLine="85" />
+	</File>
+	<File name="CrazeGraphics\ResourceHandlers.cpp" open="0" top="0" tabpos="3">
+		<Cursor position="494" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\ResourceHandlers.h" open="0" top="0" tabpos="1">
+		<Cursor position="1531" topLine="24" />
+	</File>
+	<File name="CrazeGraphics\Scene\Scene.cpp" open="0" top="0" tabpos="2">
+		<Cursor position="675" topLine="7" />
+	</File>
+	<File name="CrazeGraphics\Scene\Scene.h" open="0" top="0" tabpos="3">
+		<Cursor position="393" topLine="13" />
+	</File>
+	<File name="CrazeGraphics\Texture\DynamicTexture.cpp" open="0" top="0" tabpos="27">
+		<Cursor position="311" topLine="0" />
+	</File>
+	<File name="CrazeGraphics\Texture\DynamicTexture.h" open="0" top="0" tabpos="26">
+		<Cursor position="1207" topLine="27" />
+	</File>
+	<File name="CrazeGraphics\Texture\TextureAtlas.cpp" open="0" top="0" tabpos="5">
+		<Cursor position="1961" topLine="54" />
+	</File>
+	<File name="CrazeGraphics\Texture\TextureAtlas.h" open="0" top="0" tabpos="4">
+		<Cursor position="303" topLine="0" />
+	</File>
+	<File name="CrazeMath\CrazeMath.h" open="0" top="0" tabpos="22">
+		<Cursor position="8" topLine="0" />
+	</File>
+	<File name="CrazeMath\MathTypes.h" open="0" top="0" tabpos="0">
+		<Cursor position="309" topLine="0" />
+	</File>
+	<File name="Graphics2Test\TestApp.hpp" open="1" top="0" tabpos="3">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="Graphics2Test\TestGame.hpp" open="1" top="0" tabpos="2">
+		<Cursor position="696" topLine="70" />
+	</File>
+	<File name="Graphics2Test\main.cpp" open="1" top="0" tabpos="4">
+		<Cursor position="0" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

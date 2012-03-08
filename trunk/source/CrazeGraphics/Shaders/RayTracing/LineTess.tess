@@ -1,0 +1,11 @@
+struct INPUT
+{
+	float2 pos;
+	float3 color;
+};
+
+float2 constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID) : SV_TessFactor
+{
+	
+	return float2(
+}

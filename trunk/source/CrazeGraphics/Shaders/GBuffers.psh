@@ -1,0 +1,46 @@
+#include "globals.incl"
+
+struct PS_INPUT
+{
+	float2 uv : TEXCOORD0;
+	float3 normal : NORMAL0;
+	float4 pos : SV_Position;
+};
+
+struct PS_OUTPUT
+{
+	float4 albedoSpec : SV_TARGET0;
+	float4 normalRough : SV_TARGET1;
+	float4 lightMap : SV_Target2;
+};
+
+Texture2D Decal :						register(t0);
+Texture2D BumpMap :						register(t1);
+Texture3D Lighting :					register(t2);
+Texture2D SkyVisMap :					register(t3);
+
+PS_OUTPUT main(PS_INPUT input)
+{
+	PS_OUTPUT output;
+	output.albedoSpec = Decal.Sample(Bilinear, input.uv);
+	output.normalRough = float4(normalize(input.normal), 0.5f);
+	output.lightMap = float4(Lighting.Sample(Bilinear, float3(input.uv, LightMapIndex)).rgb * 0.01f, SkyVisMap.Sample(Bilinear, input.uv).r);
+
+	return output;
+}
+
+/*
+Normal mapping idea code:
+
+float2 dUvX = ddx(input.uv);
+float2 dUvY = ddy(input.uv);
+float3 dPX = ddx(input.worldPos);
+float3 dPY = ddy(input.worldPos);
+
+float3 t = (dUvY.y * dPX - dUvX.y * dPY) / (dUvX.x * dUvY.y - dUvX.y * dUvY.x);
+float3 b = (dUvY.x * dPX - dUvX.y * dPY) / (dUvX.y * dUvY.x - dUvX.x * dUvY.y);
+
+float3x3 tbn = float3x3(t, b, input.normal);
+
+float3 normal = mul(NormalMap.Sample(Bilinear, input.uv).xyz, tbn);
+*/
