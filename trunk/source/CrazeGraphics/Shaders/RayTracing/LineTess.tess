@@ -1,11 +1,67 @@
+cbuffer LVInfo : register(c0)
+{
+	float3 LVStart;
+	float3 LVEnd;
+	float3 LVCellSize;
+};
+
 struct INPUT
 {
-	float2 pos;
-	float3 color;
+	float4 pos : POSITION;
+	float3 color : COLOR;
+};
+
+struct PATCHCONSTANT
+{
+	float2 tess : SV_TessFactor;
+	float3 color : COLOR;
+	float3 dir : DIRECTION;
 };
 
 float2 constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID) : SV_TessFactor
 {
+	float startZ = clamp(patch[0].z, LVStart.z, LVEnd.z);
+	float endZ = clamp(patch[1].z, LVStart.z, LVEnd.z);
+
+	float zdelta = patch[1].pos.z - patch[0].pos.z;
+
+	PATCHCONSTANT output;
+	output.tess = float2(zdelta / LVCellSize.z, 1.f);
+	output.color = patch[0].color;
+	output.dir = normalize(patch[1].pos.xyz - patch[0].pos.xyz);
+
+	return output;
+}
+
+[domain("isoline")]
+[partitioning("integer")]
+[outputtopology("isoline")]
+[outputcontrolpoints(2)]
+[patchconstantfunc("constantDataFunct")]
+float4 hsMain( 
+    InputPatch<INPUT, 2> ip, 
+    uint i : SV_OutputControlPointID,
+    uint PatchID : SV_PrimitiveID ) : SV_Position
+{
+	return ip[i].pos;
+}
+
+struct DS_OUTPUT
+{
+	float3 color : COLOR0;
+	float3 dir : DIRECTION;
+	float4 pos : SV_Position;
+};
+
+
+[domain("isoline")]
+DS_OUTPUT dsMain(PATCHCONSTANT input, float2 UV : SV_DomainLocation, const OutputPatch<INPUT, 2> patches)
+{
+	DS_OUTPUT output;
 	
-	return float2(
+	output.color = input.color;
+	output.dir = input.dir;
+	output.pos = UV.x * (patches[1] - patches[0]) + patches[0];
+
+	return output;
 }
