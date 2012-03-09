@@ -1,0 +1,21 @@
+#include "SHMath.incl"
+
+struct PS_OUT
+{
+	float4 SHr : SV_Target0;
+	float4 SHg : SV_Target1;
+	float4 SHb : SV_Target2;
+};
+
+PS_OUT main(float3 color : COLOR0, float3 direction : DIRECTION0)
+{
+	PS_OUT output;
+
+	float4 sh = CreateLobe(direction);
+
+	output.SHr = sh * color.r;
+	output.SHg = sh * color.g;
+	output.SHb = sh * color.b;
+
+	return output;
+}
