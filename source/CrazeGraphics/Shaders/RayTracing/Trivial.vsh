@@ -1,4 +1,14 @@
-float3 main(float3 input)
+struct VS_OUT
 {
-	return input;
+	float3 position : POSITION;
+	float3 color : COLOR;
+}
+
+float3 main(float3 pos : POSITION0, float3 color : COLOR0)
+{
+	VS_OUT out;
+	out.position = pos;
+	out.color = color;
+
+	return out;
 }
