@@ -308,5 +308,5 @@ void Renderer::RenderLight(DirectionalLight* pLight, Scene* pScene)
 
 void RenderRays(std::shared_ptr<UAVBuffer> buffer)
 {
-
+	
 }

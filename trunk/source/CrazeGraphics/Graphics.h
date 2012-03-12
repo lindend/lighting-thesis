@@ -24,6 +24,7 @@ namespace Craze
 		extern class PosMapEffect gFxPosMap;
 		extern class NullEffect gFxNull;
 		extern class DebugDrawEffect gFxDebugDraw;
+		extern class DrawRaysEffect gFxDrawRays;
 
 		extern class InjectRaysEffect gFxInjectRays;
 
