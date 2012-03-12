@@ -59,6 +59,11 @@ Camera findSMCamera(const Light& l, Scene* scene)
 	return c;
 }
 
+std::shared_ptr<UAVBuffer> getCollidedRays()
+{
+	return m_collidedRays;
+}
+
 std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* scene)
 {
 	/*
@@ -75,6 +80,8 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 
 	renderRSMs(scene, dir);
 	injectRays();
+	traceRays();
+
 
 	return m_lightingVolumes;
 }
@@ -103,6 +110,18 @@ void LightVolumeInjector::injectRays()
 {
 	gFxInjectRays.inject(m_dummy, m_RSMs, m_RSMDS, m_toTestRays);
 }
+
+/*void injectToLightVolumes()
+{
+	if ( FAILED( pD3DDevice->CreateInputLayout( layout,
+                                            numElements,
+                                            PassDesc.pIAInputSignature,
+                                            PassDesc.IAInputSignatureSize,
+                                            &pVertexLayout ) ) ) return fatalError("Could not create Input 
+											Layout!");
+
+
+}*/
 
 void LightVolumeInjector::traceRays()
 {

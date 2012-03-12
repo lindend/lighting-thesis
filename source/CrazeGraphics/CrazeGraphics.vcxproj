@@ -128,6 +128,7 @@
     <ClInclude Include="Effect\LightVolumeEffects.h" />
     <ClInclude Include="Effect\NullEffect.h" />
     <ClInclude Include="Effect\PosMapEffect.h" />
+    <ClInclude Include="Effect\DrawRaysEffect.h" />
     <ClInclude Include="Effect\ShadowEffect.h" />
     <ClInclude Include="Effect\FontEffect.h" />
     <ClInclude Include="Effect\GBufferEffect.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="Effect\CSLighting.cpp" />
     <ClCompile Include="EffectUtil\EffectHelper.cpp" />
     <ClCompile Include="Effect\DebugDrawEffect.cpp" />
+    <ClCompile Include="Effect\DrawRaysEffect.cpp" />
     <ClCompile Include="Effect\FontEffect.cpp" />
     <ClCompile Include="Effect\GBufferEffect.cpp" />
     <ClCompile Include="Effect\IEffect.cpp" />
@@ -209,6 +211,7 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Renderer\DrawRays.cpp" />
     <ClCompile Include="Renderer\LightVolumeInjector.cpp" />
     <ClCompile Include="Scene\ModelNode.cpp" />
     <ClCompile Include="VertexStreams.cpp" />
@@ -237,6 +240,8 @@
     <VertexShader Include="Shaders\ESM_Mesh.vsh" />
     <VertexShader Include="Shaders\Font.vsh" />
     <VertexShader Include="Shaders\PosMap.vsh" />
+    <VertexShader Include="Shaders\RayTracing\DrawRay.vsh" />
+    <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
     <VertexShader Include="Shaders\ScreenQuad.vsh" />
     <VertexShader Include="Shaders\Terrain.vsh" />
     <VertexShader Include="Shaders\UI.vsh" />
@@ -260,7 +265,9 @@
     <None Include="Shaders\SkyOcclusion.csh">
       <FileType>Document</FileType>
     </None>
+    <PixelShaders Include="Shaders\RayTracing\DrawRay.psh" />
     <PixelShaders Include="Shaders\RayTracing\FirstBounce.psh" />
+    <PixelShaders Include="Shaders\RayTracing\RasterizeSH.psh" />
     <PixelShaders Include="Shaders\Simple.psh" />
     <PixelShaders Include="Shaders\TerrainShading.psh" />
     <PixelShaders Include="Shaders\UI.psh" />

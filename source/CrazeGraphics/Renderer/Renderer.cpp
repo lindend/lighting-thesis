@@ -26,6 +26,7 @@
 #include "Effect/LightingEffect.h"
 #include "Effect/DebugDrawEffect.h"
 #include "Effect/CopyToBackBuffer.h"
+#include "Buffer/Buffer.h"
 
 
 
@@ -163,9 +164,6 @@ void Renderer::Initialize()
 
 	//m_pFontFace = gFontMgr.CreateFace("Katana", "Regular", 12);
 	//m_Str = m_pFontFace->BuildStaticString("Hello world", Vector3::ONE);
-
-
-
 }
 
 void Renderer::Shutdown()
@@ -277,6 +275,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
 	
+
+	//render rays as lines
 	
 	/*gFxAmbientLighting.set();
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -304,4 +304,9 @@ void Renderer::BindScene(Scene* pScene)
 void Renderer::RenderLight(DirectionalLight* pLight, Scene* pScene)
 {
 	
+}
+
+void RenderRays(std::shared_ptr<UAVBuffer> buffer)
+{
+
 }

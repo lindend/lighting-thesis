@@ -25,6 +25,8 @@ namespace Craze
 
 			void setTriangles(Vector3* triangles, int numTriangles);
 
+			std::shared_ptr<UAVBuffer> getCollidedRays();
+
 		private:
 			void renderRSMs(Scene* scene, const Light& l);
 			void injectRays();
