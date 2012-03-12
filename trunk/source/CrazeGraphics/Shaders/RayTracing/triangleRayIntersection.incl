@@ -1,13 +1,13 @@
-float intersection(float3 rayStartPos, float3 rayDirection, float3 triangleVertices)
+float intersection(float3 rayStartPos, float3 rayDirection, float3 v0, float3 v1, float3 v2)
 {
 	float INFINITY = 1000000000000.f;
 
-	float3 edge1 = triangleVertices.z - triangleVertices.x;
-	float3 edge0 = triangleVertices.y - triangleVertices.x;
+	float3 edge1 = v2 - v0;
+	float3 edge0 = v1 - v0;
 
 	float3 p = cross(rayDirection, edge1);
 
-	float3 tv = rayStartPos - triangleVertices.x;
+	float3 tv = rayStartPos - v0;
 
 	float det = dot(edge0, p);
 
