@@ -9,8 +9,11 @@ namespace Craze
 		{
 		public:
 
-			bool initialize() { IEffect::initialize(
+			bool initialize() { return IEffect::initialize("RayTracing/DrawRay.vsh", "RayTracing/DrawRay.psh"); }
+			void set() { IEffect::set(); }
+			void destroy() { IEffect::destroy(); }
 
+			void setObjectProperties(const Matrix4& tfm, const Material& mat) {}
 
 		protected:
 
