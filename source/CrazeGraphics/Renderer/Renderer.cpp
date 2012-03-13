@@ -27,8 +27,8 @@
 #include "Effect/DebugDrawEffect.h"
 #include "Effect/CopyToBackBuffer.h"
 #include "Buffer/Buffer.h"
+#include "Renderer/DrawRays.h"
 
-#include "PIXHelper.h"
 
 
 using namespace Craze::Graphics2;
@@ -168,6 +168,8 @@ void Renderer::Initialize()
 
 	m_lightVolumeInjector.initialize();
 
+	m_rayDrawer = new DrawRays();
+	m_rayDrawer->initialize();
 }
 
 void Renderer::Shutdown()
@@ -256,15 +258,12 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	gFxGBuffer.set(pCam);
 	
+	//Should be left as it is? Probably already got a few other threads running
+	//Make sure to wait for the mainScene draw list to be ready here first
+	for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
 	{
-		PIXMARKER(L"Render G-buffers");
-		//Should be left as it is? Probably already got a few other threads running
-		//Make sure to wait for the mainScene draw list to be ready here first
-		for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
-		{
-			gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
-			i->second.m_mesh->draw();
-		}
+		gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+		i->second.m_mesh->draw();
 	}
 	
 	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
@@ -274,24 +273,19 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
 	//gFxCSLighting.run(pCam, pSRVs, m_pOutputTarget->GetUAV(), visibleLights);
 
+	//Do the other lights, with shadows
+	gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
+	//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 
-	{
-		PIXMARKER(L"Do lighting");
-		//Do the other lights, with shadows
-		gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+	ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
+	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
+	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
 
-		//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
-		ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
-		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
-		gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
-
-		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
-	}
+	gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
 	
 
-	//render rays as lines
-	
 	/*gFxAmbientLighting.set();
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gpDevice->GetDeviceContext()->Draw(3, 0);*/
@@ -306,6 +300,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
 	gFxCopyToBack.doCopy(m_pOutputTarget);
 
+	m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
+
 	gpDevice->GetDeviceContext()->OMSetDepthStencilState(0, 0);
 
 }
@@ -316,11 +312,6 @@ void Renderer::BindScene(Scene* pScene)
 }
 
 void Renderer::RenderLight(DirectionalLight* pLight, Scene* pScene)
-{
-	
-}
-
-void RenderRays(std::shared_ptr<UAVBuffer> buffer)
 {
 	
 }

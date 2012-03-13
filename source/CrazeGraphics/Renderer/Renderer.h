@@ -22,6 +22,7 @@ namespace Craze
 		class SpotLight;
 		class DirectionalLight;
 		class Graphics;
+		class DrawRays;
 		struct Light;
 
 		class Renderer
@@ -77,7 +78,7 @@ namespace Craze
 			ID3D11SamplerState* m_pPointBorderSampler;
 			ID3D11SamplerState* m_pBilinearBorderSampler;
 
-			
+			DrawRays* m_rayDrawer;
 		};
 	}
 }
