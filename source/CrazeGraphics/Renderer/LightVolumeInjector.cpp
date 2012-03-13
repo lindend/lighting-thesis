@@ -24,6 +24,8 @@
 #include "Model.h"
 #include "Geometry/MeshData.h"
 
+#include "PIXHelper.h"
+
 
 using namespace Craze;
 using namespace Craze::Graphics2;
@@ -77,7 +79,7 @@ void LightVolumeInjector::setTriangles(Vector3* tris, int numTris)
 Camera findSMCamera(const Light& l, Scene* scene)
 {
 	Camera c;
-	c.SetPosition(Vector3(0, 3000, 0));
+	c.SetPosition(Vector3(0, 2000, 0));
 	c.SetDirection(l.dir);
 	c.SetUp(Vector3::UP);
 	c.SetProjection(3.14f / 2.f, 1, 10, 100000);
@@ -103,8 +105,13 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	//Create a fake light that we can use for testing, 
 	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
 
-	renderRSMs(scene, dir);
-	spawnRays();
+	PIXMARKER(L"Create lighting volumes");
+
+	Camera c = findSMCamera(dir, scene);
+	Matrix4 viewProj = c.GetView()*c.GetProjection();
+
+	renderRSMs(scene, &c, viewProj);
+	spawnRays(viewProj);
 	traceRays();
 	injectToLV();
 
@@ -112,18 +119,18 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	return m_lightingVolumes;
 }
 
-void LightVolumeInjector::renderRSMs(Scene* scene, const Light& l)
+void LightVolumeInjector::renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj)
 {
-	Camera c = findSMCamera(l, scene);
+	PIXMARKER(L"Render RSMs");
 
 	static DrawList shadowScene;
 	shadowScene.clear();
-	scene->buildDrawList(&shadowScene, c.GetView()*c.GetProjection());
+	scene->buildDrawList(&shadowScene, viewProj);
 
 	gpDevice->SetRenderTargets(m_RSMs, 2, m_RSMDS->GetDepthStencilView());
 	gpDevice->GetDeviceContext()->ClearDepthStencilView(m_RSMDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
 
-	gFxGBuffer.set(&c);
+	gFxGBuffer.set(c);
 
 	for (auto i = shadowScene.begin(); i != shadowScene.end(); ++i)
 	{
@@ -132,9 +139,10 @@ void LightVolumeInjector::renderRSMs(Scene* scene, const Light& l)
 	}
 }
 
-void LightVolumeInjector::spawnRays()
+void LightVolumeInjector::spawnRays(const Matrix4& viewProj)
 {
-	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays);
+	PIXMARKER(L"Spawn rays");
+	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj);
 }
 
 /*void injectToLightVolumes()
@@ -151,6 +159,7 @@ void LightVolumeInjector::spawnRays()
 
 void LightVolumeInjector::traceRays()
 {
+	PIXMARKER(L"Trace rays");
 	ID3D11ShaderResourceView* triSrv = m_triangleBuffer->GetSRV();
 	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 1, &triSrv);
 
@@ -167,6 +176,7 @@ void LightVolumeInjector::traceRays()
 
 void LightVolumeInjector::injectToLV()
 {
+	PIXMARKER(L"Inject rays to light volume");
 	LightVolumeInfo lvinfo;
 	lvinfo.start = Vector3(0.f, 0.f, 0.f);
 	lvinfo.cellSize = Vector3(10.f, 10.f, 10.f);

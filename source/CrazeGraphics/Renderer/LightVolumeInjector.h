@@ -17,6 +17,7 @@ namespace Craze
 		class ComputeShaderResource;
 		class LVFirstBounceEffect;
 		class LVInjectRaysEffect;
+		class Camera;
 
 		class LightVolumeInjector
 		{
@@ -33,8 +34,8 @@ namespace Craze
 			std::shared_ptr<UAVBuffer> getCollidedRays();
 
 		private:
-			void renderRSMs(Scene* scene, const Light& l);
-			void spawnRays();
+			void renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj);
+			void spawnRays(const Matrix4& viewProj);
 			void traceRays();
 			void injectToLV();
 

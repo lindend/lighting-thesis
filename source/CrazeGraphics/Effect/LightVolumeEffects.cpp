@@ -12,6 +12,8 @@
 #include "EffectUtil/EffectHelper.h"
 #include "EffectUtil/CBufferHelper.hpp"
 
+#include "PIXHelper.h"
+
 using namespace Craze;
 using namespace Craze::Graphics2;
 
@@ -22,7 +24,7 @@ bool LVFirstBounceEffect::initialize()
 	return IEffect::initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh");
 }
 
-void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays)
+void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj)
 {
 	if (!m_random->isLoaded())
 	{
@@ -31,11 +33,15 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	IEffect::set();
 
+	CBPerLight cbLight;
+	cbLight.lightViewProj = viewProj.GetInverse();
+	gpDevice->GetCbuffers()->SetLight(cbLight);
+
 	ID3D11RenderTargetView* rtv = dummyTarget->GetRenderTargetView();
 	ID3D11UnorderedAccessView* uav = outRays->GetUAV();
 	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, 0);
 
-	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), RSMdepth->GetSRV(), m_random->m_texture->GetResourceView() };
+	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random->m_texture->GetResourceView(), RSMdepth->GetSRV() };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
 
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

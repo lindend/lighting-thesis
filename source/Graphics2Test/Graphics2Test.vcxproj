@@ -94,7 +94,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>lua5.1.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua5.1.lib;d3dx9.lib;d3d9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies);</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)lib/lua;$(SolutionDir)/lib/boost/;$(SolutionDir)lib/havok/debug_multithreaded;$(SolutionDir)lib/gwen;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -131,7 +131,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies);d3d9.dll</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)lib/havok/release_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -160,7 +160,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies);d3d9.dll</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)lib/havok/debug_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
