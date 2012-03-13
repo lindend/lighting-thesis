@@ -151,6 +151,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="PIXHelper.h" />
+    <ClInclude Include="Renderer\DrawRays.h" />
     <ClInclude Include="Renderer\LightVolumeInjector.h" />
     <ClInclude Include="Scene\ModelNode.h" />
     <ClInclude Include="VertexStreams.h" />
