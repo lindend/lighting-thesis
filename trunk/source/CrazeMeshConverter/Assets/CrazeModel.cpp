@@ -38,6 +38,7 @@ std::vector<std::shared_ptr<Craze::Graphics2::MeshData>> loadModelAssimp(const s
 		return res;
 	}
 
+
 	if (!pScene->HasMeshes())
 	{
 		LOG_WARNING("No meshes found in file: " + fileName);
@@ -51,13 +52,18 @@ std::vector<std::shared_ptr<Craze::Graphics2::MeshData>> loadModelAssimp(const s
 		for (unsigned int i = 0; i < pScene->mNumMeshes; ++i)
 		{
 			const aiMesh* pMesh = pScene->mMeshes[i];
-			if (pMesh->mPrimitiveTypes == aiPrimitiveType_TRIANGLE && pMesh->HasTextureCoords(0) && pMesh->mMaterialIndex >= 0)
+			if (pMesh->mPrimitiveTypes == aiPrimitiveType_TRIANGLE && pMesh->mMaterialIndex >= 0)
 			{
 				Vertex* pVertices = new Vertex[pMesh->mNumVertices];
 				for (unsigned int j = 0; j < pMesh->mNumVertices; ++j)
 				{
-					pVertices[j] = Vertex(aiV3ToCraze(pMesh->mVertices[j]), aiV3ToCraze(pMesh->mNormals[j]), aiV3ToCrazeV2(pMesh->mTextureCoords[0][j]));
+					if(pMesh->HasTextureCoords(0))
+						pVertices[j] = Vertex(aiV3ToCraze(pMesh->mVertices[j]), aiV3ToCraze(pMesh->mNormals[j]), aiV3ToCrazeV2(pMesh->mTextureCoords[0][j]));
+					else
+						pVertices[j] = Vertex(aiV3ToCraze(pMesh->mVertices[j]), aiV3ToCraze(pMesh->mNormals[j]), Vector2(0,0) );
 				}
+				//pVertices[j] = Vertex(aiV3ToCraze(pMesh->mVertices[j]), aiV3ToCraze(pMesh->mNormals[j]), aiV3ToCrazeV2(pMesh->mTextureCoords[0][j]));
+				//pMesh->HasTextureCoords(0) && 
 
 				unsigned short* pIndices = new unsigned short[pMesh->mNumFaces * 3];
 				
