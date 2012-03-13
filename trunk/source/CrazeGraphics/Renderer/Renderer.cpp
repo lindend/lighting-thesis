@@ -28,6 +28,7 @@
 #include "Effect/CopyToBackBuffer.h"
 #include "Buffer/Buffer.h"
 
+#include "PIXHelper.h"
 
 
 using namespace Craze::Graphics2;
@@ -255,12 +256,15 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	gFxGBuffer.set(pCam);
 	
-	//Should be left as it is? Probably already got a few other threads running
-	//Make sure to wait for the mainScene draw list to be ready here first
-	for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
 	{
-		gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
-		i->second.m_mesh->draw();
+		PIXMARKER(L"Render G-buffers");
+		//Should be left as it is? Probably already got a few other threads running
+		//Make sure to wait for the mainScene draw list to be ready here first
+		for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
+		{
+			gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+			i->second.m_mesh->draw();
+		}
 	}
 	
 	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
@@ -270,17 +274,20 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
 	//gFxCSLighting.run(pCam, pSRVs, m_pOutputTarget->GetUAV(), visibleLights);
 
-	//Do the other lights, with shadows
-	gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
-
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
-	//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 
-	ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
-	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
-	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
+	{
+		PIXMARKER(L"Do lighting");
+		//Do the other lights, with shadows
+		gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
 
-	gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
+		//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
+		ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
+		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
+		gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
+
+		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
+	}
 	
 
 	//render rays as lines

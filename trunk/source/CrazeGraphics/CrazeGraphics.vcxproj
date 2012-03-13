@@ -150,6 +150,7 @@
     <ClInclude Include="Lighting\LightmapUvProject.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="PIXHelper.h" />
     <ClInclude Include="Renderer\LightVolumeInjector.h" />
     <ClInclude Include="Scene\ModelNode.h" />
     <ClInclude Include="VertexStreams.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PIXHelper.cpp" />
     <ClCompile Include="Renderer\DrawRays.cpp" />
     <ClCompile Include="Renderer\LightVolumeInjector.cpp" />
     <ClCompile Include="Scene\ModelNode.cpp" />
