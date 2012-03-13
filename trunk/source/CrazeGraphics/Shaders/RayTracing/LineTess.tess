@@ -8,9 +8,8 @@ cbuffer LVInfo : register(c0)
 
 struct INPUT
 {
-	float3 color : COLOR;
-	float3 dir : DIRECTION;
-	float4 pos : SV_Position;
+	float3 color : COLOR0;
+	float3 pos : POSITION;
 };
 
 struct PATCHCONSTANT

@@ -3,6 +3,9 @@
 
 #include <memory>
 
+#include "Resource/ResourceManager.h"
+#include "Resource/FileDataLoader.h"
+
 #include "Device.h"
 #include "Graphics.h"
 
@@ -17,6 +20,10 @@
 
 #include "Effect/GBufferEffect.h"
 #include "Effect/LightVolumeEffects.h"
+
+#include "Model.h"
+#include "Geometry/MeshData.h"
+
 
 using namespace Craze;
 using namespace Craze::Graphics2;
@@ -40,10 +47,23 @@ bool LightVolumeInjector::initialize()
 		m_lightingVolumes[i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_VECTOR4, "Light volume");
 	}
 
-	m_toTestRays = UAVBuffer::Create(gpDevice, sizeof(float) * 4 * 3, MaxPhotonRays, true, "To test rays");
-	m_collidedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 4 * 4, MaxPhotonRays, true, "Collided rays");
+	m_toTestRays = UAVBuffer::Create(gpDevice, sizeof(float) * 3 * 3, MaxPhotonRays, true, "To test rays");
+	m_collidedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 3 * 3, MaxPhotonRays, true, "Collided rays");
 
 	m_rayTraceCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/RayTrace.csh");
+
+	//Hard coded collision geometry!
+	const Model* triMesh = dynamic_cast<const Model*>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
+	std::tr1::shared_ptr<MeshData> meshData = triMesh->getMeshes()[0].mesh->getMeshData();
+	const Vertex* verts = meshData->GetPosNormalUv();
+	const unsigned short* indices = meshData->GetIndices();
+	Vector3* tris = new Vector3[meshData->GetNumIndices()];
+	for (int i = 0; i < meshData->GetNumIndices(); ++i)
+	{
+		tris[i] = verts[indices[i]].position;
+	}
+	setTriangles(tris, meshData->GetNumIndices() / 3);
+	delete [] tris;
 
 	return true;
 }
@@ -74,7 +94,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	/*
 	Algorithm overview:
 	X 1. Render RSMs
-	X 2. Inject the photons from the RSM into m_toTestRays
+	X 2. Spawn the photons from the RSM into m_toTestRays
 	X 3. Test all the rays in m_toTestRays against the triangles in m_triangleBuffer and store the result in m_collidedRays
 	X 4. Inject all the rays in m_collidedRays into the light volumes
 	  5. Return the light volumes and rejoice! :D (maybe we should instead light the scene here directly or something...)
@@ -84,7 +104,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
 
 	renderRSMs(scene, dir);
-	injectRays();
+	spawnRays();
 	traceRays();
 	injectToLV();
 
@@ -112,7 +132,7 @@ void LightVolumeInjector::renderRSMs(Scene* scene, const Light& l)
 	}
 }
 
-void LightVolumeInjector::injectRays()
+void LightVolumeInjector::spawnRays()
 {
 	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays);
 }
@@ -140,6 +160,9 @@ void LightVolumeInjector::traceRays()
 
 	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
 	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / (32 * 8), 1, 1);
+
+	ZeroMemory(UAVs, sizeof(void*) * 2);
+	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
 }
 
 void LightVolumeInjector::injectToLV()

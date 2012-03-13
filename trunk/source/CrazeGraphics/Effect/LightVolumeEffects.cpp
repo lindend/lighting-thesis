@@ -43,6 +43,8 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	ZeroMemory(srvs, sizeof(void*) * 4);
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
+
+	gpDevice->SetRenderTarget(dummyTarget, nullptr);
 }
 
 
@@ -92,16 +94,26 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());
 
-	ID3D11Buffer* vs = rays->GetBuffer();
-	unsigned int stride = sizeof(Vector4) * 4;
+	ID3D11Buffer* vs = nullptr;
+	unsigned int stride = 0;
 	unsigned int offset = 0;
 	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
+
+	ID3D11ShaderResourceView* srv = rays->GetSRV();
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
 
 	gpDevice->SetRenderTargets(LVs, 3, nullptr);
 
 	//Draw the rays
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
+	srv = nullptr;
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
+
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
 	gpDevice->SetShader((ID3D11HullShader*)nullptr);
 	gpDevice->SetShader((ID3D11DomainShader*)nullptr);
 }
