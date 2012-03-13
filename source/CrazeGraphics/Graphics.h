@@ -26,8 +26,6 @@ namespace Craze
 		extern class DebugDrawEffect gFxDebugDraw;
 		extern class DrawRaysEffect gFxDrawRays;
 
-		extern class InjectRaysEffect gFxInjectRays;
-
 		struct GfxParams
 		{
 			GfxParams()

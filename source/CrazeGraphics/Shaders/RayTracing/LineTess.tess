@@ -2,31 +2,53 @@ cbuffer LVInfo : register(c0)
 {
 	float3 LVStart;
 	float3 LVEnd;
-	float3 LVCellSize;
+	//xyz - size, w - num cells
+	float4 LVCellSize;
 };
 
 struct INPUT
 {
-	float4 pos : POSITION;
 	float3 color : COLOR;
+	float3 dir : DIRECTION;
+	float4 pos : SV_Position;
 };
 
 struct PATCHCONSTANT
 {
-	float2 tess : SV_TessFactor;
+	float tess[2] : SV_TessFactor;
 	float3 color : COLOR;
+	int2 idx : MINMAXINDEX;
 	float3 dir : DIRECTION;
 };
 
-float2 constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID) : SV_TessFactor
+float2 findRelZ(float pos0z, float pos1z)
 {
-	float startZ = clamp(patch[0].z, LVStart.z, LVEnd.z);
-	float endZ = clamp(patch[1].z, LVStart.z, LVEnd.z);
+	return (float2(pos0z, pos1z) - LVStart.z) / LVCellSize.z;
+}
 
-	float zdelta = patch[1].pos.z - patch[0].pos.z;
+//Puts the smallest of relZ in x component, and converts both to ints
+int2 processRelZ(float2 relZ)
+{
+	return int2(floor(min(relZ.x, relZ.y)), ceil(max(relZ.x, relZ.y)));
+}
+
+PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID)
+{
+	//Relative start and end z
+	float2 relZ = findRelZ(patch[0].pos.z, patch[1].pos.z);
+	
+	//Clamp it to the [0, numCells] range
+	float2 clampRelZ = float2(clamp(relZ.x, 0.f, LVCellSize.w), clamp(relZ.y, 0.f, LVCellSize.w));
+	//Find the number of cells that the ray touches
+	clampRelZ = processRelZ(clampRelZ);
+	int numZ = clampRelZ.y - clampRelZ.x;
 
 	PATCHCONSTANT output;
-	output.tess = float2(zdelta / LVCellSize.z, 1.f);
+	//Set the detail tessellation to numZ, this will basically generate numZ instances of our line
+	output.tess[0] = numZ;
+	//Do not split the line
+	output.tess[1] = 1.f;
+	output.idx = processRelZ(relZ);
 	output.color = patch[0].color;
 	output.dir = normalize(patch[1].pos.xyz - patch[0].pos.xyz);
 
@@ -35,15 +57,15 @@ float2 constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID)
 
 [domain("isoline")]
 [partitioning("integer")]
-[outputtopology("isoline")]
+[outputtopology("line")]
 [outputcontrolpoints(2)]
-[patchconstantfunc("constantDataFunct")]
-float4 hsMain( 
+[patchconstantfunc("constDataFunct")]
+INPUT HSmain( 
     InputPatch<INPUT, 2> ip, 
     uint i : SV_OutputControlPointID,
-    uint PatchID : SV_PrimitiveID ) : SV_Position
+    uint PatchID : SV_PrimitiveID )
 {
-	return ip[i].pos;
+	return ip[i];
 }
 
 struct DS_OUTPUT
@@ -55,13 +77,16 @@ struct DS_OUTPUT
 
 
 [domain("isoline")]
-DS_OUTPUT dsMain(PATCHCONSTANT input, float2 UV : SV_DomainLocation, const OutputPatch<INPUT, 2> patches)
+DS_OUTPUT DSmain(PATCHCONSTANT input, float2 UV : SV_DomainLocation, const OutputPatch<INPUT, 2> patches)
 {
 	DS_OUTPUT output;
 	
 	output.color = input.color;
 	output.dir = input.dir;
-	output.pos = UV.x * (patches[1] - patches[0]) + patches[0];
+	output.pos.xyz = patches[1].pos.xyz * UV.x + (1.f - UV.x) * patches[0].pos.xyz;
+
+	//UV.y contains the "instance id" and is ranged [0 .. numZ - 1]
+	output.pos.w = input.idx.x + UV.y;//round(UV.x * (input.idx.y - input.idx.x) + input.idx.x);
 
 	return output;
 }

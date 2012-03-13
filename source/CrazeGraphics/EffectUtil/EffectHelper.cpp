@@ -9,6 +9,8 @@
 #include "../Device.h"
 #include "../Graphics.h"
 
+#include <functional>
+
 using namespace Craze;
 using namespace Craze::Graphics2;
 
@@ -101,7 +103,9 @@ enum SHADERSTAGE
 	VERTEX,
 	GEOMETRY,
 	PIXEL,
-	COMPUTE
+	COMPUTE,
+	HULL,
+	DOMAINSH
 };
 
 std::string GetProfile(Device* pDevice, SHADERSTAGE stage)
@@ -122,6 +126,12 @@ std::string GetProfile(Device* pDevice, SHADERSTAGE stage)
 	case COMPUTE:
 		profile = "cs";
 		break;
+	case HULL:
+		profile = "hs";
+		break;
+	case DOMAINSH:
+		profile = "ds";
+		break;
 	}
 
 	switch (pDevice->GetFeatureLevel())
@@ -138,7 +148,6 @@ std::string GetProfile(Device* pDevice, SHADERSTAGE stage)
 	}
 	return profile;
 }
-
 
 ID3D11VertexShader* CreateVS(Device* pDevice, ID3D10Blob* pCode, const std::string& name, ID3D10Blob** ppByteCode)
 {
@@ -236,106 +245,127 @@ ID3D11ComputeShader* CreateCS(Device* pDevice, ID3D10Blob* pCode, const std::str
 	return pShader;
 }
 
+ID3D11HullShader* CreateHS(Device* device, ID3D10Blob* code, const std::string& name, ID3D10Blob** byteCode)
+{
+	ID3D11HullShader* shader;
+	
+	if (FAILED(device->GetDevice()->CreateHullShader(code->GetBufferPointer(), code->GetBufferSize(), nullptr, &shader)))
+	{
+		LOG_ERROR("Error while creating shader " + name + ". Unable to create shader object.");
+		SAFE_RELEASE(code);
+		return nullptr;
+	}
+
+	SetDebugName(shader, name.c_str());
+
+	if (byteCode)
+	{
+		*byteCode = code;
+		code = nullptr;
+	}
+	SAFE_RELEASE(code);
+
+	return shader;
+}
+
+ID3D11DomainShader* CreateDS(Device* device, ID3D10Blob* code, const std::string& name, ID3D10Blob** byteCode)
+{
+	ID3D11DomainShader* shader;
+	
+	if (FAILED(device->GetDevice()->CreateDomainShader(code->GetBufferPointer(), code->GetBufferSize(), nullptr, &shader)))
+	{
+		LOG_ERROR("Error while creating shader " + name + ". Unable to create shader object.");
+		SAFE_RELEASE(code);
+		return nullptr;
+	}
+
+	SetDebugName(shader, name.c_str());
+
+	if (byteCode)
+	{
+		*byteCode = code;
+		code = nullptr;
+	}
+	SAFE_RELEASE(code);
+
+	return shader;
+}
+
 
 //Functions that create shaders from files
-ID3D11VertexShader* EffectHelper::CompileVS(Device* pDevice, const std::string& fileName, ID3D10Blob** ppByteCode, std::string mainFunction)
-{	
-	ID3D10Blob* pCode = CompileShader(NULL, 0, fileName, mainFunction, GetProfile(pDevice, VERTEX).c_str());
+template <typename ST> ST* compileShader(ST* (*createSh)(Device*, ID3D10Blob*, const std::string&, ID3D10Blob**), Device* device, const std::string& fileName, ID3D10Blob** byteCode, const std::string& mainFunction)
+{
+	ID3D10Blob* pCode = CompileShader(NULL, 0, fileName, mainFunction, GetProfile(device, PIXEL).c_str());
 
 	if (!pCode)
 	{
 		return nullptr;
 	}
 
-	return CreateVS(pDevice, pCode, fileName, ppByteCode);
+	return createSh(device, pCode, fileName, byteCode);
+}
+
+ID3D11VertexShader* EffectHelper::CompileVS(Device* pDevice, const std::string& fileName, ID3D10Blob** ppByteCode, std::string mainFunction)
+{	
+	return compileShader(&CreateVS, pDevice, fileName, ppByteCode, mainFunction);
 }
 
 ID3D11PixelShader* EffectHelper::CompilePS(Device* pDevice, const std::string& fileName, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(NULL, 0, fileName, mainFunction, GetProfile(pDevice, PIXEL).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreatePS(pDevice, pCode, fileName, ppByteCode);
+	return compileShader(&CreatePS, pDevice, fileName, ppByteCode, mainFunction);
 }
 
 ID3D11GeometryShader* EffectHelper::CompileGS(Device* pDevice, const std::string& fileName, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(NULL, 0, fileName, mainFunction, GetProfile(pDevice, GEOMETRY).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreateGS(pDevice, pCode, fileName, ppByteCode);
+	return compileShader(&CreateGS, pDevice, fileName, ppByteCode, mainFunction);
 }
 
 ID3D11ComputeShader* EffectHelper::CompileCS(Device* pDevice, const std::string& fileName, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(NULL, 0, fileName, mainFunction, GetProfile(pDevice, COMPUTE).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreateCS(pDevice, pCode, fileName, ppByteCode);
+	return compileShader(&CreateCS, pDevice, fileName, ppByteCode, mainFunction);
 }
 
 //Functions that create shaders from memory
-ID3D11VertexShader* EffectHelper::CompileVS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode, std::string mainFunction)
-{	
-	ID3D10Blob* pCode = CompileShader(pData, size, name, mainFunction, GetProfile(pDevice, VERTEX).c_str());
+template <typename ST> ST* compileShader(ST* (*createSh)(Device*, ID3D10Blob*, const std::string&, ID3D10Blob**), Device* device, SHADERSTAGE stage, const char* data, int size, const std::string& name, ID3D10Blob** byteCode, const std::string& mainFunction)
+{
+	ID3D10Blob* pCode = CompileShader(data, size, name, mainFunction, GetProfile(device, stage).c_str());
 
 	if (!pCode)
 	{
 		return nullptr;
 	}
 
-	return CreateVS(pDevice, pCode, name, ppByteCode);
+	return createSh(device, pCode, name, byteCode);
+}
+ID3D11VertexShader* EffectHelper::CompileVS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode, std::string mainFunction)
+{	
+	return compileShader(&CreateVS, pDevice, VERTEX, pData, size, name, ppByteCode, mainFunction);
 }
 
 ID3D11PixelShader* EffectHelper::CompilePS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(pData, size, name, mainFunction, GetProfile(pDevice, PIXEL).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreatePS(pDevice, pCode, name, ppByteCode);
+	return compileShader(&CreatePS, pDevice, PIXEL, pData, size, name, ppByteCode, mainFunction);
 }
 
 ID3D11GeometryShader* EffectHelper::CompileGS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(pData, size, name, mainFunction, GetProfile(pDevice, GEOMETRY).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreateGS(pDevice, pCode, name, ppByteCode);
+	return compileShader(&CreateGS, pDevice, GEOMETRY, pData, size, name, ppByteCode, mainFunction);
 }
 
 ID3D11ComputeShader* EffectHelper::CompileCS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode, std::string mainFunction)
 {
-	ID3D10Blob* pCode = CompileShader(pData, size, name, mainFunction, GetProfile(pDevice, COMPUTE).c_str());
-
-	if (!pCode)
-	{
-		return nullptr;
-	}
-
-	return CreateCS(pDevice, pCode, name, ppByteCode);
+	return compileShader(&CreateCS, pDevice, COMPUTE, pData, size, name, ppByteCode, mainFunction);
 }
 
+ID3D11HullShader* EffectHelper::CompileHS(Device* device, const char* data, int size, const std::string& name, ID3D10Blob** byteCode, const std::string& mainFunction)
+{
+	return compileShader(&CreateHS, device, HULL, data, size, name, byteCode, mainFunction);
+}
 
+ID3D11DomainShader* EffectHelper::CompileDS(Device* device, const char* data, int size, const std::string& name, ID3D10Blob** byteCode, const std::string& mainFunction)
+{
+	return compileShader(&CreateDS, device, DOMAINSH, data, size, name, byteCode, mainFunction);
+}
 
 ID3D11Buffer* EffectHelper::CreateConstantBuffer(Device* pDevice, unsigned int size)
 {

@@ -50,6 +50,8 @@ namespace Craze
 			void SetShader(ID3D11PixelShader* pPixelShader);
 			void SetShader(ID3D11VertexShader* pVertexShader);
 			void SetShader(ID3D11GeometryShader* pGeoShader);
+			void SetShader(ID3D11HullShader* hullShader);
+			void SetShader(ID3D11DomainShader* domainShader);
 
 			void DrawIndexed();
 			void Draw();

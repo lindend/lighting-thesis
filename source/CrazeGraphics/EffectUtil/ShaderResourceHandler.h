@@ -52,5 +52,25 @@ namespace Craze
             virtual bool readComplete(ResourceLoadData* pData);
 			virtual Resource* createResource(u32, u64) { return CrNew ComputeShaderResource(); }
 		};
+
+		class TessShaderResourceHandler : public ShaderResourceHandler
+		{
+			virtual bool readComplete(ResourceLoadData* data);
+			virtual Resource* createResource(u32, u64) { return CrNew TessShaderResource(); }
+		};
+
+		class HullShaderResourceHandler : public ShaderResourceHandler
+		{
+		public:
+			virtual bool readComplete(ResourceLoadData* data);
+			virtual Resource* createResource(u32, u64) { return CrNew HullShaderResource(); }
+		};
+
+		class DomainShaderResourceHandler : public ShaderResourceHandler
+		{
+		public:
+			virtual bool readComplete(ResourceLoadData* data);
+			virtual Resource* createResource(u32, u64) { return CrNew DomainShaderResource(); }
+		};
     }
 }

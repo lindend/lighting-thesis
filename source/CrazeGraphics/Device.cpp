@@ -339,6 +339,16 @@ void Device::SetShader(ID3D11GeometryShader* pGS)
 		m_pDeviceContext->GSSetShader(pGS, NULL, 0);
 	}
 }
+void Device::SetShader(ID3D11HullShader* hs)
+{
+	PROFILEF();
+	m_pDeviceContext->HSSetShader(hs, nullptr, 0);
+}
+void Device::SetShader(ID3D11DomainShader* ds)
+{
+	PROFILEF();
+	m_pDeviceContext->DSSetShader(ds, nullptr, 0);
+}
 
 void Device::SetRenderTargets(std::shared_ptr<RenderTarget>* pRenderTargets, unsigned int numRenderTargets, ID3D11DepthStencilView* pDSV)
 {

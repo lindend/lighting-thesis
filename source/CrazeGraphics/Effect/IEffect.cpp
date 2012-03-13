@@ -75,6 +75,9 @@ bool IEffect::initialize(const char* vsFile, const char* psFile, const char* gsF
 			auto desc = getLayout(count);
 			if (FAILED(gpDevice->GetDevice()->CreateInputLayout(desc, count, m_byteCode->GetBufferPointer(), m_byteCode->GetBufferSize(), &m_inputLayout)))
 			{
+				char buf[1024];
+				sprintf_s(buf, "Unable to create input layout when compiling vertex shader %s.", vsFile);
+				LOG_ERROR(buf);
 				return false;
 			}
 	    } else

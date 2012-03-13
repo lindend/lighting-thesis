@@ -26,8 +26,6 @@
 #include "Effect/NullEffect.h"
 #include "Effect/DebugDrawEffect.h"
 
-#include "Effect/LightVolumeEffects.h"
-
 #include "EffectUtil/ShaderResourceHandler.h"
 #include "UI/UISystem.h"
 
@@ -41,6 +39,9 @@ VertexShaderResourceHandler gVSResHandler;
 PixelShaderResourceHandler gPSResHandler;
 GeometryShaderResourceHandler gGSResHandler;
 ComputeShaderResourceHandler gCSResHandler;
+HullShaderResourceHandler gHSResHandler;
+DomainShaderResourceHandler gDSResHandler;
+TessShaderResourceHandler gTessResHandler;
 
 namespace Craze
 {
@@ -62,8 +63,6 @@ namespace Craze
 		PosMapEffect gFxPosMap;
 		NullEffect gFxNull;
 		DebugDrawEffect gFxDebugDraw;
-	
-		InjectRaysEffect gFxInjectRays;
 	}
 }
 
@@ -95,7 +94,6 @@ bool InitEffects()
 	gFxNull.initialize() &&
 	gFxDebugDraw.initialize() &&
 
-	gFxInjectRays.initialize() &&
 	true;
 }
 
@@ -113,6 +111,7 @@ void DestroyEffects()
 	gFxPosMap.destroy();
 	gFxNull.destroy();
 	gFxDebugDraw.destroy();
+
 }
 
 bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int height)
@@ -163,6 +162,9 @@ bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int 
 	gResMgr.setResourceHandling(hash32(".psh"), &gPSResHandler);
 	gResMgr.setResourceHandling(hash32(".gsh"), &gGSResHandler);
 	gResMgr.setResourceHandling(hash32(".csh"), &gCSResHandler);
+	gResMgr.setResourceHandling(hash32(".hsh"), &gHSResHandler);
+	gResMgr.setResourceHandling(hash32(".dsh"), &gDSResHandler);
+	gResMgr.setResourceHandling(hash32(".tess"), &gTessResHandler);
 
 
 	if (!InitEffects())

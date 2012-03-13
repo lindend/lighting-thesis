@@ -142,6 +142,7 @@ void FileDataLoader::add(Resource* res)
     if (item == m_lastChanged.end())
     {
         auto it = m_fileIds.find(res->getFileId());
+		res->name = it->second;
         assert(it != m_fileIds.end());
 		m_lastChanged.insert(std::make_pair(res, getLastChanged(it->second)));
     }

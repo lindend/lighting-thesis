@@ -18,7 +18,7 @@ AppendStructuredBuffer<PhotonRay> OutRays : register(u1);
 
 StructuredBuffer<Triangle> Triangles : register(t0);
 
-#define TRICACHESIZE 1024
+#define TRICACHESIZE 512
 groupshared Triangle TriCache[TRICACHESIZE];
 
 [numthreads(32, 8, 1)]
@@ -26,13 +26,13 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 {
 	PhotonRay r = Rays.Consume();
 
-	float closest = 1000.f;
+	float closest = 10000.f;
 
 	//Iterate so that we can cover all the triangles
 	for (int k = 0; k < ceil(NumTriangles / TRICACHESIZE); ++k)
 	{
 		GroupMemoryBarrierWithGroupSync();
-		const uint maxIdx = min(TRICACHESIZE, NumTriangles - (i + k * TRICACHESIZE));
+		const int maxIdx = min(TRICACHESIZE, NumTriangles - (k * TRICACHESIZE));
 		//Load triangles to cache
 		for (int i = groupIdx; i < maxIdx; i += 32 * 8)
 		{
