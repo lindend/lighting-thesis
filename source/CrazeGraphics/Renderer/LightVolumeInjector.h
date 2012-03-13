@@ -34,7 +34,7 @@ namespace Craze
 
 		private:
 			void renderRSMs(Scene* scene, const Light& l);
-			void injectRays();
+			void spawnRays();
 			void traceRays();
 			void injectToLV();
 

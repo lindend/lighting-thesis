@@ -3,9 +3,9 @@
 
 struct Triangle
 {
-	float3 v0;
-	float3 v1;
-	float3 v2;
+	float4 v0;
+	float4 v1;
+	float4 v2;
 };
 
 cbuffer RayTraceInfo : register (b0)
@@ -44,10 +44,11 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		for (int i = 0; i < maxIdx; ++i)
 		{
 			Triangle tri = TriCache[i];
-			closest = min(intersection(r.origin, r.dir, tri.v0, tri.v1, tri.v2), closest);
+			closest = min(intersection(r.origin, r.dir, tri.v0.xyz, tri.v1.xyz, tri.v2.xyz), closest);
 		}
 	}
 	
 	r.dir = r.origin + r.dir * closest;
+	
 	OutRays.Append(r);
 }

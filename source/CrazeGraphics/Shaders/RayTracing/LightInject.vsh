@@ -1,21 +1,20 @@
-cbuffer LVInfo : register(c0)
-{
-	float3 LVStart;
-	float3 LVEnd;
-	float3 LVCellSize;
-};
+#include "RayTracing/PhotonRay.incl"
+
+StructuredBuffer<PhotonRay> Rays : register(t0);
 
 struct VS_OUT
 {
-	float3 position : POSITION;
 	float3 color : COLOR0;
+	float3 position : POSITION;
 };
 
-VS_OUT main(float3 pos : POSITION0, float3 color : COLOR0)
+VS_OUT main(uint idx : SV_VertexID)
 {
 	VS_OUT output;
-	output.position = pos;
-	output.color = color;
+	
+	PhotonRay ray = Rays[idx];
+	output.position = idx % 2 == 0 ? ray.origin : ray.dir;
+	output.color = ray.power;
 
 	return output;
 }
