@@ -23,6 +23,11 @@ using namespace Craze::Graphics2;
 
 bool LightVolumeInjector::initialize()
 {
+	m_fxFirstBounce.reset(new LVFirstBounceEffect());
+	m_fxInjectRays.reset(new LVInjectRaysEffect());
+	m_fxFirstBounce->initialize();
+	m_fxInjectRays->initialize();
+
 	m_RSMs[0] = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_COLOR_LINEAR, "RSM color");
 	m_RSMs[1] = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_VECTOR4, "RSM normal");
 
@@ -59,7 +64,7 @@ Camera findSMCamera(const Light& l, Scene* scene)
 	return c;
 }
 
-std::shared_ptr<UAVBuffer> getCollidedRays()
+std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 {
 	return m_collidedRays;
 }
@@ -71,7 +76,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	X 1. Render RSMs
 	X 2. Inject the photons from the RSM into m_toTestRays
 	X 3. Test all the rays in m_toTestRays against the triangles in m_triangleBuffer and store the result in m_collidedRays
-	  4. Inject all the rays in m_collidedRays into the light volumes
+	X 4. Inject all the rays in m_collidedRays into the light volumes
 	  5. Return the light volumes and rejoice! :D (maybe we should instead light the scene here directly or something...)
 	*/
 
@@ -81,6 +86,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	renderRSMs(scene, dir);
 	injectRays();
 	traceRays();
+	injectToLV();
 
 
 	return m_lightingVolumes;
@@ -108,7 +114,7 @@ void LightVolumeInjector::renderRSMs(Scene* scene, const Light& l)
 
 void LightVolumeInjector::injectRays()
 {
-	gFxInjectRays.inject(m_dummy, m_RSMs, m_RSMDS, m_toTestRays);
+	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays);
 }
 
 /*void injectToLightVolumes()
@@ -134,4 +140,15 @@ void LightVolumeInjector::traceRays()
 
 	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
 	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / (32 * 8), 1, 1);
+}
+
+void LightVolumeInjector::injectToLV()
+{
+	LightVolumeInfo lvinfo;
+	lvinfo.start = Vector3(0.f, 0.f, 0.f);
+	lvinfo.cellSize = Vector3(10.f, 10.f, 10.f);
+	lvinfo.end = lvinfo.cellSize * (float)LightVolumeResolution;
+	lvinfo.numCells = LightVolumeResolution;
+
+	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes, lvinfo);
 }

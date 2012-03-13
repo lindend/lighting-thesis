@@ -65,6 +65,8 @@ namespace Craze
 
 		virtual ~Resource() {}
 
+		std::string name;
+
     protected:
         virtual void onDestroy() = 0;
 

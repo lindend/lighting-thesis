@@ -32,6 +32,8 @@ namespace Craze
 			static ID3D11PixelShader* CompilePS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode = NULL, std::string mainFunction = "main");
 			static ID3D11GeometryShader* CompileGS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode = NULL, std::string mainFunction = "main");
 			static ID3D11ComputeShader* CompileCS(Device* pDevice, const char* pData, int size, const std::string& name, ID3D10Blob** ppByteCode = NULL, std::string mainFunction = "main");
+			static ID3D11HullShader* CompileHS(Device* device, const char* data, int size, const std::string& name, ID3D10Blob** byteCode = nullptr, const std::string& mainFunction = "HSmain");
+			static ID3D11DomainShader* CompileDS(Device* device, const char* data, int size, const std::string& name, ID3D10Blob** byteCode = nullptr, const std::string& mainFunction = "DSmain");
 
 			static ID3D11Buffer* CreateConstantBuffer(Device* pDevice, unsigned int size);
 		};

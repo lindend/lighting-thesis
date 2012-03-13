@@ -122,7 +122,7 @@
     <ClInclude Include="Effect\CopyToBackBuffer.h" />
     <ClInclude Include="Effect\DebugDrawEffect.h" />
     <ClInclude Include="Effect\CSLighting.h" />
-    <ClInclude Include="EffectUtil\shaderresource.h" />
+    <ClInclude Include="EffectUtil\ShaderResource.h" />
     <ClInclude Include="EffectUtil\ShaderResourceHandler.h" />
     <ClInclude Include="Effect\LightingEffect.h" />
     <ClInclude Include="Effect\LightVolumeEffects.h" />
@@ -240,6 +240,7 @@
     <VertexShader Include="Shaders\ESM_Mesh.vsh" />
     <VertexShader Include="Shaders\Font.vsh" />
     <VertexShader Include="Shaders\PosMap.vsh" />
+    <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
     <VertexShader Include="Shaders\RayTracing\DrawRay.vsh" />
     <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
     <VertexShader Include="Shaders\ScreenQuad.vsh" />
@@ -281,6 +282,7 @@
   </ItemGroup>
   <ItemGroup>
     <GeometryShaders Include="Shaders\Font.gsh" />
+    <GeometryShaders Include="Shaders\RayTracing\LineDraw.gsh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

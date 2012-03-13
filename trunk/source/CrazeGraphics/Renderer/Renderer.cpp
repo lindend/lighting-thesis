@@ -75,7 +75,7 @@ void Renderer::Initialize()
 	m_rsmTargets[0] = RenderTarget::Create2D(gpDevice, 128, 128, 1, TEXTURE_FORMAT_COLOR_LINEAR, "RSM color");
 	m_rsmTargets[1] = RenderTarget::Create2D(gpDevice, 128, 128, 1, TEXTURE_FORMAT_VECTOR4, "RSM normal");
 
-	m_pShadowDS = DepthStencil::Create2D(gpDevice, 128, 128, DEPTHSTENCIL_FORMAT_D16);
+	m_pShadowDS = DepthStencil::Create2D(gpDevice, 128, 128, DEPTHSTENCIL_FORMAT_D24S8);
 
 	m_pScreenQuad = Mesh::createScreenQuad(gpDevice);
 
@@ -164,10 +164,15 @@ void Renderer::Initialize()
 
 	//m_pFontFace = gFontMgr.CreateFace("Katana", "Regular", 12);
 	//m_Str = m_pFontFace->BuildStaticString("Hello world", Vector3::ONE);
+
+	m_lightVolumeInjector.initialize();
+
 }
 
 void Renderer::Shutdown()
 {
+	m_lightVolumeInjector.destroy();
+
 	for (unsigned int i = 0; i < NumGBuffers; ++i)
 	{
 		m_GBuffers[i] = nullptr;
@@ -214,6 +219,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	Vector3 pos = pCam->GetPosition() + pCam->GetDirection() * pCam->GetFar() * 0.5f - m_pDirLight->GetDirection() * pCam->GetFar() * 2.f;
 	Matrix4 lightViewProj = Matrix4::CreateView(pos, m_pDirLight->GetDirection() + pos, Vector3::UP) * Matrix4::CreateOrtho(pCam->GetFar(), pCam->GetFar(), 10.f, pCam->GetFar() * 4.f);
+
+	m_lightVolumeInjector.getLightingVolumes(pScene);
 
 	//Thread this...
 	pScene->buildDrawList(&mainScene, viewProj);

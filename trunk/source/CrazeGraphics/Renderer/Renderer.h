@@ -1,10 +1,12 @@
 #pragma once
+#include <memory>
 
 #include "Mesh.h"
 #include "Texture/RenderTarget.h"
 #include "Texture/DepthStencil.h"
 #include "Scene/Scene.h"
 #include "EffectUtil/CBufferManager.h"
+#include "LightVolumeInjector.h"
 
 #include "Font/FontManager.h"
 
@@ -49,6 +51,8 @@ namespace Craze
 			void drawShadowMaps(Scene* scene);
 			void drawGBuffers(Scene* scene);
 
+			LightVolumeInjector m_lightVolumeInjector;
+
 			static const int NumGBuffers = 3;
 			std::shared_ptr<RenderTarget> m_GBuffers[NumGBuffers];
 			std::shared_ptr<RenderTarget> m_pOutputTarget;
@@ -58,6 +62,7 @@ namespace Craze
 			std::shared_ptr<DepthStencil> m_pShadowDS;
 
 			std::shared_ptr<Mesh> m_pScreenQuad;
+
 
 			//std::auto_ptr<SpotLight> m_pSpotLight;
 			std::auto_ptr<DirectionalLight> m_pDirLight;

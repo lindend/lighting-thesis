@@ -20,7 +20,7 @@ std::shared_ptr<DepthStencil> DepthStencil::Create2D(Craze::Graphics2::Device *p
 	
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.Format = (DXGI_FORMAT)format;
 	depthStencilDesc.Height = height;
@@ -44,13 +44,18 @@ std::shared_ptr<DepthStencil> DepthStencil::Create2D(Craze::Graphics2::Device *p
 		return pRes;
 	}
 
-	if (FAILED(pDevice->GetDevice()->CreateDepthStencilView(pRes->m_pDepthStencil, NULL, &pRes->m_pDepthStencilView)))
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	dsvDesc.Flags = 0;
+	dsvDesc.Format = format == DEPTHSTENCIL_FORMAT_D24S8 ? DXGI_FORMAT_D24_UNORM_S8_UINT : (DXGI_FORMAT)format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+	if (FAILED(pDevice->GetDevice()->CreateDepthStencilView(pRes->m_pDepthStencil, &dsvDesc, &pRes->m_pDepthStencilView)))
 	{
 		LOG_ERROR("Could not create depth stencil render target view");
 		pRes.reset((DepthStencil*)nullptr);
 	}
 
-	CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC((ID3D11Texture2D*)pRes->m_pDepthStencil, D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_D24_UNORM_S8_UINT, 0, 1, 0, 0);
+	CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC((ID3D11Texture2D*)pRes->m_pDepthStencil, D3D11_SRV_DIMENSION_TEXTURE2D, DXGI_FORMAT_R24_UNORM_X8_TYPELESS, 0, 1, 0, 0);
 	if (FAILED(pDevice->GetDevice()->CreateShaderResourceView(pRes->m_pDepthStencil, &srvDesc, &pRes->m_SRV)))
 	{
 		LOG_ERROR("Could not create depth stencil shader resource view");

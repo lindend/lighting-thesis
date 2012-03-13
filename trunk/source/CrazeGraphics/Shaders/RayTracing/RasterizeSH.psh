@@ -7,7 +7,7 @@ struct PS_OUT
 	float4 SHb : SV_Target2;
 };
 
-PS_OUT main(float3 color : COLOR0, float3 direction : DIRECTION0)
+PS_OUT main(float3 color : COLOR0, float3 direction : DIRECTION)
 {
 	PS_OUT output;
 

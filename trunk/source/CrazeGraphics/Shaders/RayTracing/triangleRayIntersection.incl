@@ -11,7 +11,7 @@ float intersection(float3 rayStartPos, float3 rayDirection, float3 v0, float3 v1
 
 	float det = dot(edge0, p);
 
-	if(det < .00001f && det > -.00001f))
+	if(det < .00001f && det > -.00001f)
 	{
 		return INFINITY;
 	}

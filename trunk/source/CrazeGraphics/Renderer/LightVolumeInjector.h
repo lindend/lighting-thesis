@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 
+#include "Effect/LightVolumeEffects.h"
+
 namespace Craze
 {
 	namespace Graphics2
@@ -13,11 +15,13 @@ namespace Craze
 		class SRVBuffer;
 		class Light;
 		class ComputeShaderResource;
+		class LVFirstBounceEffect;
+		class LVInjectRaysEffect;
 
 		class LightVolumeInjector
 		{
 		public:
-			LightVolumeInjector();
+			LightVolumeInjector() {}
 
 			bool initialize();
 
@@ -25,12 +29,14 @@ namespace Craze
 
 			void setTriangles(Vector3* triangles, int numTriangles);
 
+			void destroy() {}
 			std::shared_ptr<UAVBuffer> getCollidedRays();
 
 		private:
 			void renderRSMs(Scene* scene, const Light& l);
 			void injectRays();
 			void traceRays();
+			void injectToLV();
 
 			static const int RSMResolution = 128;
 			static const int LightVolumeResolution = 32;
@@ -52,6 +58,9 @@ namespace Craze
 			std::shared_ptr<UAVBuffer> m_collidedRays;
 
 			const ComputeShaderResource* m_rayTraceCS;
+
+			std::unique_ptr<LVFirstBounceEffect> m_fxFirstBounce;
+			std::unique_ptr<LVInjectRaysEffect> m_fxInjectRays;
 		};
 	}
 }

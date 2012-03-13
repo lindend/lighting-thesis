@@ -21,15 +21,14 @@
 				SPOTLIGHT = LOCAL_SPOT_ID,
 				POINTLIGHT = LOCAL_POINT_ID,
 			};
+	#undef LOCAL_DIR_ID
+	#undef LOCAL_SPOT_ID
+	#undef LOCAL_POINT_ID
 #else
 	#define DIRECTIONALLIGHT LOCAL_DIR_ID
 	#define SPOTLIGHT LOCAL_SPOT_ID
 	#define POINTLIGHT LOCAL_POINT_ID
 #endif
-
-#undef LOCAL_DIR_ID
-#undef LOCAL_SPOT_ID
-#undef LOCAL_POINT_ID
 
 struct Light
 {
