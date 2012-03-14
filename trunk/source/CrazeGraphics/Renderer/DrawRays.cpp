@@ -17,11 +17,17 @@ bool DrawRays::initialize()
 	unsigned int args[] = { 0, 1, 0, 0};
 	m_argBuffer = Buffer::CreateArg(gpDevice, sizeof(unsigned int) * 4, args, "DrawRays arg buffer");
 
+
+	CD3D11_RASTERIZER_DESC rsDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
+	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
+
+	m_effect.initialize();
 	return true;
 }
 
 void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 {
+	m_effect.set();
 	//draw instanced indirect in immediate context (gpdevice->getDeviceContext
 	CBPerObject cbObj;
 	cbObj.world = Matrix4::IDENTITY * viewProj;
@@ -29,6 +35,7 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 
 	auto dc = gpDevice->GetDeviceContext();
 
+	//dc->RSSetState(m_rasterizerState);
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());
 
@@ -38,8 +45,6 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
 
-	gpDevice->SetRenderTarget(nullptr, nullptr);
-
 	ID3D11ShaderResourceView* srv = rays->GetSRV();
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
 
@@ -47,6 +52,8 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//dc->RSSetState(nullptr);
 
 	srv = nullptr;
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
