@@ -8,11 +8,6 @@ struct Triangle
 	float4 v2;
 };
 
-cbuffer RayTraceInfo : register (b0)
-{
-	uint NumTriangles;
-};
-
 ConsumeStructuredBuffer<PhotonRay> Rays : register(u0);
 AppendStructuredBuffer<PhotonRay> OutRays : register(u1);
 
@@ -26,7 +21,10 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 {
 	PhotonRay r = Rays.Consume();
 
-	float closest = 10000.f;
+	uint NumTriangles, stride;
+	Triangles.GetDimensions(NumTriangles, stride);
+
+	float closest = 1000000.f;
 
 	//Iterate so that we can cover all the triangles
 	for (int k = 0; k < ceil(NumTriangles / TRICACHESIZE); ++k)
@@ -44,11 +42,13 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		for (int i = 0; i < maxIdx; ++i)
 		{
 			Triangle tri = TriCache[i];
-			closest = min(intersection(r.origin, r.dir, tri.v0.xyz, tri.v1.xyz, tri.v2.xyz), closest);
+			closest = min(intersection(r.origin, normalize(r.dir), tri.v0.xyz, tri.v1.xyz, tri.v2.xyz), closest);
 		}
 	}
-	
-	r.dir = r.origin + r.dir * closest;
-	
-	OutRays.Append(r);
+
+	if (dot(r.dir, r.dir) > 0.2f)
+	{
+		r.dir = r.origin + r.dir * closest;
+		OutRays.Append(r);
+	}
 }

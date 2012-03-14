@@ -255,7 +255,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	}*/
 
 	gpDevice->SetRenderTargets(m_GBuffers, NumGBuffers, gpDevice->GetDefaultDepthBuffer());
-
+	gpDevice->ClearCache();
 	{
 		PIXMARKER(L"Create g-buffers");
 		gFxGBuffer.set(pCam);
@@ -304,6 +304,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pSRVs);
 
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+
+	gpDevice->SetRenderTargets(&m_pOutputTarget, 1, gpDevice->GetDefaultDepthBuffer());
 
 	{
 		PIXMARKER(L"Draw rays");

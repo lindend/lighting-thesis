@@ -79,7 +79,7 @@ void LightVolumeInjector::setTriangles(Vector3* tris, int numTris)
 Camera findSMCamera(const Light& l, Scene* scene)
 {
 	Camera c;
-	c.SetPosition(Vector3(0, 2000, 0));
+	c.SetPosition(Vector3(0, 1000, 0));
 	c.SetDirection(l.dir);
 	c.SetUp(Vector3::UP);
 	c.SetProjection(3.14f / 2.f, 1, 10, 100000);
