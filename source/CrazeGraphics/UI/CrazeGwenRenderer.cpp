@@ -13,6 +13,8 @@
 #include "../Font/FontManager.h"
 #include "../EffectUtil/EffectHelper.h"
 
+#include "PIXHelper.h"
+
 using namespace Craze;
 using namespace Craze::Graphics2;
 
@@ -101,6 +103,7 @@ void CrazeGwenRenderer::Shutdown()
 
 void CrazeGwenRenderer::Begin()
 {
+	PIXBEGIN(L"UI");
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_pBlendState, bf, 0xFFFFFFFF);
 	gpDevice->GetDeviceContext()->RSSetState(m_pRastState);
@@ -117,6 +120,7 @@ void CrazeGwenRenderer::End()
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
 	gpDevice->GetDeviceContext()->RSSetState(nullptr);
 	gpDevice->GetDeviceContext()->OMSetDepthStencilState(nullptr, 0);
+	PIXEND();
 }
 
 void CrazeGwenRenderer::AddQuad(const UIQuadInstance& quad)
@@ -194,7 +198,7 @@ void CrazeGwenRenderer::EndClip()
 
 void CrazeGwenRenderer::LoadTexture(Gwen::Texture* pTexture)
 {
-	const TextureResource* res = dynamic_cast<const TextureResource*>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile(pTexture->name.Get())));
+	std::shared_ptr<const TextureResource> res = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile(pTexture->name.Get())));
 
 	if (res)
 	{
@@ -209,8 +213,7 @@ void CrazeGwenRenderer::LoadTexture(Gwen::Texture* pTexture)
 }
 void CrazeGwenRenderer::FreeTexture(Gwen::Texture* pTexture)
 {
-	const Resource* res = m_TexResources[pTexture];
-	res->release();
+	std::shared_ptr<const Resource> res = m_TexResources[pTexture];
 }
 
 void CrazeGwenRenderer::DrawTexturedRect(Gwen::Texture* pTexture, Gwen::Rect rect, float u1, float v1, float u2, float v2)

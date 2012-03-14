@@ -135,31 +135,28 @@ __int64 getLastChanged(const std::string& path)
 	return 0;
 }
 
-void FileDataLoader::add(Resource* res)
+void FileDataLoader::add(std::shared_ptr<Resource> res)
 {
 	ScopedLock lcLock(m_lastChangeLock);
-    auto item = m_lastChanged.find(res);
+    auto item = m_lastChanged.find(res.get());
     if (item == m_lastChanged.end())
     {
         auto it = m_fileIds.find(res->getFileId());
 		res->name = it->second;
         assert(it != m_fileIds.end());
-		m_lastChanged.insert(std::make_pair(res, getLastChanged(it->second)));
+		LastChangedItem lastChanged;
+		lastChanged.changed = getLastChanged(it->second);
+		lastChanged.res = res;
+		lastChanged.file = it->second;
+		m_lastChanged.insert(std::make_pair(res.get(), lastChanged));
     }
 }
 
-void FileDataLoader::remove(Resource* res)
+void FileDataLoader::remove(std::shared_ptr<Resource> res)
 {
 	ScopedLock lcLock(m_lastChangeLock);
-	m_lastChanged.erase(res);
+	m_lastChanged.erase(res.get());
 }
-struct LastChangedItem
-{
-    Resource* res;
-    std::string file;
-    i64 changed;
-};
-
 void FileDataLoader::threadMain()
 {
 	const int CachedIterations = 10;
@@ -174,11 +171,13 @@ void FileDataLoader::threadMain()
 			ScopedLock lcLock(m_lastChangeLock);
 			for (auto i = m_lastChanged.begin(); i != m_lastChanged.end(); ++i)
 			{
-			    LastChangedItem itm;
-			    itm.res = i->first;
-			    itm.changed = i->second;
-			    itm.file = m_fileIds[i->first->getFileId()];
-				fileWatches.push_back(itm);
+			    LastChangedItem itm = i->second;
+				std::shared_ptr<Resource> res = itm.res.lock();
+				if (res)
+				{
+					itm.file = m_fileIds[res->getFileId()];
+					fileWatches.push_back(itm);
+				}
 			}
 		}
 
@@ -189,13 +188,18 @@ void FileDataLoader::threadMain()
 				i64 changed = getLastChanged(j->file);
 				if (changed != j->changed && changed != 0)
 				{
-					j->changed = changed;
+					std::shared_ptr<Resource> res = j->res.lock();
+					if (res)
 					{
-						ScopedLock lcLock(m_lastChangeLock);
-						m_lastChanged[j->res] = changed;
-					}
+						j->changed = changed;
+						{
+							ScopedLock lcLock(m_lastChangeLock);
+						
+							m_lastChanged[res.get()].changed = changed;
+						}
 
-					gResMgr.reloadResource(j->res);
+						gResMgr.reloadResource(res);
+					}
 				}
 			}
 

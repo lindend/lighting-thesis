@@ -58,8 +58,8 @@ namespace Craze
 		//The file ending does include the dot, i.e. picture.png will give the ending .png
 		void setResourceHandling(u32 fileType, ResourceEventHandler* handler);
 
-		const Resource* loadResource(u64 fileId, std::function<void(const Resource*)> callback = std::function<void(const Resource*)>(nullptr));
-		const Resource* loadResourceBlocking(u64 fileId);
+		std::shared_ptr<const Resource> loadResource(u64 fileId, std::function<void(std::shared_ptr<const Resource>)> callback = std::function<void(std::shared_ptr<const Resource>)>(nullptr));
+		std::shared_ptr<const Resource> loadResourceBlocking(u64 fileId);
 
 		//This is a blocking function that just reads in the data of the requested file, the
 		//data returned is owned by the caller so make sure to dealloc it with delete[].
@@ -67,10 +67,10 @@ namespace Craze
 
 		int getNumPending() const { return m_pendingResources; }
 
-		void reloadResource(Resource* res);
+		void reloadResource(std::shared_ptr<Resource> res);
 
 	private:
-		void release(Resource* resource);
+		void release(std::shared_ptr<Resource> resource);
 		void process(ResourceLoadData* data);
 
 		void readData(ResourceLoadData* data);
@@ -87,8 +87,8 @@ namespace Craze
 
 		std::vector<ResourceDataLoader*> m_dataLoaders;
 		std::map<u32, ResourceEventHandler*> m_resourceHandlers;
-		std::map<u64, Resource*> m_resources;
-		std::map<const Resource*, std::list<std::function<void(const Resource*)>>> m_onLoadCallbacks;
+		std::map<u64, std::weak_ptr<Resource>> m_resources;
+		std::map<void*, std::list<std::function<void(std::shared_ptr<const Resource>)>>> m_onLoadCallbacks;
 
 		Concurrency::concurrent_queue<ResourceLoadData*> m_loadEvents;
 

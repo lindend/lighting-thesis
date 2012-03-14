@@ -9,11 +9,11 @@ namespace Craze
 	class CRAZEENGINE_EXP LevelResourceHandler : public ResourceEventHandler
 	{
 	public:
-		virtual bool PreRead(Resource* pRes) { return true; }
-		virtual bool ReadComplete(Resource* pRes) = 0;
-		virtual bool AllComplete(Resource* pRes) = 0;
+		virtual bool PreRead(std::shared_ptr<Resource> pRes) { return true; }
+		virtual bool ReadComplete(std::shared_ptr<Resource> pRes) = 0;
+		virtual bool AllComplete(std::shared_ptr<Resource> pRes) = 0;
 
-		virtual bool FileReadError(Resource* pRes) { return false; }
+		virtual bool FileReadError(std::shared_ptr<Resource> pRes) { return false; }
 	};
 
 	class CRAZEENGINE_EXP LevelFile

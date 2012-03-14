@@ -13,12 +13,12 @@ namespace Craze
 		class EffectHelper
 		{
 		public:
-            template <typename T> static const T* LoadShaderFromResource(const std::string& file)
+            template <typename T> static std::shared_ptr<const T> LoadShaderFromResource(const std::string& file)
             {
-                const Resource* res = gResMgr.loadResourceBlocking(gFileDataLoader.addFile(file));
+                std::shared_ptr<const Resource> res = gResMgr.loadResourceBlocking(gFileDataLoader.addFile(file));
                 if (res && res->getStatus() == Resource::FINISHED)
                 {
-                    return dynamic_cast<const T*>(res);
+                    return std::dynamic_pointer_cast<const T>(res);
                 }
                 return nullptr;
             }

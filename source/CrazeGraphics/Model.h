@@ -21,9 +21,7 @@ namespace Craze
 		{
             CRAZE_POOL_ALLOC(Model);
         public:
-            virtual void onDestroy()
-            {
-            }
+            virtual void onDestroy();
 
             const std::vector<MeshItem>& getMeshes() const { return m_meshes; }
 
@@ -39,13 +37,13 @@ namespace Craze
 		public:
 			ModelResourceHandler() { m_readCompleteMT = true; m_allCompleteMT = true;}
 
-			virtual bool preRead(Resource* ) { return true; }
+			virtual bool preRead(std::shared_ptr<Resource> ) { return true; }
 			virtual bool readComplete(ResourceLoadData* loadData);
 			virtual bool allComplete(ResourceLoadData*) { return true; }
 
 			virtual bool fileReadError(ResourceLoadData*) { return false; }
 
-			virtual Resource* createResource(u32, u64) { return CrNew Model(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew Model()); }
 		};
 	}
 }

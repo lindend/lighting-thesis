@@ -20,6 +20,16 @@ NavigationScene::NavigationScene() : m_pMesh(nullptr), m_pMeshDetail(nullptr), m
 	m_pNavQuery = dtAllocNavMeshQuery();
 }
 
+NavigationScene::~NavigationScene()
+{
+	CleanUp();
+
+	for (auto i = m_pMeshes.begin(); i != m_pMeshes.end(); ++i)
+	{
+		delete *i;
+	}
+}
+
 void NavigationScene::CleanUp()
 {
 	rcFreePolyMesh(m_pMesh);

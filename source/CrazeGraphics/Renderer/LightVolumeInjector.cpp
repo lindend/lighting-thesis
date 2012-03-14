@@ -55,7 +55,7 @@ bool LightVolumeInjector::initialize()
 	m_rayTraceCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/RayTrace.csh");
 
 	//Hard coded collision geometry!
-	const Model* triMesh = dynamic_cast<const Model*>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
+	std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
 	std::tr1::shared_ptr<MeshData> meshData = triMesh->getMeshes()[0].mesh->getMeshData();
 	const Vertex* verts = meshData->GetPosNormalUv();
 	const unsigned short* indices = meshData->GetIndices();

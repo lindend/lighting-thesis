@@ -17,7 +17,7 @@ namespace Craze
 				m_allCompleteMT = true;
 			}
 
-            virtual bool preRead(Resource* res)
+            virtual bool preRead(std::shared_ptr<Resource> res)
             {
                 return true;
             }
@@ -29,48 +29,48 @@ namespace Craze
 		{
         public:
             virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew VertexShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew VertexShaderResource()); }
 		};
 
 		class PixelShaderResourceHandler : public ShaderResourceHandler
 		{
         public:
             virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew PixelShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew PixelShaderResource()); }
 		};
 
 		class GeometryShaderResourceHandler : public ShaderResourceHandler
 		{
         public:
             virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew GeometryShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew GeometryShaderResource()); }
 		};
 
 		class ComputeShaderResourceHandler : public ShaderResourceHandler
 		{
         public:
             virtual bool readComplete(ResourceLoadData* pData);
-			virtual Resource* createResource(u32, u64) { return CrNew ComputeShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew ComputeShaderResource()); }
 		};
 
 		class TessShaderResourceHandler : public ShaderResourceHandler
 		{
 			virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew TessShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew TessShaderResource()); }
 		};
 
 		class HullShaderResourceHandler : public ShaderResourceHandler
 		{
 		public:
 			virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew HullShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew HullShaderResource()); }
 		};
 
 		class DomainShaderResourceHandler : public ShaderResourceHandler
 		{
 		public:
 			virtual bool readComplete(ResourceLoadData* data);
-			virtual Resource* createResource(u32, u64) { return CrNew DomainShaderResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew DomainShaderResource()); }
 		};
     }
 }

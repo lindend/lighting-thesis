@@ -25,7 +25,7 @@ bool Craze::Graphics2::CreatePositionMap(std::shared_ptr<Mesh> pMesh, std::share
 bool Craze::Graphics2::CalculateSkyVisibility(std::shared_ptr<SRVBuffer> pTris, std::shared_ptr<SRVBuffer> pKdTree, std::shared_ptr<Texture> pPosMap, 
 	std::shared_ptr<Texture> pNormalMap, std::shared_ptr<RenderTarget> pOcclMap)
 {
-	static const ComputeShaderResource* res = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("SkyOcclusion.csh");
+	static std::shared_ptr<const ComputeShaderResource> res = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("SkyOcclusion.csh");
 	if (!res || !res->m_shader)
 	{
 		LOG_ERROR("Unable to compile sky visibility shader");

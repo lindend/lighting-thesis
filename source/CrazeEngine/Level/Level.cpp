@@ -27,8 +27,9 @@ Level::Level()
 
 Level::~Level()
 {
-    delete m_pScene;
 	VClear();
+    delete m_pScene;
+	delete m_pNavScene;
 }
 
 

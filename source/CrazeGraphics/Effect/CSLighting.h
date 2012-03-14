@@ -20,7 +20,7 @@ namespace Craze
 			void run(const Camera* pCamera, ID3D11ShaderResourceView* pGBufSRVs[4], ID3D11UnorderedAccessView* pTarget, const LightArray& lights);
 		private:
 			std::shared_ptr<SRVBuffer> m_lightBuffer;
-			const ComputeShaderResource* m_cs;
+			std::shared_ptr<const ComputeShaderResource> m_cs;
 			ID3D11Buffer* m_cb;
 			static const unsigned int MaxLights = 3000;
 		};

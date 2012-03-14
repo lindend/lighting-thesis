@@ -5,7 +5,7 @@ using namespace Craze;
 
 bool DefaultResHandler::readComplete(ResourceLoadData* resData)
 {
-	DefaultResource* res = dynamic_cast<DefaultResource*>(resData->res);
+	std::shared_ptr<DefaultResource> res = std::dynamic_pointer_cast<DefaultResource>(resData->res);
 	if (!res)
 	{
 	    return false;

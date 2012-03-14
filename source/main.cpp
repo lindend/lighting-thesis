@@ -43,7 +43,7 @@ int main()
 
 	ldr.AddResourceLocationFolder("");
 
-	Craze::Resource::Resource* pRes = ldr.LoadFile("bigFile1.txt");
+	Craze::Resource::std::shared_ptr<Resource> pRes = ldr.LoadFile("bigFile1.txt");
 
 	ldr.Process(7 * Craze::Resource::MEGABYTE);
 

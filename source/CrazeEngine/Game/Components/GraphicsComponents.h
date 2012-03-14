@@ -15,7 +15,7 @@ namespace Craze
 	{
 		CRAZE_POOL_ALLOC(TriMeshComponent);
 	public:
-		TriMeshComponent(TransformComponent* pTfmComp, const Resource* pRes, Level* pLevel, GameObject* pOwner);
+		TriMeshComponent(TransformComponent* pTfmComp, std::shared_ptr<const Resource> pRes, Level* pLevel, GameObject* pOwner);
 
 		static TriMeshComponent* Create(Level* pLevel, GameObject* pOwner, lua_State* L);
 
@@ -29,7 +29,7 @@ namespace Craze
 	
 	private:
 		TransformComponent* m_pTfmComp;
-		const Graphics2::Model* m_modelRes;
+		std::shared_ptr<const Graphics2::Model> m_modelRes;
 		Graphics2::ModelNode* m_model;
 		Level* m_pLevel;
 

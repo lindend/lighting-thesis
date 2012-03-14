@@ -36,8 +36,9 @@ namespace Craze
 			CRAZE_ALLOC();
 		public:
 			Scene(Device* device);
+			~Scene();
 
-			ModelNode* addModel(const Model* model, NODEFLAGS flags = NODE_ALLFLAGS);
+			ModelNode* addModel(std::shared_ptr<const Model> model, NODEFLAGS flags = NODE_ALLFLAGS);
 			void removeModel(ModelNode* model);
 
 			//MeshInstance* addMesh(std::shared_ptr<Mesh> pMesh, NODEFLAGS flags);
@@ -72,10 +73,13 @@ namespace Craze
 			Light m_sunLight;
 			bool m_hasSun;
 
+			static const int MaxMeshesInScene = 3200;
+
 			std::vector<ModelNode*> m_models;
 			//A list of the bounding boxes of each mesh in the scene
 			//Perform culling by traversing this list
-			std::vector<BoundingBox*> m_meshBBs;
+			BoundingBox* m_meshBBs;
+			int m_currentBB;
 			std::vector<MeshItem> m_meshes;
 
 			Device* m_device;

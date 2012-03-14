@@ -10,6 +10,14 @@ namespace Craze
 {
     class Resource;
 
+	struct LastChangedItem
+	{
+		std::weak_ptr<Resource> res;
+		std::string file;
+		i64 changed;
+	};
+
+
     class FileDataLoader : public ResourceDataLoader
     {
     public:
@@ -22,8 +30,8 @@ namespace Craze
         virtual int getSize(u64 resId);
         virtual bool read(u64 resId, char* destBuf, int destSize);
 
-        virtual void add(Resource* res);
-        virtual void remove(Resource* res);
+        virtual void add(std::shared_ptr<Resource> res);
+        virtual void remove(std::shared_ptr<Resource> res);
 
 		void addLocation(const std::string& location)
 		{
@@ -38,7 +46,7 @@ namespace Craze
         void threadMain();
 
         std::vector<std::string> m_roots;
-        std::map<Resource*, __int64> m_lastChanged;
+        std::map<void*, LastChangedItem> m_lastChanged;
         std::map<u64, std::string> m_fileIds;
 
         Lock m_lastChangeLock;

@@ -21,7 +21,7 @@ void NavMeshComponent::VUpdate(float delta)
 {
 	if (!m_pNavMesh && m_pRes && m_pRes->getStatus() == Resource::FINISHED)
 	{
-		const Model* model = dynamic_cast<const Model*>(m_pRes);
+		std::shared_ptr<const Model> model = std::dynamic_pointer_cast<const Model>(m_pRes);
 		if (model && !model->getMeshes().empty())
 		{
 			auto meshes = model->getMeshes();
@@ -35,19 +35,24 @@ void NavMeshComponent::VUpdate(float delta)
 	}
 }
 
+NavMeshComponent::~NavMeshComponent()
+{
+	m_pLevel->GetNavigationScene()->RemoveMesh(m_pNavMesh);
+	delete m_pNavMesh;
+}
+
 NavMeshComponent* NavMeshComponent::Create(Level* pLevel, GameObject* pOwner, lua_State* L)
 {
 	lua_getfield(L, -1, "file");
 	const char* fileName = luaL_optstring(L, -1, "");
 	lua_pop(L, 1);
 
-	const Resource* pRes = gResMgr.loadResource(gFileDataLoader.addFile(fileName));
+	std::shared_ptr<const Resource> pRes = gResMgr.loadResource(gFileDataLoader.addFile(fileName));
 
 	if (pRes)
 	{
 		lua_pushboolean(L, 1);
 		return CrNew NavMeshComponent(pRes, pOwner, pLevel);
 	} 
-	pRes->release();
 	return nullptr;	
 }

@@ -43,13 +43,9 @@ namespace Craze
 		};
 
 	public:
-        void addRef() const { InterlockedIncrement((LONG*)&m_counter); }
-		unsigned int release() const;
-
 		u64 getFileId() const { return m_fileId; }
 
-		const Resource** getDependencies() const { return m_dependencies; }
-		unsigned int getNumDependencies() const { return m_numDependencies; }
+		const std::vector<std::shared_ptr<const Resource>> getDependencies() const { return m_dependencies; }
 
 		RES_LOAD_ERROR getError() const { return m_currentError; }
 		RESOURCE_STATUS getStatus() const { return m_status; }
@@ -58,12 +54,14 @@ namespace Craze
 
 		const bool isLoaded() const { return getStatus() == FINISHED; }
 
-		void setDependencies(const Resource** pDepenencies, unsigned int numDependencies);
+		void setDependencies(const std::vector<std::shared_ptr<const Resource>>& dependencies);
 		void setStatus(RESOURCE_STATUS status);
 		void setError(RES_LOAD_ERROR error);
 		void destroy();
 
-		virtual ~Resource() {}
+		virtual ~Resource()
+		{
+		}
 
 		std::string name;
 
@@ -78,8 +76,7 @@ namespace Craze
 
 		ResourceManager* m_resourceManager;
 
-		const Resource** m_dependencies;
-		unsigned int m_numDependencies;
+		std::vector<std::shared_ptr<const Resource>> m_dependencies;
 
 		Event m_finishedEvent;
 
@@ -115,9 +112,9 @@ namespace Craze
 		CRAZE_POOL_ALLOC(ResourceLoadData);
 
 	public:
-		ResourceLoadData() : res(nullptr), data(nullptr), dataSize(0), evtHandler(nullptr), dataLoader(nullptr) {}
+		ResourceLoadData() : data(nullptr), dataSize(0), evtHandler(nullptr), dataLoader(nullptr) {}
 
-		Resource* res;
+		std::shared_ptr<Resource> res;
 
 		char* data;
 		int dataSize;

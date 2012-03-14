@@ -29,7 +29,7 @@
 #include "Buffer/Buffer.h"
 #include "Renderer/DrawRays.h"
 
-
+#include "PIXHelper.h"
 
 using namespace Craze::Graphics2;
 using namespace Craze;
@@ -256,14 +256,17 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	gpDevice->SetRenderTargets(m_GBuffers, NumGBuffers, gpDevice->GetDefaultDepthBuffer());
 
-	gFxGBuffer.set(pCam);
-	
-	//Should be left as it is? Probably already got a few other threads running
-	//Make sure to wait for the mainScene draw list to be ready here first
-	for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
 	{
-		gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
-		i->second.m_mesh->draw();
+		PIXMARKER(L"Create g-buffers");
+		gFxGBuffer.set(pCam);
+	
+		//Should be left as it is? Probably already got a few other threads running
+		//Make sure to wait for the mainScene draw list to be ready here first
+		for (auto i = mainScene.begin(); i != mainScene.end(); ++i)
+		{
+			gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+			i->second.m_mesh->draw();
+		}
 	}
 	
 	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
@@ -279,11 +282,14 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
 	//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 
-	ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
-	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
-	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
+	{
+		PIXMARKER(L"Do lighting");
+		ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
+		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
+		gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
 
-	gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
+		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
+	}
 	
 
 	/*gFxAmbientLighting.set();
@@ -300,7 +306,10 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
 	gFxCopyToBack.doCopy(m_pOutputTarget);
 
-	m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
+	{
+		PIXMARKER(L"Draw rays");
+		m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
+	}
 
 	gpDevice->GetDeviceContext()->OMSetDepthStencilState(0, 0);
 

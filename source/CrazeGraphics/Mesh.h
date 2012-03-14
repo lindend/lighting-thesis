@@ -2,7 +2,6 @@
 #include <memory>
 
 #include "Memory/MemoryManager.h"
-#include "Resource/ResourceManager.h"
 #include "Intersection/BoundingBox.h"
 
 #include "VertexStreams.h"
@@ -23,10 +22,8 @@ namespace Craze
 
 		struct MaterialData;
 
-		class Mesh : public Resource
+		class Mesh
 		{
-			friend class MeshResourceHandler;
-
 			CRAZE_POOL_ALLOC(Mesh);
 		public:
 			Mesh(Device* device);
@@ -43,7 +40,7 @@ namespace Craze
 
 			bool createFromMemory(const char* data, unsigned long length);
 
-			~Mesh() {}
+			~Mesh();
 
             const BoundingBox& getBoundingBox() const { return *m_boundingBox; }
             std::shared_ptr<MeshData> getMeshData() const { return m_meshData; }
@@ -58,32 +55,6 @@ namespace Craze
 			std::shared_ptr<MeshData> m_meshData;
 
 			Device* m_device;
-
-		//Resource stuff:
-		protected:
-			virtual void onDestroy()
-			{
-			    delete m_boundingBox;
-			}
-        private:
-            virtual Resource* createInstance()
-            {
-                return CrNew Mesh(gpDevice);
-            }
 		};
-
-		class MeshResourceHandler : public ResourceEventHandler
-		{
-		public:
-			MeshResourceHandler() { m_readCompleteMT = true; m_allCompleteMT = true;}
-
-			virtual bool preRead(Resource* ) { return true; }
-			virtual bool readComplete(ResourceLoadData* loadData);
-			virtual bool allComplete(ResourceLoadData*) { return true; }
-
-			virtual bool fileReadError(ResourceLoadData*) { return false; }
-
-		};
-
 	}
 }

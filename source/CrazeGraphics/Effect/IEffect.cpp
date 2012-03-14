@@ -12,21 +12,9 @@ using namespace Craze::Graphics2;
 
 void IEffect::destroy()
 {
-	if (m_vs)
-	{
-		m_vs->release();
-		m_vs = nullptr;
-	}
-	if (m_gs)
-	{
-		m_gs->release();
-		m_gs = nullptr;
-	}
-	if (m_ps)
-	{
-		m_ps->release();
-		m_ps = nullptr;
-	}
+	m_vs = nullptr;
+	m_gs = nullptr;
+	m_ps = nullptr;
 	if (m_inputLayout)
 	{
 		m_inputLayout->Release();

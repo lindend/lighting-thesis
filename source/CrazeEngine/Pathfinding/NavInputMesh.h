@@ -11,7 +11,7 @@ namespace Craze
 	{
 		CRAZE_POOL_ALLOC(NavInputMesh);
 	public:
-		NavInputMesh() : m_pVertices(nullptr), m_NumVerts(0), m_NumTris(0), m_pBB(nullptr) {}
+		NavInputMesh() : m_pVertices(nullptr), m_pIndices(nullptr), m_NumVerts(0), m_NumTris(0), m_pBB(nullptr) {}
 		~NavInputMesh() { Free(); }
 
 		void Set(const Vec3* pVerts, int vtxStride, int numVerts, const unsigned short* pIndices, int numTris);

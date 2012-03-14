@@ -16,7 +16,7 @@ namespace Craze
 		//Returning false from any of the handlers below will cancel the file loading and flag the resource with an error
 
 		//Called before the resource starts to load, from the thread that started the loading of the resource
-		virtual bool preRead(Resource* res) = 0;
+		virtual bool preRead(std::shared_ptr<Resource> res) = 0;
 		//Called once the resource has been fully loaded, this is when you want to start loading subresources
 		virtual bool readComplete(ResourceLoadData* resData) = 0;
 		//Called when all of the subresources has been fully loaded
@@ -25,7 +25,7 @@ namespace Craze
 		//If there are errors reading the file, this function will be called. Return true from this to continue processing anyway
 		virtual bool fileReadError(ResourceLoadData* resData) = 0;
 
-		virtual Resource* createResource(u32 typeId, u64 resId) = 0;
+		virtual std::shared_ptr<Resource> createResource(u32 typeId, u64 resId) = 0;
 
 		bool readCompleteMT() const { return m_readCompleteMT; }
 		bool allCompleteMT() const { return m_allCompleteMT; }
@@ -41,13 +41,13 @@ namespace Craze
 	public:
 		DefaultResHandler() { m_readCompleteMT = true; m_allCompleteMT = true;}
 
-		virtual bool preRead(Resource* ) { return true; }
+		virtual bool preRead(std::shared_ptr<Resource> ) { return true; }
 		virtual bool readComplete(ResourceLoadData* resData);
 		virtual bool allComplete(ResourceLoadData* ) { return true; }
 
 		virtual bool fileReadError(ResourceLoadData* ) { return true; }
 
-		virtual Resource* createResource(u32, u64) { return CrNew DefaultResource(); }
+		virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew DefaultResource()); }
 
 	};
 }

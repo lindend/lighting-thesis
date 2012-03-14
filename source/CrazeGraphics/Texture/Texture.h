@@ -93,7 +93,7 @@ namespace Craze
 		public:
 			TexturePtr() : m_tex(nullptr), m_texRes(nullptr) {}
 			TexturePtr(Texture* tex) : m_tex(tex), m_texRes(nullptr) {}
-			TexturePtr(const TextureResource* texRes) : m_tex(nullptr), m_texRes(texRes) {}
+			TexturePtr(std::shared_ptr<const TextureResource> texRes) : m_tex(nullptr), m_texRes(texRes) {}
 
 			TexturePtr& operator=(Texture* tex)
 			{
@@ -102,7 +102,7 @@ namespace Craze
 				return *this;
 			}
 
-			TexturePtr& operator=(TextureResource* texRes)
+			TexturePtr& operator=(std::shared_ptr<TextureResource> texRes)
 			{
 				m_tex = nullptr;
 				m_texRes = texRes;
@@ -133,7 +133,7 @@ namespace Craze
 
 		private:
 			Texture* m_tex;
-			const TextureResource* m_texRes;
+			std::shared_ptr<const TextureResource> m_texRes;
 		};
 
 		class TextureResourceHandler : public ResourceEventHandler
@@ -141,13 +141,13 @@ namespace Craze
 		public:
 			TextureResourceHandler() : m_currentID(0) { m_readCompleteMT = true; m_allCompleteMT = true;}
 
-			virtual bool preRead(Resource* res) { return true; }
+			virtual bool preRead(std::shared_ptr<Resource> res) { return true; }
 			virtual bool readComplete(ResourceLoadData* loadData);
 			virtual bool allComplete(ResourceLoadData* loadData) { return true; }
 
 			virtual bool fileReadError(ResourceLoadData* loadData);
 
-			virtual Resource* createResource(u32, u64) { return CrNew TextureResource(); }
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew TextureResource()); }
 		private:
 			unsigned short m_currentID;
 		};

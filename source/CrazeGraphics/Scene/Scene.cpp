@@ -16,10 +16,22 @@ using namespace Craze;
 using namespace Craze::Graphics2;
 Scene::Scene(Device* device) : m_device(device), m_numLights(0), m_maxLightIndex(-1)
 {
+	m_meshBBs = (BoundingBox*)gMemory.AllocateAligned(16, sizeof(BoundingBox) * MaxMeshesInScene, __FILE__, __LINE__);;
 	m_bounds = CrNew BoundingBox();
 	m_camera = CrNew Camera();
 
 	memset(m_activeLights, 0, sizeof(m_activeLights));
+}
+Scene::~Scene()
+{
+	gMemory.FreeAligned(m_meshBBs);
+	delete m_bounds;
+	delete m_camera;
+
+	for (auto i = m_models.begin(); i != m_models.end(); ++i)
+	{
+		delete (*i);
+	}
 }
 
 Light* Scene::addLight(const Light& l)
@@ -85,14 +97,13 @@ int Scene::findFirstFreeLightSlot() const
 	return i * 32 + firstBitNotSet(m_activeLights[i]);
 }
 
-ModelNode* Scene::addModel(const Model* model, NODEFLAGS flags)
+ModelNode* Scene::addModel(std::shared_ptr<const Model> model, NODEFLAGS flags)
 {
 	ModelNode* modelNode = CrNew ModelNode(m_meshes.size(), model->getMeshes().size());
     m_models.push_back(modelNode);
 	for (auto i = model->getMeshes().begin(); i != model->getMeshes().end(); ++i)
 	{
         m_meshes.push_back(*i);
-        m_meshBBs.push_back(CrNew BoundingBox());
 	}
 	return modelNode;
 }
@@ -112,11 +123,11 @@ void Scene::update()
 			const int last = m->getFirstMesh() + m->getNumMeshes();
 			for (int j = m->getFirstMesh(); j < last; ++j)
 			{
-				*m_meshBBs[j] = m_meshes[j].mesh->getBoundingBox();
+				m_meshBBs[j] = m_meshes[j].mesh->getBoundingBox();
 			}
 			if (m->getNumMeshes() > 0)
 			{
-				TransformV4(m->getTransform(), (Vector4*)m_meshBBs[m->getFirstMesh()], 2 * m->getNumMeshes());
+				TransformV4(m->getTransform(), (Vector4*)&m_meshBBs[m->getFirstMesh()], 2 * m->getNumMeshes());
 			}
 
 			m->unflagDirty();
@@ -140,7 +151,7 @@ void Scene::buildDrawList(DrawList* drawList, const Matrix4& viewProj) const
 
             for (u32 j = 0; j < maxIdx; ++j)
             {
-                if (Intersection::IsInside(viewProj, *m_meshBBs[j], &depth))
+                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth))
                 {
                     const MeshItem& mi = m_meshes[j];
 					if (mi.material.m_decal.get() != NULL)
