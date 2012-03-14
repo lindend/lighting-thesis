@@ -76,7 +76,7 @@ namespace Craze
 			void AddQuad(const UIQuadInstance &quad);
 			void Flush();
 
-			std::map<void*, const Resource*> m_TexResources;
+			std::map<void*, std::shared_ptr<const Resource>> m_TexResources;
 
 			std::vector<UIQuadInstance> m_Quads;
 			static const int QuadBufferSize = 4096;
@@ -90,8 +90,8 @@ namespace Craze
 			ID3D11RasterizerState* m_pRastState;
 			ID3D11InputLayout* m_pInputLayout;
 
-			const VertexShaderResource* m_pVertexShader;
-			const PixelShaderResource* m_pPixelShader;
+			std::shared_ptr<const VertexShaderResource> m_pVertexShader;
+			std::shared_ptr<const PixelShaderResource> m_pPixelShader;
 			ID3DBlob* m_pShaderByteCode;
 
 			TextureResource *m_pCurrentTexture;

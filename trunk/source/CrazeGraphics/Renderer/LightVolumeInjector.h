@@ -58,7 +58,7 @@ namespace Craze
 			std::shared_ptr<UAVBuffer> m_toTestRays;
 			std::shared_ptr<UAVBuffer> m_collidedRays;
 
-			const ComputeShaderResource* m_rayTraceCS;
+			std::shared_ptr<const ComputeShaderResource> m_rayTraceCS;
 
 			std::unique_ptr<LVFirstBounceEffect> m_fxFirstBounce;
 			std::unique_ptr<LVInjectRaysEffect> m_fxInjectRays;

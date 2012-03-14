@@ -31,10 +31,7 @@ bool CSLighting::initialize()
 void CSLighting::destroy()
 {
 	SAFE_RELEASE(m_cb);
-	if (m_cs)
-	{
-		m_cs->release();
-	}
+	m_cs = nullptr;
 	m_lightBuffer = nullptr;
 }
 

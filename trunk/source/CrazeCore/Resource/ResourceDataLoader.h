@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 #include <string>
 #include "../CrazeMath/MathTypes.h"
@@ -16,7 +17,7 @@ namespace Craze
         virtual int getSize(u64 resId) = 0;
         virtual bool read(u64 resId, char* pDestBuf, int destSize) = 0;
 
-        virtual void add(Resource* pRes) = 0;
-        virtual void remove(Resource* pRes) = 0;
+        virtual void add(std::shared_ptr<Resource> pRes) = 0;
+        virtual void remove(std::shared_ptr<Resource> pRes) = 0;
     };
 }

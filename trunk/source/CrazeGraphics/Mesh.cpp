@@ -19,22 +19,16 @@ Mesh::Mesh(Device* device)
 	m_boundingBox = CrNew BoundingBox();
 }
 
-bool MeshResourceHandler::readComplete(ResourceLoadData* data)
+Mesh::~Mesh()
 {
-	Mesh* res = dynamic_cast<Mesh*>(data->res);
-
-	if (res)
-	{
-		return res->createFromMemory(data->data, data->dataSize);
-	}
-
-	return false;
+	delete m_boundingBox;
 }
+
 /*
 
 
 			int numSubs = (!matData.decalFileName.empty() ? 1 : 0) + (!matData.bumpFileName.empty() ? 1 : 0);
-			const Resource** subs = (numSubs > 0 ? new const Resource*[numSubs] : nullptr);
+			std::shared_ptr<const Resource>* subs = (numSubs > 0 ? new std::shared_ptr<const Resource>[numSubs] : nullptr);
 
 			res->m_decalIndex = res->m_bumpIndex = -1;
 

@@ -40,10 +40,16 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 
 	gpDevice->SetRenderTarget(nullptr, nullptr);
 
+	ID3D11ShaderResourceView* srv = rays->GetSRV();
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
+
 	//Draw the rays
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	srv = nullptr;
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
 }
 
 

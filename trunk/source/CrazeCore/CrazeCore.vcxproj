@@ -136,10 +136,10 @@
     <ClInclude Include="Resource\ResourceManager.h" />
     <ClInclude Include="Settings\Setting.h" />
     <ClInclude Include="Settings\SettingsManager.h" />
-    <ClInclude Include="StrUtil.hpp" />
     <ClInclude Include="Stream\IStreamHandler.h" />
     <ClInclude Include="Stream\Stream.h" />
     <ClInclude Include="Stream\StreamManager.h" />
+    <ClInclude Include="StrUtil.hpp" />
     <ClInclude Include="SystemInfo\SystemInfo.h" />
     <ClInclude Include="Threading\ThreadPool.h" />
     <ClInclude Include="Threading\ThreadUtil.hpp" />

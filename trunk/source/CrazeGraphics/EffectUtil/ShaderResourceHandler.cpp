@@ -11,7 +11,7 @@ using namespace Craze::Graphics2;
 
 bool VertexShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-    VertexShaderResource* res = dynamic_cast<VertexShaderResource*>(data->res);
+    std::shared_ptr<VertexShaderResource> res = std::dynamic_pointer_cast<VertexShaderResource>(data->res);
    	auto shader = EffectHelper::CompileVS(gpDevice, data->data, data->dataSize, data->res->name, &res->m_shaderByteCode);
 	if (shader)
 	{
@@ -27,7 +27,7 @@ bool VertexShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool GeometryShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-   GeometryShaderResource* res = dynamic_cast<GeometryShaderResource*>(data->res);
+	std::shared_ptr<GeometryShaderResource> res = std::dynamic_pointer_cast<GeometryShaderResource>(data->res);
    	auto shader = EffectHelper::CompileGS(gpDevice, data->data, data->dataSize, data->res->name);
 	if (shader)
 	{
@@ -43,7 +43,7 @@ bool GeometryShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool PixelShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-	PixelShaderResource* res = dynamic_cast<PixelShaderResource*>(data->res);
+	std::shared_ptr<PixelShaderResource> res = std::dynamic_pointer_cast<PixelShaderResource>(data->res);
    	auto shader = EffectHelper::CompilePS(gpDevice, data->data, data->dataSize, data->res->name);
 	if (shader)
 	{
@@ -59,7 +59,7 @@ bool PixelShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool ComputeShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-	ComputeShaderResource* res = dynamic_cast<ComputeShaderResource*>(data->res);
+	std::shared_ptr<ComputeShaderResource> res = std::dynamic_pointer_cast<ComputeShaderResource>(data->res);
    	auto shader = EffectHelper::CompileCS(gpDevice, data->data, data->dataSize, data->res->name);
 	if (shader)
 	{
@@ -75,7 +75,7 @@ bool ComputeShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool TessShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-	TessShaderResource* res = dynamic_cast<TessShaderResource*>(data->res);
+	std::shared_ptr<TessShaderResource> res = std::dynamic_pointer_cast<TessShaderResource>(data->res);
 
 	auto hs = EffectHelper::CompileHS(gpDevice, data->data, data->dataSize, data->res->name);
 	if (hs)
@@ -101,7 +101,7 @@ bool TessShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool HullShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-	HullShaderResource* res = dynamic_cast<HullShaderResource*>(data->res);
+	std::shared_ptr<HullShaderResource> res = std::dynamic_pointer_cast<HullShaderResource>(data->res);
 	auto shader = EffectHelper::CompileHS(gpDevice, data->data, data->dataSize, "HullShader");
 	if (shader)
 	{
@@ -116,7 +116,7 @@ bool HullShaderResourceHandler::readComplete(ResourceLoadData* data)
 
 bool DomainShaderResourceHandler::readComplete(ResourceLoadData* data)
 {
-	DomainShaderResource* res = dynamic_cast<DomainShaderResource*>(data->res);
+	std::shared_ptr<DomainShaderResource> res = std::dynamic_pointer_cast<DomainShaderResource>(data->res);
 	auto shader = EffectHelper::CompileDS(gpDevice, data->data, data->dataSize, "HullShader");
 	if (shader)
 	{

@@ -14,7 +14,7 @@ CRAZE_POOL_ALLOC_IMPL(Model);
 
 bool ModelResourceHandler::readComplete(ResourceLoadData* loadData)
 {
-	Model* model = dynamic_cast<Model*>(loadData->res);
+	std::shared_ptr<Model> model = std::dynamic_pointer_cast<Model>(loadData->res);
 	assert(model);
 
 	return model->createFromMemory(loadData->data, loadData->dataSize);
@@ -77,6 +77,14 @@ bool Craze::Graphics2::saveModel(std::string fileName, std::vector<std::shared_p
 		write(fs, (u32)0xFFFFFFFF);
 	}
 	return true;
+}
+
+void Model::onDestroy()
+{
+	for(auto i = m_meshes.begin(); i != m_meshes.end(); ++i)
+	{
+		delete i->mesh;
+	}
 }
 
 bool Model::createFromMemory(const char* data, unsigned int size)
@@ -165,16 +173,16 @@ bool Model::createFromMemory(const char* data, unsigned int size)
 		{
 			std::stringstream decalName;
 			decalName << decalId << ".jpg";
-			mi.material.m_decal = dynamic_cast<const TextureResource*>(gResMgr.loadResource(gFileDataLoader.addFile(decalName.str())));
+			mi.material.m_decal = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile(decalName.str())));
 			if (mi.material.m_decal == NULL)
 			{
-				mi.material.m_decal = dynamic_cast<const TextureResource*>(gResMgr.loadResource(gFileDataLoader.addFile("textureerror.png")));;
+				mi.material.m_decal = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("textureerror.png")));;
 			}
 		}
 
 		if (flags & MATFLAG_HASBUMP)
 		{
-			mi.material.m_bump = dynamic_cast<const TextureResource*>(gResMgr.loadResource(bumpId));
+			mi.material.m_bump = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(bumpId));
 		}
 
 		u32 color;

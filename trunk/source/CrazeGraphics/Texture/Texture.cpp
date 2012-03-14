@@ -24,7 +24,7 @@ bool TextureResourceHandler::fileReadError(ResourceLoadData* data)
 
 bool TextureResourceHandler::readComplete(ResourceLoadData* data)
 {
-	TextureResource* res = dynamic_cast<TextureResource*>(data->res);
+	std::shared_ptr<TextureResource> res = std::dynamic_pointer_cast<TextureResource>(data->res);
 	assert(res);
 
 	Texture* texture = Texture::CreateFromMemory(gpDevice, data->data, data->dataSize, true

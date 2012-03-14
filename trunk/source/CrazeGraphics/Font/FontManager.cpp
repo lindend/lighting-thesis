@@ -432,17 +432,14 @@ void FontManager::shutdown()
 		FT_Done_Face(i->second);
 	}
 
-	for (auto i = m_resources.begin(); i != m_resources.end(); ++i)
-	{
-		(*i)->release();
-	}
+	m_resources.clear();
 
 	FT_Done_FreeType(m_library);
 }
 
 bool FontManager::addFontFile(const std::string &fontFile)
 {
-	const DefaultResource *res = dynamic_cast<const DefaultResource*>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile(fontFile)));
+	std::shared_ptr<const DefaultResource> res = std::dynamic_pointer_cast<const DefaultResource>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile(fontFile)));
 
 	if (!res)
 	{

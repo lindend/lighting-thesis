@@ -36,6 +36,7 @@ namespace Craze
 		CRAZE_ALLOC();
 	public:
 		NavigationScene();
+		~NavigationScene();
 
 		//Adds a mesh to the navigation scene, the memory will be owned by the NavigationScene instance. The memory will be freed when ClearScene is called, or the NavigationScene is destroyed.
 		//The effect of the mesh will be part of the walk mesh once BuildNavigationMesh has been called.

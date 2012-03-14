@@ -43,11 +43,9 @@ void ResourceManager::shutdown()
 {
 	m_running = false;
 	ScopedLock sl(m_resourceLock);
-	while (m_resources.size() > 0)
+	if (m_resources.size())
 	{
-		auto i = m_resources.begin();
-		i->second->getFinishedEvent().Await();
-		release(i->second);
+		LOG_ERROR("There are unfreed resources");
 	}
 }
 
@@ -62,7 +60,7 @@ void ResourceManager::update()
 
 bool ResourceManager::dataReadError(ResourceLoadData* loadData)
 {
-	Resource* res = loadData->res;
+	std::shared_ptr<Resource> res = loadData->res;
 
 	if (loadData->evtHandler->fileReadError(loadData))
 	{
@@ -76,7 +74,7 @@ bool ResourceManager::dataReadError(ResourceLoadData* loadData)
 
 void ResourceManager::readData(ResourceLoadData* loadData)
 {
-	Resource* res = loadData->res;
+	std::shared_ptr<Resource> res = loadData->res;
 
 	assert(res != nullptr);
 	assert(res->getError() == RLE_SUCCESS);
@@ -106,7 +104,7 @@ void ResourceManager::readData(ResourceLoadData* loadData)
 
 void ResourceManager::handleProcess(ResourceLoadData* loadData, bool mainThread)
 {
-	Resource* res = loadData->res;
+	std::shared_ptr<Resource> res = loadData->res;
 
 	assert(res->getStatus() == Resource::PROCESS);
 
@@ -127,11 +125,11 @@ void ResourceManager::handleProcess(ResourceLoadData* loadData, bool mainThread)
 
 bool ResourceManager::handleLoadSubRes(ResourceLoadData* loadData, bool mainThread)
 {
-	Resource* res = loadData->res;
+	std::shared_ptr<Resource> res = loadData->res;
 	assert(res->getStatus() == Resource::LOADSUB);
 
-	const Resource** dependencies = res->getDependencies();
-	for (unsigned int i = 0; i < res->getNumDependencies(); ++i)
+	auto dependencies = res->getDependencies();
+	for (unsigned int i = 0; i < dependencies.size(); ++i)
 	{
 		Resource::RESOURCE_STATUS status = dependencies[i]->getStatus();
 		if (status == Resource::LOADERROR)
@@ -164,7 +162,7 @@ bool ResourceManager::handleLoadSubRes(ResourceLoadData* loadData, bool mainThre
 
 void ResourceManager::process(ResourceLoadData* loadData)
 {
-	Resource* res = loadData->res;
+	std::shared_ptr<Resource> res = loadData->res;
 
 	if (res->getStatus() == Resource::RELOAD)
 	{
@@ -238,7 +236,7 @@ ResourceEventHandler* ResourceManager::findEventHandler(u32 fileType)
 	return &m_defResHandler;
 }
 
-const Resource* ResourceManager::loadResource(u64 fileId, std::function<void(const Resource*)> callback)
+std::shared_ptr<const Resource> ResourceManager::loadResource(u64 fileId, std::function<void(std::shared_ptr<const Resource>)> callback)
 {
 	if (!m_running)
 	{
@@ -248,21 +246,21 @@ const Resource* ResourceManager::loadResource(u64 fileId, std::function<void(con
 	ScopedLock resLock(m_resourceLock);
 
 	auto itRes = m_resources.find(fileId);
-	if (itRes != m_resources.end())
+	if (itRes != m_resources.end() && !itRes->second.expired())
 	{
-		itRes->second->addRef();
+		std::shared_ptr<Resource> res = itRes->second.lock();
 		if (callback)
 		{
-            auto status = itRes->second->getStatus();
+            auto status = res->getStatus();
 			if (status == Resource::FINISHED || status == Resource::LOADERROR)
 			{
-				callback(itRes->second);
+				callback(res);
 			} else
 			{
-				m_onLoadCallbacks[itRes->second].push_back(callback);
+				m_onLoadCallbacks[res.get()].push_back(callback);
 			}
 		}
-		return itRes->second;
+		return res;
 	}
 
 	ResourceDataLoader* dataLoader = findDataLoader(fileId);
@@ -282,7 +280,7 @@ const Resource* ResourceManager::loadResource(u64 fileId, std::function<void(con
 	loadData->dataLoader = dataLoader;
 	loadData->evtHandler = findEventHandler(dataLoader->getType(fileId));
 
-	Resource* res = loadData->evtHandler->createResource(type, fileId);
+	std::shared_ptr<Resource> res = loadData->evtHandler->createResource(type, fileId);
 	res->m_resourceManager = this;
 	res->m_fileId = fileId;
 	res->setStatus(Resource::READFILE);
@@ -292,14 +290,13 @@ const Resource* ResourceManager::loadResource(u64 fileId, std::function<void(con
 
 	if (!loadData->evtHandler->preRead(res))
 	{
-		delete res;
 		res = nullptr;
 		delete loadData;
 	} else
 	{
 		if (callback)
 		{
-			m_onLoadCallbacks[res].push_back(callback);
+			m_onLoadCallbacks[res.get()].push_back(callback);
 		}
 
 		m_resources.insert(std::make_pair(fileId, res));
@@ -315,7 +312,7 @@ const Resource* ResourceManager::loadResource(u64 fileId, std::function<void(con
 	return res;
 }
 
-void ResourceManager::reloadResource(Resource* res)
+void ResourceManager::reloadResource(std::shared_ptr<Resource> res)
 {
 	if (!m_running)
 	{
@@ -381,9 +378,9 @@ char* ResourceManager::readFileData(u64 fileId, int& outSize)
 	return nullptr;
 }
 
-const Resource* ResourceManager::loadResourceBlocking(u64 fileId)
+std::shared_ptr<const Resource> ResourceManager::loadResourceBlocking(u64 fileId)
 {
-	const Resource* res = loadResource(fileId);
+	std::shared_ptr<const Resource> res = loadResource(fileId);
 
 	if (res)
 	{
@@ -396,7 +393,7 @@ const Resource* ResourceManager::loadResourceBlocking(u64 fileId)
 	return res;
 }
 
-void ResourceManager::release(Resource* res)
+void ResourceManager::release(std::shared_ptr<Resource> res)
 {
 	ScopedLock resLock(m_resourceLock);
 
@@ -410,7 +407,6 @@ void ResourceManager::release(Resource* res)
 	if (res->getStatus() == Resource::LOADERROR || res->getStatus() == Resource::FINISHED)
 	{
 		res->destroy();
-		delete res;
 	} else
 	{
 		//Add it to a removal list and release when its status is LOADERROR or FINISHED
@@ -422,7 +418,7 @@ void ResourceManager::handleEvents()
 	ResourceLoadData* loadData = nullptr;
 	while (m_loadEvents.try_pop(loadData))
 	{
-		Resource* res = loadData->res;
+		std::shared_ptr<Resource> res = loadData->res;
 
 		if (res->getStatus() == Resource::PROCESS)
 		{
@@ -448,7 +444,7 @@ void ResourceManager::handleEvents()
 
 		if (res->getStatus() == Resource::FINISHED || res->getStatus() == Resource::LOADERROR)
 		{
-			const auto it = m_onLoadCallbacks.find(res);
+			const auto it = m_onLoadCallbacks.find(res.get());
 			if (it != m_onLoadCallbacks.end())
 			{
 				for (auto i = it->second.begin(); i != it->second.end(); ++i)

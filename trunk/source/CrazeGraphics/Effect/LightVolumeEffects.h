@@ -24,7 +24,7 @@ namespace Craze
 
 			void destroy() { IEffect::destroy(); }
 		private:
-			const TextureResource* m_random;
+			TexturePtr m_random;
 		};
 
 		struct LightVolumeInfo
@@ -47,7 +47,7 @@ namespace Craze
 		protected:
 			virtual const D3D11_INPUT_ELEMENT_DESC* getLayout(int& count);
 		private:
-			const TessShaderResource* m_tessShaders;
+			std::shared_ptr<const TessShaderResource> m_tessShaders;
 			std::shared_ptr<Buffer> m_argBuffer;
 			ID3D11Buffer* m_cbuffer;
 		};

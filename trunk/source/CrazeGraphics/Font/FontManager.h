@@ -109,7 +109,7 @@ namespace Craze
 			FT_Library m_library;
 			std::multimap<std::string, FT_Face> m_faces;
 			std::map<std::string, std::string> m_fontFiles;
-			std::vector<const Resource *> m_resources;
+			std::vector<std::shared_ptr<const Resource>> m_resources;
 
 			const char* m_lastError;
 		};

@@ -19,14 +19,14 @@ using namespace Craze::Graphics2;
 
 bool LVFirstBounceEffect::initialize()
 {
-	m_random = (const TextureResource*)gResMgr.loadResource(gFileDataLoader.addFile("random.png"));
+	m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.png")));
 
 	return IEffect::initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh");
 }
 
 void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj)
 {
-	if (!m_random->isLoaded())
+	if (!m_random.get())
 	{
 		return;
 	}
@@ -41,7 +41,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	ID3D11UnorderedAccessView* uav = outRays->GetUAV();
 	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, 0);
 
-	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random->m_texture->GetResourceView(), RSMdepth->GetSRV() };
+	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
 
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -30,9 +30,9 @@ namespace Craze
 			ID3DBlob* m_byteCode;
 			ID3D11InputLayout* m_inputLayout;
 
-			const VertexShaderResource* m_vs;
-			const GeometryShaderResource* m_gs;
-			const PixelShaderResource* m_ps;
+			std::shared_ptr<const VertexShaderResource> m_vs;
+			std::shared_ptr<const GeometryShaderResource> m_gs;
+			std::shared_ptr<const PixelShaderResource> m_ps;
 
 			void set();
 			void destroy();

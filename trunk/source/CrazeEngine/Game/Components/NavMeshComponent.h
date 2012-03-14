@@ -17,7 +17,8 @@ namespace Craze
 	{
 		CRAZE_POOL_ALLOC(NavMeshComponent);
 	public:
-		NavMeshComponent(const Resource* pRes, GameObject* pOwner, Level* pLevel) : IGameComponent(pOwner), m_pNavMesh(nullptr), m_pRes(pRes), m_pLevel(pLevel) {}
+		NavMeshComponent(std::shared_ptr<const Resource> pRes, GameObject* pOwner, Level* pLevel) : IGameComponent(pOwner), m_pNavMesh(nullptr), m_pRes(pRes), m_pLevel(pLevel) {}
+		~NavMeshComponent();
 		static NavMeshComponent* Create(Level* pLevel, GameObject* pOwner, lua_State* L);
 
 		virtual void VUpdate(float delta);
@@ -27,7 +28,7 @@ namespace Craze
 
 	private:
 		NavInputMesh* m_pNavMesh;
-		const Resource* m_pRes;
+		std::shared_ptr<const Resource> m_pRes;
 		Level* m_pLevel;
 	};
 }

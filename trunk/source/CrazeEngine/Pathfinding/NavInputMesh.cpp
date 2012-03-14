@@ -51,5 +51,6 @@ void NavInputMesh::SetVerts(const Vec3* pVerts, int stride, int numVerts)
 void NavInputMesh::Free()
 {
 	gMemory.Free(m_pVertices);
+	gMemory.Free(m_pIndices);
 	delete m_pBB;
 }

@@ -116,7 +116,7 @@ void craze_open_game(lua_State* L)
 
 		def("getResolution", &getResolution),
 		def("setLevel", &sgame_setLevel),
-		def("newLevel", &sgame_newLevel),
+		def("newLevel", &sgame_newLevel, adopt(result)),
 		def("loadFile", &sgame_loadFile),
 		def("setCameraController", &sgame_setCameraController),
 
@@ -124,7 +124,7 @@ void craze_open_game(lua_State* L)
 			.def("getNode", &ScriptPath::GetNode)
 			.def_readonly("numNodes", &ScriptPath::GetNumNodes),
 
-		class_<ScriptLevel, ScriptLevel*>("Level")
+		class_<ScriptLevel>("Level")
 			.def("add", &ScriptLevel::AddObject)
 			.def("build", &ScriptLevel::Build)
 			.def("findPath", &ScriptLevel::FindPath, adopt(result))
