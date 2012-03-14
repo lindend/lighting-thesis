@@ -49,10 +49,10 @@ void GBufferEffect::setObjectProperties(const Matrix4& world, const Material& ma
 	CBPerObject data;
 	data.specularFactor = material.m_specular;
 	data.world = worldView * m_camera->GetProjection();
-	data.normalTfm = Transpose(Inverse(Matrix3(worldView)));
+	data.normalTfm = Transpose(Inverse(Matrix3(world)));
 	data.lightMapIndex = material.m_lightMapIndex;
 
-	ID3D11ShaderResourceView* const srvs[4] = { material.m_decal->GetResourceView(), nullptr, optSRV(material.m_lightMap), optSRV(material.m_skyVisMap) };
+	ID3D11ShaderResourceView* const srvs[4] = { material.m_decal.get() ? material.m_decal->GetResourceView() : nullptr, nullptr, optSRV(material.m_lightMap), optSRV(material.m_skyVisMap) };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
 
 	if (material.m_type == MT_NORMAL)

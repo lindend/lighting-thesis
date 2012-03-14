@@ -42,7 +42,9 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 		PhotonRay pr;
 		pr.origin = position;
 		float2 polarAngle = float2(acos(sqrt(random.x)), 2.f * 3.1415f * random.y);
-		pr.dir = fromPolar(polarNrm + polarAngle);
+		pr.dir = normalize(random.xyz);//normal;//fromPolar(polarNrm + polarAngle);
+		pr.dir *= sign(dot(pr.dir, normal));
+		//pr.dir = normal;
 		pr.power = color;
 		OutRays.Append(pr);
 	}

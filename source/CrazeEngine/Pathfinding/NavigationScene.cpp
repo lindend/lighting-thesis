@@ -137,6 +137,7 @@ namespace Craze
 
 bool NavigationScene::CreateRecastMeshes()
 {
+	return true;
 	if (m_pMeshes.size() == 0)
 	{
 		return false;

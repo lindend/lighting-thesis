@@ -66,11 +66,11 @@ namespace Craze
 		{
 		public:
 			const std::pair<u64, RenderItem>* begin() const { return m_items.empty() ? nullptr : &m_items.front(); }
-			const std::pair<u64, RenderItem>* end() const { return m_items.empty() ? nullptr : &m_items.back(); }
+			const std::pair<u64, RenderItem>* end() const { return m_items.empty() ? nullptr : &m_items.back() + 1; }
 
 			void add(RENDERTYPE type, u32 depth, const Mesh* mesh, const Material* material, const Matrix4* transform)
 			{
-				u64 sortId = SortingId::encode(depth, material->m_decal->GetID(), material->m_type, type, material->m_isTransparent, 0);
+				u64 sortId = SortingId::encode(depth, material->m_decal.get() ? material->m_decal->GetID() : 0, material->m_type, type, material->m_isTransparent, 0);
 				RenderItem itm = {transform, material, mesh};
 				m_items.push_back(std::make_pair(21, itm));
 			}

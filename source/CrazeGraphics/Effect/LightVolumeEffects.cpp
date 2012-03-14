@@ -39,7 +39,8 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	ID3D11RenderTargetView* rtv = dummyTarget->GetRenderTargetView();
 	ID3D11UnorderedAccessView* uav = outRays->GetUAV();
-	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, 0);
+	unsigned int initCount = 0;
+	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, &initCount);
 
 	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);

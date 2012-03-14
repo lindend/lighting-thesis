@@ -13,8 +13,8 @@ void LightingEffect::doLighting(const Light& l, const Matrix4& view, std::shared
 	assert(l.type == DIRECTIONALLIGHT);
 
 	CBPerLight cb;
-	//cb.lightDir = l.dir.operator Craze::Vector3();
- 	cb.lightDir = TransformVec(view, l.dir);
+	cb.lightDir = l.dir.operator Craze::Vector3();
+ 	//cb.lightDir = TransformVec(view, l.dir);
 
 	cb.lightType = DIRECTIONALLIGHT;
 	cb.lightColor = l.color.operator Craze::Vector3();

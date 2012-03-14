@@ -17,7 +17,6 @@ namespace Craze
 			std::shared_ptr<Buffer> m_argBuffer;
 			DrawRaysEffect m_effect;
 			ID3D11RasterizerState* m_rasterizerState;
-			ID3D11DepthStencilState* m_dss;
 		};
 	}
 }

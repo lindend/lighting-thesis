@@ -151,10 +151,10 @@ void Scene::buildDrawList(DrawList* drawList, const Matrix4& viewProj) const
 
             for (u32 j = 0; j < maxIdx; ++j)
             {
-                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth))
+                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth) || true)
                 {
                     const MeshItem& mi = m_meshes[j];
-					if (mi.material.m_decal.get() != NULL)
+					//if (mi.material.m_decal.get() != NULL)
 					{
 						drawList->add(RT_MESH, (u32)(depth * (2 << 24)), mi.mesh, &mi.material, &model->getTransform());
 					}
