@@ -304,12 +304,13 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pSRVs);
 
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
-	gFxCopyToBack.doCopy(m_pOutputTarget);
 
 	{
 		PIXMARKER(L"Draw rays");
 		m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
 	}
+
+	gFxCopyToBack.doCopy(m_pOutputTarget);
 
 	gpDevice->GetDeviceContext()->OMSetDepthStencilState(0, 0);
 
