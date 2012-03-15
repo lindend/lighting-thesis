@@ -50,6 +50,21 @@ namespace Craze
 			std::shared_ptr<const TessShaderResource> m_tessShaders;
 			std::shared_ptr<Buffer> m_argBuffer;
 			ID3D11Buffer* m_cbuffer;
+			ID3D11BlendState* m_blendState;
+		};
+
+		class LVAmbientLightingEffect : IEffect
+		{
+		public:
+			bool initialize();
+			void doLighting(std::shared_ptr<RenderTarget> LVs[], std::shared_ptr<RenderTarget> gbuffers[], ID3D11ShaderResourceView* depth, const LightVolumeInfo& lvInfo);
+
+			void setObjectProperties(const Matrix4& world, const Material& material) {}
+
+			void destroy() { IEffect::destroy(); }
+
+		private:
+			ID3D11Buffer* m_cbuffer;
 		};
 	}
 }

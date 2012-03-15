@@ -12,7 +12,7 @@ VS_OUT main(uint idx : SV_VertexID)
 {
 	VS_OUT output;
 	
-	PhotonRay ray = Rays[idx];
+	PhotonRay ray = Rays[floor(idx / 2)];
 	output.position = idx % 2 == 0 ? ray.origin : ray.dir;
 	output.color = ray.power;
 

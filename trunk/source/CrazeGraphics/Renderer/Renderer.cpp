@@ -223,7 +223,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	Vector3 pos = pCam->GetPosition() + pCam->GetDirection() * pCam->GetFar() * 0.5f - m_pDirLight->GetDirection() * pCam->GetFar() * 2.f;
 	Matrix4 lightViewProj = Matrix4::CreateView(pos, m_pDirLight->GetDirection() + pos, Vector3::UP) * Matrix4::CreateOrtho(pCam->GetFar(), pCam->GetFar(), 10.f, pCam->GetFar() * 4.f);
 
-	m_lightVolumeInjector.getLightingVolumes(pScene);
+	std::shared_ptr<RenderTarget>* lightVolumes = m_lightVolumeInjector.getLightingVolumes(pScene);
 
 	//Thread this...
 	pScene->buildDrawList(&mainScene, viewProj);
@@ -278,9 +278,11 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	//Do the other lights, with shadows
 	gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+	float black[] = { 0.f, 0.f, 0.f, 0.f };
+	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_pOutputTarget->GetRenderTargetView(), black);
 
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
-	//gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
+	gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 
 	{
 		PIXMARKER(L"Do lighting");
@@ -291,6 +293,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
 	}
 	
+	gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo());
 
 	/*gFxAmbientLighting.set();
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

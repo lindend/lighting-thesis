@@ -1,4 +1,4 @@
-cbuffer LVInfo : register(c0)
+cbuffer LVInfo : register(b0)
 {
 	float3 LVStart;
 	float3 LVEnd;
@@ -16,7 +16,7 @@ struct PATCHCONSTANT
 {
 	float tess[2] : SV_TessFactor;
 	float3 color : COLOR;
-	int2 idx : MINMAXINDEX;
+	int3 idx : MINMAXINDEX;
 	float3 dir : DIRECTION;
 };
 
@@ -43,11 +43,11 @@ PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_Primi
 	int numZ = clampRelZ.y - clampRelZ.x;
 
 	PATCHCONSTANT output;
-	//Set the detail tessellation to numZ, this will basically generate numZ instances of our line
-	output.tess[0] = numZ;
-	//Do not split the line
-	output.tess[1] = 1.f;
-	output.idx = processRelZ(relZ);
+	//Set the density tessellation to numZ, this will basically generate numZ instances of our line
+	output.tess[1] = numZ;
+	//Do not split the line by setting the detail tessellation to 1
+	output.tess[0] = 1.f;
+	output.idx = uint3(clampRelZ, numZ);
 	output.color = patch[0].color;
 	output.dir = normalize(patch[1].pos.xyz - patch[0].pos.xyz);
 
@@ -79,13 +79,13 @@ struct DS_OUTPUT
 DS_OUTPUT DSmain(PATCHCONSTANT input, float2 UV : SV_DomainLocation, const OutputPatch<INPUT, 2> patches)
 {
 	DS_OUTPUT output;
-	
+
 	output.color = input.color;
 	output.dir = input.dir;
 	output.pos.xyz = patches[1].pos.xyz * UV.x + (1.f - UV.x) * patches[0].pos.xyz;
 
-	//UV.y contains the "instance id" and is ranged [0 .. numZ - 1]
-	output.pos.w = input.idx.x + UV.y;//round(UV.x * (input.idx.y - input.idx.x) + input.idx.x);
+	//UV.y contains the "instance id" and is ranged [0 .. (numZ - 1) / numZ]
+	output.pos.w = input.idx.x + UV.y * input.idx.z;//round(UV.x * (input.idx.y - input.idx.x) + input.idx.x);
 
 	return output;
 }

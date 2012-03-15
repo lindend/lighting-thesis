@@ -192,3 +192,13 @@ void LightVolumeInjector::injectToLV()
 
 	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes, lvinfo);
 }
+
+LightVolumeInfo LightVolumeInjector::getLVInfo() const
+{
+	LightVolumeInfo lvinfo;
+	lvinfo.start = Vector3(0.f, 0.f, 0.f);
+	lvinfo.cellSize = Vector3(10.f, 10.f, 10.f);
+	lvinfo.end = lvinfo.cellSize * (float)LightVolumeResolution;
+	lvinfo.numCells = LightVolumeResolution;
+	return lvinfo;
+}
