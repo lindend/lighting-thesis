@@ -59,7 +59,7 @@ bool LightVolumeInjector::initialize()
 	std::tr1::shared_ptr<MeshData> meshData = triMesh->getMeshes()[0].mesh->getMeshData();
 	const Vertex* verts = meshData->GetPosNormalUv();
 	const unsigned short* indices = meshData->GetIndices();
-	Vector3* tris = new Vector3[meshData->GetNumIndices()];
+	Vec3* tris = new Vec3[meshData->GetNumIndices()];
 	for (int i = 0; i < meshData->GetNumIndices(); ++i)
 	{
 		tris[i] = verts[indices[i]].position;
@@ -70,9 +70,9 @@ bool LightVolumeInjector::initialize()
 	return true;
 }
 
-void LightVolumeInjector::setTriangles(Vector3* tris, int numTris)
+void LightVolumeInjector::setTriangles(Vec3* tris, int numTris)
 {
-	m_triangleBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(float) * 4 * 3, numTris, tris, false, "Triangle buffer");
+	m_triangleBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(float) * 3 * 3, numTris, tris, false, "Triangle buffer");
 	m_numTriangles = numTris;
 }
 
@@ -81,7 +81,14 @@ Camera findSMCamera(const Light& l, Scene* scene)
 	Camera c;
 	c.SetPosition(Vector3(0, 1000, 0));
 	c.SetDirection(l.dir);
-	c.SetUp(Vector3::UP);
+	if (Dot(c.GetDirection(), Vector3::UP) > 0.9f)
+	{
+		c.SetUp(Vector3::RIGHT);
+	} else
+	{
+		c.SetUp(Vector3::UP);
+	}
+	
 	c.SetProjection(3.14f / 2.f, 1, 10, 100000);
 	return c;
 }

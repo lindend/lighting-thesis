@@ -285,6 +285,7 @@
   </ItemGroup>
   <ItemGroup>
     <GeometryShaders Include="Shaders\Font.gsh" />
+    <GeometryShaders Include="Shaders\RayTracing\DrawRay.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\LineDraw.gsh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
