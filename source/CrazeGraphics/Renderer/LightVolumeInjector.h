@@ -28,7 +28,7 @@ namespace Craze
 
 			std::shared_ptr<RenderTarget>* getLightingVolumes(Scene* scene);
 
-			void setTriangles(Vector3* triangles, int numTriangles);
+			void setTriangles(Vec3* triangles, int numTriangles);
 
 			void destroy() {}
 			std::shared_ptr<UAVBuffer> getCollidedRays();

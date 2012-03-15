@@ -14,18 +14,24 @@ float2 toPolar(float3 v)
 	return float2(atan(v.y / v.x), acos(v.z));
 }
 
-float3 fromPolar(float2 v)
+float3 fromPolar(float theta, float phi)
 {
-	float2 scTheta, scPhi;
-	sincos(v.x, scTheta.x, scTheta.y);
-	sincos(v.y, scPhi.x, scPhi.y);
-	return float3(scTheta.y * scPhi.x, scTheta.x * scPhi.x, scPhi.y);
+	float sinTheta, cosTheta;
+	float sinPhi, cosPhi;
+	sincos(theta, sinTheta, cosTheta);
+	sincos(phi, sinPhi, cosPhi);
+	return float3(cosTheta * sinPhi, sinTheta * sinPhi, cosPhi);
 }
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
-	float3 color = ColorSpec.Sample(Point, uv).xyz;
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
+	if (dot(normal, normal) < 0.5f)
+	{
+		discard;
+	}
+
+	float3 color = ColorSpec.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
 
 	float3 position = DepthToPos(depth, uv);
@@ -36,14 +42,17 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 	float2 polarNrm = toPolar(normal);
 
-	if (random.z <= avgPower)
+	if (random.w <= avgPower)
 	{
 		//Emit the photon!
 		PhotonRay pr;
-		pr.origin = position;
-		float2 polarAngle = float2(acos(sqrt(random.x)), 2.f * 3.1415f * random.y);
-		pr.dir = normalize(random.xyz);//normal;//fromPolar(polarNrm + polarAngle);
+		float3 rndDir = normalize(random.xyz * 2.f - 1.f);
+		//pr.dir = fromPolar(2.f * 3.1415f * random.x, acos(2.f * random.y - 1.f));
+		//pr.dir = normalize(random.xyz * 2.f - 1.f);//normal;//fromPolar(polarNrm + polarAngle);
+		pr.dir = rndDir;
 		pr.dir *= sign(dot(pr.dir, normal));
+		//Just move out the ray a bit
+		pr.origin = position + normal * 10.f;
 		//pr.dir = normal;
 		pr.power = color;
 		OutRays.Append(pr);

@@ -22,7 +22,7 @@ struct OUTPUT
 
 float2 toLVSpace(float2 pos)
 {
-	return ((pos - LVStart) / (LVEnd - LVStart)) * 2.f - 1.f;
+	return ((pos - LVStart.xy) / (LVEnd.xy - LVStart.xy)) * 2.f - 1.f;
 }
 
 float calcZPos(float z, int idx)

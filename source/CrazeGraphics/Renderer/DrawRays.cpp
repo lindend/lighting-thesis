@@ -43,7 +43,7 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 	ID3D11Buffer* vs = nullptr;
 	unsigned int stride = 0;
 	unsigned int offset = 0;
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
 	dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
 	dc->IASetInputLayout(nullptr);
@@ -62,6 +62,8 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 
 	srv = nullptr;
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
+
+	m_effect.reset();
 }
 
 
