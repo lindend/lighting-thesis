@@ -57,7 +57,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 bool LVInjectRaysEffect::initialize()
 {
-	unsigned int args[] = { 0, 1, 0, 0};
+	unsigned int args[] = { 0, 2, 0, 0};
 	m_argBuffer = Buffer::CreateArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
 
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
@@ -134,7 +134,8 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	//Draw the rays
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
-	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
+	dc->Draw(6000, 0);
+	//dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	srv = nullptr;
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);

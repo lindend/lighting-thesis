@@ -44,9 +44,9 @@ PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_Primi
 
 	PATCHCONSTANT output;
 	//Set the density tessellation to numZ, this will basically generate numZ instances of our line
-	output.tess[1] = numZ;
+	output.tess[0] = numZ;
 	//Do not split the line by setting the detail tessellation to 1
-	output.tess[0] = 1.f;
+	output.tess[1] = 1.f;
 	output.idx = uint3(clampRelZ, numZ);
 	output.color = patch[0].color;
 	output.dir = normalize(patch[1].pos.xyz - patch[0].pos.xyz);

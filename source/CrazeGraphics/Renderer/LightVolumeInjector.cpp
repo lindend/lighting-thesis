@@ -184,11 +184,7 @@ void LightVolumeInjector::traceRays()
 void LightVolumeInjector::injectToLV()
 {
 	PIXMARKER(L"Inject rays to light volume");
-	LightVolumeInfo lvinfo;
-	lvinfo.start = Vector3(0.f, 0.f, 0.f);
-	lvinfo.cellSize = Vector3(10.f, 10.f, 10.f);
-	lvinfo.end = lvinfo.cellSize * (float)LightVolumeResolution;
-	lvinfo.numCells = LightVolumeResolution;
+	LightVolumeInfo lvinfo = getLVInfo();
 
 	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes, lvinfo);
 }
@@ -197,7 +193,7 @@ LightVolumeInfo LightVolumeInjector::getLVInfo() const
 {
 	LightVolumeInfo lvinfo;
 	lvinfo.start = Vector3(0.f, 0.f, 0.f);
-	lvinfo.cellSize = Vector3(10.f, 10.f, 10.f);
+	lvinfo.cellSize = Vector3::ONE * 100.f;
 	lvinfo.end = lvinfo.cellSize * (float)LightVolumeResolution;
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
