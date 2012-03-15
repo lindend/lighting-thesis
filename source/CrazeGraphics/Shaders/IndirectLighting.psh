@@ -1,13 +1,28 @@
 #include "globals.incl"
 #include "SHMath.incl"
 
+cbuffer LVInfo : register(c1)
+{
+	float3 LVStart;
+	float3 LVEnd;
+	//xyz - size, w - num cells
+	float4 LVCellSize;
+};
+
 float3 DepthToPos(float depth, float2 uv)
 {
-	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvProj);
+	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
 	return worldPos.xyz / worldPos.w;
 }
 
-float4 main(float3 color : COLOR0, float3 direction : DIRECTION)
+float3 cellFromPos(float3 worldPos)
+{
+	float3 localPos = (worldPos - LVStart) / (LVCellSize.w * LVCellSize.xyz);
+	//localPos.z *= LVCellSize.w;
+	return localPos;
+}
+
+float4 main(float2 uv : TEXCOORD0) : SV_Target0
 {
 	float4 color = ColorSpec.Sample(Point, uv);
 	float4 normRough = NormalRough.Sample(Point, uv);
@@ -16,19 +31,18 @@ float4 main(float3 color : COLOR0, float3 direction : DIRECTION)
 	float3 pos = DepthToPos(depth, uv);
 
 	float3 cell = cellFromPos(pos);
+	cell.y = 1.f - cell.y;
 
-	float4 redSH = LightVolumeRed.Sample(Bilinear, cell);
-	float4 greenSH = LightVolumeGreen.Sample(Bilinear, cell);
-	float4 blueSH = LightVolumeBlue.Sample(Bilinear, cell);
+	if (max(cell.x, cell.y) > 1.f || min(cell.x, cell.y) < 0.f || cell.z < 0.f || cell.z > 1.f)
+	{
+		discard;
+	}
 
-	return = float4(EvalSH(redSH, normal), EvalSH(greenSH, normal), EvalSH(blueSH, normal), 1.0f);
-}
+	float4 redSH = LightVolumeR.Sample(Bilinear, cell);
+	float4 greenSH = LightVolumeG.Sample(Bilinear, cell);
+	float4 blueSH = LightVolumeB.Sample(Bilinear, cell);
 
-float3 cellFromPos(float3 worldPosition)
-{
-	float x = worldPosition / cellSize;
-	float y = worldPosition / cellSize;
-	float z = worldPosition / cellSize * 32;
-
-	return float3(x,y,z);
+	float3 light = float3(EvalSH(redSH, -normal), EvalSH(greenSH, -normal), EvalSH(blueSH, -normal)); 
+	light = saturate(light);
+	return float4(light * color, 1.0f);
 }

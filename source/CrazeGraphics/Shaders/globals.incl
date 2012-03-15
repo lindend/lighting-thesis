@@ -71,6 +71,9 @@ Texture2D Depth :						register(t3);
 
 Texture2D Random :						register(t2);
 
+Texture3D LightVolumeR :				register(t4);
+Texture3D LightVolumeG :				register(t5);
+Texture3D LightVolumeB :				register(t6);
 
 SamplerState Bilinear :					register(s0);
 SamplerState Trilinear :				register(s1);

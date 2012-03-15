@@ -25,6 +25,7 @@
 #include "Effect/PosMapEffect.h"
 #include "Effect/NullEffect.h"
 #include "Effect/DebugDrawEffect.h"
+#include "Effect/LightVolumeEffects.h"
 
 #include "EffectUtil/ShaderResourceHandler.h"
 #include "UI/UISystem.h"
@@ -63,6 +64,7 @@ namespace Craze
 		PosMapEffect gFxPosMap;
 		NullEffect gFxNull;
 		DebugDrawEffect gFxDebugDraw;
+		LVAmbientLightingEffect gFxLVAmbientLighting;
 	}
 }
 
@@ -93,7 +95,7 @@ bool InitEffects()
 	gFxPosMap.initialize() &&
 	gFxNull.initialize() &&
 	gFxDebugDraw.initialize() &&
-
+	gFxLVAmbientLighting.initialize() &&
 	true;
 }
 
@@ -111,6 +113,7 @@ void DestroyEffects()
 	gFxPosMap.destroy();
 	gFxNull.destroy();
 	gFxDebugDraw.destroy();
+	gFxLVAmbientLighting.destroy();
 
 }
 

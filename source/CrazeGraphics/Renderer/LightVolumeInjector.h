@@ -33,6 +33,8 @@ namespace Craze
 			void destroy() {}
 			std::shared_ptr<UAVBuffer> getCollidedRays();
 
+			LightVolumeInfo getLVInfo() const;
+
 		private:
 			void renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj);
 			void spawnRays(const Matrix4& viewProj);

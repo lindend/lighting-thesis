@@ -25,6 +25,7 @@ namespace Craze
 		extern class NullEffect gFxNull;
 		extern class DebugDrawEffect gFxDebugDraw;
 		extern class DrawRaysEffect gFxDrawRays;
+		extern class LVAmbientLightingEffect gFxLVAmbientLighting;
 
 		struct GfxParams
 		{

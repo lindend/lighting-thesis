@@ -41,7 +41,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	ID3D11UnorderedAccessView* uav = outRays->GetUAV();
 	unsigned int initCount = 0;
 	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, &initCount);
-
+	
 	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
 
@@ -63,6 +63,19 @@ bool LVInjectRaysEffect::initialize()
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
 
 	m_cbuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 3);
+
+	CD3D11_BLEND_DESC bDesc;
+	bDesc.IndependentBlendEnable = false;
+	bDesc.RenderTarget[0].BlendEnable = true;
+	bDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	bDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+
+	gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_blendState);
 
 	return IEffect::initialize("RayTracing/LightInject.vsh", "RayTracing/RasterizeSH.psh", "RayTracing/LineDraw.gsh");
 }
@@ -94,6 +107,14 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	auto dc = gpDevice->GetDeviceContext();
 
+	float bf[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	gpDevice->GetDeviceContext()->OMSetBlendState(m_blendState, bf, 0xFFFFFFFF);
+
+	float black[] = { 0.f, 0.f, 0.f, 0.f };
+	dc->ClearRenderTargetView(LVs[0]->GetRenderTargetView(), black);
+	dc->ClearRenderTargetView(LVs[1]->GetRenderTargetView(), black);
+	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
+
 	dc->HSSetConstantBuffers(0, 1, &m_cbuffer);
 	dc->DSSetConstantBuffers(0, 1, &m_cbuffer);
 	dc->GSSetConstantBuffers(0, 1, &m_cbuffer);
@@ -123,4 +144,35 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
 	gpDevice->SetShader((ID3D11HullShader*)nullptr);
 	gpDevice->SetShader((ID3D11DomainShader*)nullptr);
+
+	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+}
+
+bool LVAmbientLightingEffect::initialize()
+{
+	m_cbuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 3);
+	return IEffect::initialize("ScreenQuad.vsh", "IndirectLighting.psh"); 
+}
+
+void LVAmbientLightingEffect::doLighting(std::shared_ptr<RenderTarget> LVs[], std::shared_ptr<RenderTarget> gbuffers[], ID3D11ShaderResourceView* depth, const LightVolumeInfo& LVinfo)
+{
+	IEffect::set();
+
+	CBufferHelper cbuffer(gpDevice, m_cbuffer);
+	cbuffer[0] = LVinfo.start.v;
+	cbuffer[1] = LVinfo.end.v;
+	cbuffer[2] = Vector4(LVinfo.cellSize, LVinfo.numCells);
+	cbuffer.Unmap();
+
+	auto dc = gpDevice->GetDeviceContext();
+
+	dc->PSSetConstantBuffers(1, 1, &m_cbuffer);
+
+	ID3D11ShaderResourceView* srvs[] = { gbuffers[0]->GetResourceView(), gbuffers[1]->GetResourceView(), nullptr, depth, LVs[0]->GetResourceView(), LVs[1]->GetResourceView(), LVs[2]->GetResourceView() };
+
+	dc->PSSetShaderResources(0, 7, srvs);
+	dc->Draw(3, 0);
+
+	ZeroMemory(srvs, sizeof(void*) * 7);
+	dc->PSSetShaderResources(0, 7, srvs);
 }

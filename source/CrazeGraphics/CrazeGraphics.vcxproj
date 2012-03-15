@@ -261,6 +261,7 @@
     <None Include="Shaders\Lighting.csh">
       <FileType>Document</FileType>
     </None>
+    <PixelShaders Include="Shaders\IndirectLighting.psh" />
     <PixelShaders Include="Shaders\PosMap.psh" />
     <None Include="Shaders\RayTracing\LineTess.tess" />
     <None Include="Shaders\RayTracing\PhotonRay.incl" />
