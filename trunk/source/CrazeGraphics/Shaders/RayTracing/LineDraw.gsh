@@ -32,15 +32,13 @@ float calcZPos(float z, int idx)
 }
 
 [maxvertexcount(2)]
-void main(line DS_OUTPUT input[2], inout TriangleStream<OUTPUT> output)
+void main(line DS_OUTPUT input[2], inout LineStream<OUTPUT> output)
 {
 	OUTPUT output0;
 	OUTPUT output1;
-
-	output0.color = input[0].color;
-	output1.color = input[0].color;
-	output0.dir = input[0].dir;
-	output1.dir = input[0].dir;
+	
+	output0.color = output1.color = input[0].color;
+	output0.dir = output1.dir = input[0].dir;
 	output0.rtIdx = input[0].pos.w;
 	output1.rtIdx = input[0].pos.w;
 
@@ -49,6 +47,8 @@ void main(line DS_OUTPUT input[2], inout TriangleStream<OUTPUT> output)
 
 	output0.pos = float4(toLVSpace(input[0].pos.xy), zPos0, 1.f);
 	output1.pos = float4(toLVSpace(input[1].pos.xy), zPos1, 1.f);
+
+	
 
 	//Append the points in opposite order for rasterization that is better suited to our purposes (does not matter if using antialiasing though)
 	output.Append(output1);
