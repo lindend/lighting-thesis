@@ -51,6 +51,7 @@ namespace Craze
 			std::shared_ptr<Buffer> m_argBuffer;
 			ID3D11Buffer* m_cbuffer;
 			ID3D11BlendState* m_blendState;
+			ID3D11RasterizerState* m_rasterizerState;
 		};
 
 		class LVAmbientLightingEffect : IEffect

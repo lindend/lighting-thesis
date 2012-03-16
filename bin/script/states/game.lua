@@ -134,7 +134,7 @@ function onMouseDown(pos, button, isDown)
 		end
 	end
 end
-
+--[[
 exitGame = ui.Button("Exit game", 100, 350, 100, 30, function() game.shutDown() end)
 
 ui_x = 20
@@ -153,6 +153,7 @@ btn1 =  ui.Button("ON", ui_x + 150, ui_y+(ui_h*1), ui_w, ui_h, function() game.s
 btn2 = ui.Button("ON", ui_x + 150, ui_y+(ui_h*3), ui_w, ui_h, function() game.shutdown() end)
 btn3 = ui.Button("ON", ui_x + 150, ui_y+(ui_h*4), ui_w, ui_h, function() game.shutdown() end)
 
+]]--
 print("Pending: " .. resource.getNumPending())
 waitFor(function() return resource.getNumPending() == 0 end, onLoaded)
 
