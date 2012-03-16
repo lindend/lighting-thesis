@@ -12,7 +12,7 @@ PS_OUT main(float3 color : COLOR0, float3 direction : DIRECTION)
 	PS_OUT output;
 
 	float4 sh = CreateLobe(direction);
-
+	 
 	output.SHr = sh * color.r;
 	output.SHg = sh * color.g;
 	output.SHb = sh * color.b;

@@ -24,9 +24,8 @@ float3 cellFromPos(float3 worldPos)
 
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
 {
-	float4 color = ColorSpec.Sample(Point, uv);
-	float4 normRough = NormalRough.Sample(Point, uv);
-	float3 normal = normRough.xyz;
+	float3 color = ColorSpec.Sample(Point, uv).xyz;
+	float3 normal = NormalRough.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 pos = DepthToPos(depth, uv);
 
@@ -38,11 +37,12 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		discard;
 	}
 
-	float4 redSH = LightVolumeR.Sample(Bilinear, cell);
-	float4 greenSH = LightVolumeG.Sample(Bilinear, cell);
-	float4 blueSH = LightVolumeB.Sample(Bilinear, cell);
+	float4 redSH = LightVolumeR.Sample(BilinearBorder, cell);
+	float4 greenSH = LightVolumeG.Sample(BilinearBorder, cell);
+	float4 blueSH = LightVolumeB.Sample(BilinearBorder, cell);
 
-	float3 light = float3(EvalSH(redSH, -normal), EvalSH(greenSH, -normal), EvalSH(blueSH, -normal)); 
-	light = saturate(light);
+	float4 sh = EvalSH(-normal);
+
+	float3 light = saturate(float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)));
 	return float4(light * color, 1.0f);
 }
