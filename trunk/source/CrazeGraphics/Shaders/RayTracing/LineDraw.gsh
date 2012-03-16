@@ -20,11 +20,6 @@ struct OUTPUT
 	uint rtIdx : SV_RenderTargetArrayIndex;
 };
 
-float2 toLVSpace(float2 pos)
-{
-	return ((pos - LVStart.xy) / (LVEnd.xy - LVStart.xy)) * 2.f - 1.f;
-}
-
 float calcZPos(float z, int idx)
 {
 	float startZ = LVStart.z + LVCellSize.z * idx;
@@ -45,8 +40,8 @@ void main(line DS_OUTPUT input[2], inout LineStream<OUTPUT> output)
 	float zPos0 = calcZPos(input[0].pos.z, output0.rtIdx);
 	float zPos1 = calcZPos(input[1].pos.z, output1.rtIdx);
 
-	output0.pos = float4(toLVSpace(input[0].pos.xy), zPos0, 1.f);
-	output1.pos = float4(toLVSpace(input[1].pos.xy), zPos1, 1.f);
+	output0.pos = float4(input[0].pos.xy, zPos0, 1.f);
+	output1.pos = float4(input[1].pos.xy, zPos1, 1.f);
 
 	
 

@@ -66,6 +66,7 @@ bool LVInjectRaysEffect::initialize()
 
 	CD3D11_BLEND_DESC bDesc;
 	bDesc.IndependentBlendEnable = false;
+	bDesc.AlphaToCoverageEnable = false;
 	bDesc.RenderTarget[0].BlendEnable = true;
 	bDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 	bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -76,6 +77,9 @@ bool LVInjectRaysEffect::initialize()
 	bDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 
 	gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_blendState);
+
+	CD3D11_RASTERIZER_DESC rsDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
+	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
 
 	return IEffect::initialize("RayTracing/LightInject.vsh", "RayTracing/RasterizeSH.psh", "RayTracing/LineDraw.gsh");
 }
@@ -115,6 +119,8 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	dc->ClearRenderTargetView(LVs[1]->GetRenderTargetView(), black);
 	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
 
+	dc->RSSetState(m_rasterizerState);
+
 	dc->HSSetConstantBuffers(0, 1, &m_cbuffer);
 	dc->DSSetConstantBuffers(0, 1, &m_cbuffer);
 	dc->GSSetConstantBuffers(0, 1, &m_cbuffer);
@@ -134,8 +140,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	//Draw the rays
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
-	dc->Draw(6000, 0);
-	//dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
+	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	srv = nullptr;
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
@@ -147,6 +152,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	gpDevice->SetShader((ID3D11DomainShader*)nullptr);
 
 	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+	dc->RSSetState(nullptr);
 }
 
 bool LVAmbientLightingEffect::initialize()

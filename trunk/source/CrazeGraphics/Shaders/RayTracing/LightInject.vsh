@@ -12,10 +12,9 @@ VS_OUT main(uint idx : SV_VertexID, uint inst : SV_InstanceID)
 {
 	VS_OUT output;
 
-	uint numRays, stride;
-	Rays.GetDimensions(numRays, stride);
+	uint numRays = 5856;
 	
-	PhotonRay ray = Rays[floor(idx + numRays * inst)];
+	PhotonRay ray = Rays[floor((idx + numRays * inst) / 2)];
 	output.position = idx % 2 == 0 ? ray.origin : ray.dir;
 	output.color = ray.power;
 

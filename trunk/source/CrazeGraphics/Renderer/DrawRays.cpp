@@ -17,16 +17,13 @@ bool DrawRays::initialize()
 	unsigned int args[] = { 0, 1, 0, 0};
 	m_argBuffer = Buffer::CreateArg(gpDevice, sizeof(unsigned int) * 4, args, "DrawRays arg buffer");
 
-
-	CD3D11_RASTERIZER_DESC rsDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
-	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
-
 	m_effect.initialize();
 	return true;
 }
 
 void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 {
+	return;
 	m_effect.set();
 	//draw instanced indirect in immediate context (gpdevice->getDeviceContext
 	CBPerObject cbObj;
@@ -34,8 +31,6 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 	gpDevice->GetCbuffers()->SetObject(cbObj);
 
 	auto dc = gpDevice->GetDeviceContext();
-
-	//dc->RSSetState(m_rasterizerState);
 
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());

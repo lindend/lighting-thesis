@@ -3,8 +3,8 @@
 
 //0.8862269f
 //1.02332665f
-#define Lobe0 0.25f
-#define Lobe1 0.6f
+#define Lobe0 0.8862269f
+#define Lobe1 1.02332665f
 
 
 float4 RotateZH(float3 dir, float2 zh)
@@ -21,7 +21,7 @@ float4 RotateZH(float3 dir, float2 zh)
 
 float4 CreateLobe(float3 dir)
 {
-    return float4(Lobe0, float3(-Lobe1 * dir.y, Lobe1 * dir.z, -Lobe1 * dir.x));
+    return float4(Lobe0, -Lobe1 * dir.y, Lobe1 * dir.z, -Lobe1 * dir.x);
 }
 
 float4 EvalSH(float3 dir)
