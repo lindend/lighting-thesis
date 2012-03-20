@@ -1,10 +1,4 @@
-cbuffer LVInfo : register(b0)
-{
-	float3 LVStart;
-	float3 LVEnd;
-	//xyz - size, w - num cells
-	float4 LVCellSize;
-};
+#include "globals.incl"
 
 struct INPUT
 {

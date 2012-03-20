@@ -36,28 +36,96 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 	float3 position = DepthToPos(depth, uv);
 
-	float4 random = Random.Sample(Point, uv);
 
-	float avgPower = (color.r + color.g + color.b) * 0.333f;
-
-	float2 polarNrm = toPolar(normal);
-
-	if (random.w <= avgPower)
+	const float3 normals[6] =
 	{
+		float3(1.f,		0.f,	0.f), 
+		float3(-1.f,	0.f,	0.f),
+		float3(0.f,		1.f,	0.f),
+		float3(0.f,		-1.f,	0.f),
+		float3(0.f,		0.f,	1.f),
+		float3(0.f,		0.f,	-1.f),
+	};
+
+	float3 lvSize = LVCellSize.xyz * LVCellSize.w;
+	float power = 0;
+	float lightVolumeSideArea[] =
+	{
+		lvSize.y * lvSize.z,
+		lvSize.x * lvSize.z,
+		lvSize.x * lvSize.y,
+	};
+	float3 sideCenter[] = 
+	{
+		//Right
+		LVStart + lvSize * float3(1.f, 0.5f, 0.5f),
+		//Left
+		LVStart + lvSize * float3(0.f, 0.5f, 0.5f),
+		//Up
+		LVStart + lvSize * float3(0.5f, 1.0f, 0.5f),
+		//Down
+		LVStart + lvSize * float3(0.5f, 0.f, 0.5f),
+		//Forward
+		LVStart + lvSize * float3(0.5f, 0.5f, 1.f),
+		//Backward
+		LVStart + lvSize * float3(0.5f, 0.5f, 0.f),
+	};
+	
+	for(int i = 0; i < 6; i++) //for each side of the volume
+	{
+		float3 texelToVolumeSide = sideCenter[i] - position;
+		float distSq = dot(texelToVolumeSide, texelToVolumeSide);
+		float angle = saturate(dot(normals[i], texelToVolumeSide));
+		power = lightVolumeSideArea[floor(i * 0.5f)] * angle / distSq;
+
+		if(power > .0001f)
+		{
+			break; //we have projected a quad with non-zero result, so clearly volume is intersected by ray
+		}
+	}
+
+	if(power < .0001f)
+	{
+		discard;
+	}
+	color *= power;
+
+	int RAYS_PER_TEXEL = 5;
+	for(int i = 0; i < RAYS_PER_TEXEL; i++)
+	{
+		float4 random = Random.Sample(Point, uv * 0.01f * i);
+
 		//Emit the photon!
 		PhotonRay pr;
-		float3 rndDir = normalize(random.xyz * 2.f - 1.f);
-		//pr.dir = fromPolar(2.f * 3.1415f * random.x, acos(2.f * random.y - 1.f));
-		//pr.dir = normalize(random.xyz * 2.f - 1.f);//normal;//fromPolar(polarNrm + polarAngle);
-		pr.dir = rndDir;
-		pr.dir *= sign(dot(pr.dir, normal));
+		float3 target = LVStart + (LVCellSize.xyz * LVCellSize.w) * random.xyz;
+		pr.dir = normalize(target - position);
 		//Just move out the ray a bit
 		pr.origin = position + normal * 10.f;
-		//pr.dir = normal;
 		pr.power = color;
 		OutRays.Append(pr);
 	}
 
+	return 1.f.xxxx;
+
+
+
+
+
+	/*
+	float4 random = Random.Sample(Point, uv);
+
+	float2 polarNrm = toPolar(normal);
+
+	//Emit the photon!
+	PhotonRay pr;
+	float3 rndDir = normalize(random.xyz * 2.f - 1.f);
+	pr.dir = rndDir;
+	pr.dir *= sign(dot(pr.dir, normal));
+	//Just move out the ray a bit
+	pr.origin = position + normal * 10.f;
+	pr.power = color;
+	OutRays.Append(pr);
 
 	return 1.f.xxxx;
+	*/
 }

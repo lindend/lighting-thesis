@@ -36,13 +36,10 @@ cbuffer cbPerFrame : register(b3)
 	row_major matrix InvViewProj :		packoffset(c5);
 	float2 InvResolution :				packoffset(c9);
 	float3 AmbientLight :				packoffset(c10);
-	float LPVNumCells :					packoffset(c10.w);
-	float3 LPV0Start :					packoffset(c11);
-	float LPV0Size :					packoffset(c11.w);
-	float3 LPV1Start :					packoffset(c12);
-	float LPV1Size :					packoffset(c12.w);
-	float3 LPV2Start :					packoffset(c13);
-	float LPV2Size :					packoffset(c13.w);
+	float3 LVStart :					packoffset(c11);
+	float3 LVEnd :						packoffset(c12);
+	//xyz - size, w - num cells
+	float4 LVCellSize :					packoffset(c13);
 	bool DisableDirect :				packoffset(c14.x);
 	bool DisableAO :					packoffset(c14.y);
 	bool DisableIndirect :				packoffset(c14.z);

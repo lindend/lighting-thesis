@@ -25,6 +25,7 @@ int main(int argc, const char* argv[])
 	if (app.Initialize(argc, argv))
 	{
 		app.VMainLoop();
+
 	}
 
 	app.VDestroy();
