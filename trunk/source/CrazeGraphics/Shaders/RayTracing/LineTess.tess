@@ -8,26 +8,24 @@ cbuffer LVInfo : register(b0)
 
 struct INPUT
 {
-	float3 color : COLOR0;
-	float3 pos : POSITION;
+	float4 pos : POSITION;
 };
 
 struct PATCHCONSTANT
 {
 	float tess[2] : SV_TessFactor;
-	float3 color : COLOR;
 	int3 idx : MINMAXINDEX;
-	float3 dir : DIRECTION;
+	float4 dir : DIRECTION;
 };
 
 float2 toLVSpaceBase0(float2 pos)
 {
-	return ((pos - LVStart.xy) / (LVEnd.xy - LVStart.xy));
+	return ((pos - LVStart.xy) / (LVCellSize.xy * LVCellSize.w));
 }
 
 float2 toLVSpace(float2 pos)
 {
-	return ((pos - LVStart.xy) / (LVEnd.xy - LVStart.xy)) * 2.f - 1.f;
+	return ((pos - LVStart.xy) / (LVCellSize.xy * LVCellSize.w)) * 2.f - 1.f;
 }
 
 
@@ -40,6 +38,14 @@ float2 findRelZ(float pos0z, float pos1z)
 int2 processRelZ(float2 relZ)
 {
 	return int2(floor(min(relZ.x, relZ.y)), ceil(max(relZ.x, relZ.y)));
+}
+
+float3 parseColor(float v)
+{
+	uint color = asuint(v);
+	return float3(	(color & 0xFF) / 255.f,
+					((color >> 8) & 0xFF) / 255.f,
+					((color >> 16) & 0xFF) / 255.f);
 }
 
 PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_PrimitiveID)
@@ -64,9 +70,10 @@ PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_Primi
 	output.tess[0] = numZ * (insideLV.x * insideLV.y <= 1 ? 1 : 0);
 	//Do not split the line by setting the detail tessellation to 1
 	output.tess[1] = 1.f;
+	//output.color = parseColor(patch[0].pos.w);
 	output.idx = uint3(clampRelZ, numZ);
-	output.color = patch[0].color;
-	output.dir = normalize(patch[1].pos.xyz - patch[0].pos.xyz);
+	output.dir.xyz = normalize(patch[1].pos.xyz - patch[0].pos.xyz);
+	output.dir.w = patch[0].pos.w;
 
 	return output;
 }
@@ -88,8 +95,7 @@ INPUT HSmain(
 
 struct DS_OUTPUT
 {
-	float3 color : COLOR0;
-	float3 dir : DIRECTION;
+	float4 dir : DIRECTION;
 	float4 pos : SV_Position;
 };
 
@@ -99,9 +105,9 @@ DS_OUTPUT DSmain(PATCHCONSTANT input, float2 UV : SV_DomainLocation, const Outpu
 {
 	DS_OUTPUT output;
 
-	output.color = input.color;
 	output.dir = input.dir;
 	output.pos.xyz = patches[1].pos.xyz * UV.x + (1.f - UV.x) * patches[0].pos.xyz;
+	//output.color = input.color;
 
 	//UV.y contains the "instance id" and is ranged [0 .. (numZ - 1) / numZ]
 	output.pos.w = input.idx.x + UV.y * input.idx.z;//round(UV.x * (input.idx.y - input.idx.x) + input.idx.x);

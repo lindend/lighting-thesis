@@ -7,12 +7,20 @@ struct PS_OUT
 	float4 SHb : SV_Target2;
 };
 
-PS_OUT main(float3 color : COLOR0, float3 direction : DIRECTION)
+float3 parseColor(float v)
 {
-	PS_OUT output;
+	uint color = asuint(v);
+	return float3(	(color & 0xFF) / 255.f,
+					((color >> 8) & 0xFF) / 255.f,
+					((color >> 16) & 0xFF) / 255.f);
+}
 
-	float4 sh = CreateLobe(direction);
-	 
+PS_OUT main(nointerpolation float4 direction : DIRECTION)
+{
+	PS_OUT output; 
+
+	float4 sh = CreateLobe(direction.xyz);
+	float3 color = parseColor(direction.w);
 	output.SHr = sh * color.r;
 	output.SHg = sh * color.g;
 	output.SHb = sh * color.b;

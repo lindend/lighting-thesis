@@ -33,16 +33,16 @@ namespace Craze
 			void destroy() {}
 			std::shared_ptr<UAVBuffer> getCollidedRays();
 
-			LightVolumeInfo getLVInfo() const;
+			const LightVolumeInfo getLVInfo(const Camera* cam) const;
 
 		private:
 			void renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj);
 			void spawnRays(const Matrix4& viewProj);
 			void traceRays();
-			void injectToLV();
+			void injectToLV(const Camera* c);
 
 			static const int RSMResolution = 128;
-			static const int LightVolumeResolution = 32;
+			static const int LightVolumeResolution = 16;
 			static const int MaxPhotonRays = RSMResolution * RSMResolution;
 
 			static const int NumRSMs = 2;

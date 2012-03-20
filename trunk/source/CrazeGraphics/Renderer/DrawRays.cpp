@@ -23,7 +23,6 @@ bool DrawRays::initialize()
 
 void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 {
-	return;
 	m_effect.set();
 	//draw instanced indirect in immediate context (gpdevice->getDeviceContext
 	CBPerObject cbObj;

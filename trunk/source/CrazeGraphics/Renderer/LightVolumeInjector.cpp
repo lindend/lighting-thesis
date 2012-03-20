@@ -120,7 +120,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	renderRSMs(scene, &c, viewProj);
 	spawnRays(viewProj);
 	traceRays();
-	injectToLV();
+	injectToLV(scene->getCamera());
 
 
 	return m_lightingVolumes;
@@ -181,20 +181,45 @@ void LightVolumeInjector::traceRays()
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
 }
 
-void LightVolumeInjector::injectToLV()
+void LightVolumeInjector::injectToLV(const Camera* cam)
 {
 	PIXMARKER(L"Inject rays to light volume");
-	LightVolumeInfo lvinfo = getLVInfo();
+	LightVolumeInfo lvinfo = getLVInfo(cam);
 
 	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes, lvinfo);
 }
 
-LightVolumeInfo LightVolumeInjector::getLVInfo() const
+const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 {
 	LightVolumeInfo lvinfo;
-	lvinfo.start = Vector3(0.f, 0.f, 0.f);
-	lvinfo.cellSize = Vector3::ONE * 100.f;
-	lvinfo.end = lvinfo.cellSize * (float)LightVolumeResolution;
+	
+	float zSlice =  2000.f;
+	Vector3 slicePt = cam->GetPosition() + cam->GetDirection() * zSlice;
+	float upVecScale = Tan(cam->GetFovY() * 0.5f) * zSlice;
+	Vector3 rightVec = Cross(cam->GetDirection(), cam->GetUp()) * upVecScale * cam->GetAspect();
+	Vector3 upVec = cam->GetUp() * upVecScale;
+
+	Vector3 corners[] = {
+		slicePt + rightVec + upVec,
+		slicePt + rightVec - upVec,
+		slicePt - rightVec + upVec,
+		slicePt - rightVec - upVec
+	};
+
+	lvinfo.start = cam->GetPosition();
+	lvinfo.end = cam->GetPosition();
+
+	for (int i = 0; i < 4; ++i)
+	{
+		lvinfo.start = Min(lvinfo.start, corners[i]);
+		lvinfo.end = Max(lvinfo.end, corners[i]);
+	}
+	Vector3 delta = lvinfo.end - lvinfo.start;
+	lvinfo.cellSize = delta / (float)LightVolumeResolution;
+	Vector3 start = lvinfo.start;
+	start = start / lvinfo.cellSize;
+	start = Vector3((int)start->x, (int)start->y, (int)start->z);
+	lvinfo.start = start  * lvinfo.cellSize;
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
 }
