@@ -28,13 +28,9 @@ namespace Craze
 			Matrix4 viewProj;
 			Vector2 invResolution;
 			Vec3 ambientColor;
-			float LPVNumCells;
-			Vec3 LPV0Start;
-			float LPV0Size;
-			Vec3 LPV1Start;
-			float LPV1Size;
-			Vec3 LPV2Start;
-			float LPV2Size;
+			Vec3 LVStart;
+			Vec3 LVEnd;
+			Vector4 LVCellSize;
 			bool DisableDirect;
 			bool DisableAO;
 			bool DisableIndirect;

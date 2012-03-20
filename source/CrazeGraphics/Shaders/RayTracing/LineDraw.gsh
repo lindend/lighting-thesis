@@ -1,9 +1,4 @@
-cbuffer LVInfo : register(c0)
-{
-	float3 LVStart;
-	float3 LVEnd;
-	float3 LVCellSize;
-};
+#include "globals.incl"
 
 struct DS_OUTPUT
 {
