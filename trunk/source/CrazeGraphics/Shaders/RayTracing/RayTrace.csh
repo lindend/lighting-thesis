@@ -77,27 +77,6 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		closest = min(intersect, closest);
 	} 
 	
-	//Iterate so that we can cover all the triangles
-	/*for (int k = 0; k < ceil(NumTriangles / TRICACHESIZE); ++k)
-	{
-		GroupMemoryBarrierWithGroupSync();
-		const int maxIdx = min(TRICACHESIZE, NumTriangles - (k * TRICACHESIZE));
-		//Load triangles to cache
-		for (int i = groupIdx; i < maxIdx; i += 32 * 8)
-		{
-			TriCache[i] = Triangles[i + k * TRICACHESIZE];
-		}
-
-		GroupMemoryBarrierWithGroupSync();
-		
-		for (int i = 0; i < maxIdx; ++i)
-		{
-			Triangle tri = TriCache[i];
-			float intersect = rayTriIntersect(r.origin, normalize(r.dir), tri.v0.xyz, tri.v1.xyz, tri.v2.xyz);
-			closest = min(intersect, closest);
-		}
-	}*/
-	  
 	if (dot(r.dir, r.dir) > 0.2f)// && closest < 100000.f)
 	{
 		r.dir = r.origin + r.dir * closest;
