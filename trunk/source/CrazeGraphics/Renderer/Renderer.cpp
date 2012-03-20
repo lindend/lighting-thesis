@@ -202,6 +202,11 @@ void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
 	cbuffer.cameraPos = pCam->GetPosition();
 	cbuffer.viewProj = viewProj;
 	cbuffer.ambientColor = pScene->AmbientLight;
+	
+	LightVolumeInfo lvInfo = m_lightVolumeInjector.getLVInfo(pCam);
+	cbuffer.LVStart = lvInfo.start;
+	cbuffer.LVEnd = lvInfo.end;
+	cbuffer.LVCellSize = Vector4(lvInfo.cellSize, lvInfo.numCells);
 }
 
 void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)

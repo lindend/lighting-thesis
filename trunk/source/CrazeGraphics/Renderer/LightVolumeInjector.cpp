@@ -186,7 +186,7 @@ void LightVolumeInjector::injectToLV(const Camera* cam)
 	PIXMARKER(L"Inject rays to light volume");
 	LightVolumeInfo lvinfo = getLVInfo(cam);
 
-	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes, lvinfo);
+	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes);
 }
 
 const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const

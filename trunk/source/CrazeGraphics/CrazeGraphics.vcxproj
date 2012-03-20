@@ -266,7 +266,6 @@
     <None Include="Shaders\RayTracing\LineTess.tess" />
     <None Include="Shaders\RayTracing\PhotonRay.incl" />
     <None Include="Shaders\RayTracing\RayTrace.csh" />
-    <None Include="Shaders\RayTracing\triangleRayIntersection.incl" />
     <None Include="Shaders\SkyOcclusion.csh">
       <FileType>Document</FileType>
     </None>

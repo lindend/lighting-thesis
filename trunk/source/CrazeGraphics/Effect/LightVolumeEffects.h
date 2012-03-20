@@ -39,7 +39,7 @@ namespace Craze
 		{
 		public:
 			bool initialize();
-			void injectRays(std::shared_ptr<UAVBuffer> rays, std::shared_ptr<RenderTarget> LVs[], const LightVolumeInfo& LVinfo);
+			void injectRays(std::shared_ptr<UAVBuffer> rays, std::shared_ptr<RenderTarget> LVs[]);
 
 			void setObjectProperties(const Matrix4& world, const Material& material) {}
 
@@ -49,7 +49,6 @@ namespace Craze
 		private:
 			std::shared_ptr<const TessShaderResource> m_tessShaders;
 			std::shared_ptr<Buffer> m_argBuffer;
-			ID3D11Buffer* m_cbuffer;
 			ID3D11BlendState* m_blendState;
 			ID3D11RasterizerState* m_rasterizerState;
 		};
@@ -64,8 +63,6 @@ namespace Craze
 
 			void destroy() { IEffect::destroy(); }
 
-		private:
-			ID3D11Buffer* m_cbuffer;
 		};
 	}
 }

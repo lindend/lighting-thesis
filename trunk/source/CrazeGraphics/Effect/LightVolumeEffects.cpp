@@ -62,8 +62,6 @@ bool LVInjectRaysEffect::initialize()
 
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
 
-	m_cbuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 3);
-
 	CD3D11_BLEND_DESC bDesc;
 	bDesc.IndependentBlendEnable = false;
 	bDesc.AlphaToCoverageEnable = false;
@@ -97,17 +95,11 @@ const D3D11_INPUT_ELEMENT_DESC* LVInjectRaysEffect::getLayout(int& count)
 	return pDesc;
 }
 
-void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared_ptr<RenderTarget> LVs[], const LightVolumeInfo& LVinfo)
+void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared_ptr<RenderTarget> LVs[])
 {
 	IEffect::set();
 	gpDevice->SetShader(m_tessShaders->m_hs);
 	gpDevice->SetShader(m_tessShaders->m_ds);
-
-	CBufferHelper cbuffer(gpDevice, m_cbuffer);
-	cbuffer[0] = LVinfo.start.v;
-	cbuffer[1] = LVinfo.end.v;
-	cbuffer[2] = Vector4(LVinfo.cellSize, LVinfo.numCells);
-	cbuffer.Unmap();
 
 	auto dc = gpDevice->GetDeviceContext();
 
@@ -120,10 +112,6 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
 
 	//dc->RSSetState(m_rasterizerState);
-
-	dc->HSSetConstantBuffers(0, 1, &m_cbuffer);
-	dc->DSSetConstantBuffers(0, 1, &m_cbuffer);
-	dc->GSSetConstantBuffers(0, 1, &m_cbuffer);
 
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());
@@ -157,7 +145,6 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 bool LVAmbientLightingEffect::initialize()
 {
-	m_cbuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 3);
 	return IEffect::initialize("ScreenQuad.vsh", "IndirectLighting.psh"); 
 }
 
@@ -165,15 +152,8 @@ void LVAmbientLightingEffect::doLighting(std::shared_ptr<RenderTarget> LVs[], st
 {
 	IEffect::set();
 
-	CBufferHelper cbuffer(gpDevice, m_cbuffer);
-	cbuffer[0] = LVinfo.start.v;
-	cbuffer[1] = LVinfo.end.v;
-	cbuffer[2] = Vector4(LVinfo.cellSize, LVinfo.numCells);
-	cbuffer.Unmap();
 
 	auto dc = gpDevice->GetDeviceContext();
-
-	dc->PSSetConstantBuffers(1, 1, &m_cbuffer);
 
 	ID3D11ShaderResourceView* srvs[] = { gbuffers[0]->GetResourceView(), gbuffers[1]->GetResourceView(), nullptr, depth, LVs[0]->GetResourceView(), LVs[1]->GetResourceView(), LVs[2]->GetResourceView() };
 

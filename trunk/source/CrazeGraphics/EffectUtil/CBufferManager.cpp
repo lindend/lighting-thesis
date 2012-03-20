@@ -47,6 +47,8 @@ void CBufferManager::ResetBuffers()
 	m_pDevice->GetDeviceContext()->PSSetConstantBuffers(3, 1, &m_pPerFrame);
 	m_pDevice->GetDeviceContext()->GSSetConstantBuffers(3, 1, &m_pPerFrame);
 	m_pDevice->GetDeviceContext()->CSSetConstantBuffers(3, 1, &m_pPerFrame);
+	m_pDevice->GetDeviceContext()->HSSetConstantBuffers(3, 1, &m_pPerFrame);
+	m_pDevice->GetDeviceContext()->DSSetConstantBuffers(3, 1, &m_pPerFrame);
 }
 
 void CBufferManager::Shutdown()
@@ -79,13 +81,9 @@ void CBufferManager::SetFrame(const CBPerFrame& data)
 	cbuffer[5] = data.viewProj.GetInverse();
 	cbuffer[9] = data.invResolution;
 	cbuffer[10] = data.ambientColor;
-	cbuffer[10].W() = data.LPVNumCells;
-	cbuffer[11] = data.LPV0Start;
-	cbuffer[11].W() = data.LPV0Size;
-	cbuffer[12] = data.LPV1Start;
-	cbuffer[12].W() = data.LPV1Size;
-	cbuffer[13] = data.LPV2Start;
-	cbuffer[13].W() = data.LPV2Size;
+	cbuffer[11] = data.LVStart;
+	cbuffer[12] = data.LVEnd;
+	cbuffer[13] = data.LVCellSize;
 	cbuffer[14] = (unsigned int)data.DisableDirect;
 	cbuffer[14].Y() = (unsigned int)data.DisableAO;
 	cbuffer[14].Z() = (unsigned int)data.DisableIndirect;

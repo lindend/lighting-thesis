@@ -1,14 +1,6 @@
 #include "globals.incl"
 #include "SHMath.incl"
 
-cbuffer LVInfo : register(c1)
-{
-	float3 LVStart;
-	float3 LVEnd;
-	//xyz - size, w - num cells
-	float4 LVCellSize;
-};
-
 float3 DepthToPos(float depth, float2 uv)
 {
 	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
