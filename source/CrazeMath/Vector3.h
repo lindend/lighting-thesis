@@ -107,10 +107,10 @@ namespace Craze
 	inline void operator-=(Vector3& v0, const Vector3& v1) { v0 = v0 - v1; }
 
 	inline const Vector3 operator*(const Vector3& v, const float f) { return _mm_mul_ps(v.vec, _mm_set_ps1(f)); }
-	inline const Vector3 operator/(const Vector3& v, const float f) { return _mm_mul_ps(v.vec, _mm_set_ps1(f)); }
+	inline const Vector3 operator/(const Vector3& v, const float f) { return _mm_div_ps(v.vec, _mm_set_ps1(f)); }
 
 	inline const Vector3 operator*(const float f, const Vector3& v) { return _mm_mul_ps(v.vec, _mm_set_ps1(f)); }
-	inline const Vector3 operator/(const float f, const Vector3& v) { return _mm_mul_ps(v.vec, _mm_set_ps1(f)); }
+	inline const Vector3 operator/(const float f, const Vector3& v) { return _mm_div_ps(v.vec, _mm_set_ps1(f)); }
 
 	inline void operator*=(Vector3& v, float f) { v = v * f; }
 	inline void operator/=(Vector3& v, float f) { v = v / f; }

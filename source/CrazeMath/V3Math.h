@@ -52,4 +52,15 @@ namespace Craze
 		__m128 p = _mm_mul_ps(v0.vec, v1.vec);
 		return (p.m128_f32[0] + p.m128_f32[1] + p.m128_f32[2]);
 	}
+
+	inline Vector3 Sign(const Vector3& v)
+	{
+		//Mask away the -1 or 1 if the number equals zero
+							//Check if the number is not zero and give a mask that we can use
+		return _mm_and_ps(	_mm_cmpeq_ps(v.vec, Vector3::ZERO.vec),
+							//Add the sign bit that has been isolated to a 1
+							_mm_or_ps(_mm_set1_ps(1.f),
+									//Isolate the sign bit
+									_mm_and_ps(v.vec, _mm_set1_ps(-0.f))));
+	}
 }

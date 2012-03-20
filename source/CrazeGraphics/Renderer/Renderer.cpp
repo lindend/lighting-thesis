@@ -293,7 +293,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
 	}
 	
-	gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo());
+	gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo(pCam));
 
 	/*gFxAmbientLighting.set();
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

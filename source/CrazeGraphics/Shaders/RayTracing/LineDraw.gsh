@@ -7,15 +7,14 @@ cbuffer LVInfo : register(c0)
 
 struct DS_OUTPUT
 {
-	float3 color : COLOR0;
-	float3 dir : DIRECTION;
+	float4 dir : DIRECTION;
 	float4 pos : SV_Position;
 };
 
 struct OUTPUT
 {
-	float3 color : COLOR0;
-	float3 dir : DIRECTION;
+	//float3 color : COLOR;
+	float4 dir : DIRECTION;
 	float4 pos : SV_Position;
 	uint rtIdx : SV_RenderTargetArrayIndex;
 };
@@ -26,14 +25,22 @@ float calcZPos(float z, int idx)
 	return (z - startZ) / LVCellSize.z;
 }
 
+float3 parseColor(float v)
+{
+	uint color = asuint(v);
+	return float3(	(color & 0xFF) / 255.f,
+					((color >> 8) & 0xFF) / 255.f,
+					((color >> 16) & 0xFF) / 255.f);
+}
+
 [maxvertexcount(2)]
 void main(line DS_OUTPUT input[2], inout LineStream<OUTPUT> output)
 {
 	OUTPUT output0;
 	OUTPUT output1;
 	
-	output0.color = output1.color = input[0].color;
 	output0.dir = output1.dir = input[0].dir;
+	//output0.color = output1.color = parseColor(input[0].dir.w);
 	output0.rtIdx = input[0].pos.w;
 	output1.rtIdx = input[0].pos.w;
 
@@ -42,8 +49,6 @@ void main(line DS_OUTPUT input[2], inout LineStream<OUTPUT> output)
 
 	output0.pos = float4(input[0].pos.xy, zPos0, 1.f);
 	output1.pos = float4(input[1].pos.xy, zPos1, 1.f);
-
-	
 
 	//Append the points in opposite order for rasterization that is better suited to our purposes (does not matter if using antialiasing though)
 	output.Append(output1);

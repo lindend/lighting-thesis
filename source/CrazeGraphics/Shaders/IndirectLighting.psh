@@ -44,5 +44,6 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float4 sh = EvalSH(-normal);
 
 	float3 light = saturate(float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)));
+
 	return float4(light * color, 1.0f);
 }

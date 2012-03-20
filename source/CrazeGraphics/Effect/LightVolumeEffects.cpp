@@ -119,7 +119,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	dc->ClearRenderTargetView(LVs[1]->GetRenderTargetView(), black);
 	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
 
-	dc->RSSetState(m_rasterizerState);
+	//dc->RSSetState(m_rasterizerState);
 
 	dc->HSSetConstantBuffers(0, 1, &m_cbuffer);
 	dc->DSSetConstantBuffers(0, 1, &m_cbuffer);
