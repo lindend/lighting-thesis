@@ -58,7 +58,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 bool LVInjectRaysEffect::initialize()
 {
 	unsigned int args[] = { 0, 2, 0, 0};
-	m_argBuffer = Buffer::CreateArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
+	m_argBuffer = SRVBuffer::CreateRawArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
 
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
 
@@ -111,7 +111,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	dc->ClearRenderTargetView(LVs[1]->GetRenderTargetView(), black);
 	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
 
-	//dc->RSSetState(m_rasterizerState);
+	dc->RSSetState(m_rasterizerState);
 
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());
@@ -121,8 +121,8 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	unsigned int offset = 0;
 	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
 
-	ID3D11ShaderResourceView* srv = rays->GetSRV();
-	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
+	ID3D11ShaderResourceView* srv[] = { rays->GetSRV(), m_argBuffer->GetSRV() };
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 2, srv);
 
 	gpDevice->SetRenderTargets(LVs, 3, nullptr);
 
@@ -130,8 +130,8 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
-	srv = nullptr;
-	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
+	ZeroMemory(srv, sizeof(void*) * 2);
+	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 2, srv);
 
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

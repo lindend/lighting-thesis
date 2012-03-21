@@ -125,6 +125,24 @@ std::shared_ptr<SRVBuffer> SRVBuffer::CreateRaw(Device *pDevice, DXGI_FORMAT for
 	return nullptr;
 }
 
+std::shared_ptr<SRVBuffer> SRVBuffer::CreateRawArg(Device *pDevice, int size, const void *pData, const char *pDebugName)
+{
+	ID3D11Buffer *pBuf = createBuffer(pDevice, size, 0, D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS, D3D11_BIND_SHADER_RESOURCE, D3D11_USAGE_DEFAULT, pData, pDebugName);
+	
+	if (pBuf)
+	{
+		CD3D11_SHADER_RESOURCE_VIEW_DESC srvDesc(pBuf, DXGI_FORMAT_R32G32B32A32_UINT, 0, 1);
+		ID3D11ShaderResourceView* pSRV;
+		if (SUCCEEDED(gpDevice->GetDevice()->CreateShaderResourceView(pBuf, &srvDesc, &pSRV)))
+		{
+			SetDebugName(pSRV, pDebugName);
+			return std::shared_ptr<SRVBuffer>(CrNew SRVBuffer(pDevice, pBuf, pSRV));
+		}
+		pBuf->Release();
+	}
+	return nullptr;
+}
+
 std::shared_ptr<UAVBuffer> UAVBuffer::Create(Device *pDevice, int elemSize, int numElems, bool appendConsume, const char *pDebugName)
 {
 	void *pData = malloc(elemSize * numElems);

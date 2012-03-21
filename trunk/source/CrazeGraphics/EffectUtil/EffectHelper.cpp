@@ -55,7 +55,7 @@ ID3D10Blob* CompileShader(const char* pData, int bufSize, const std::string& nam
 #ifdef CRAZE_DEBUG_SHADERS
 	flags |= D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION;
 #else
-	flags |= D3D10_SHADER_OPTIMIZATION_LEVEL3;
+	flags |= D3D10_SHADER_OPTIMIZATION_LEVEL2;
 #endif
 
 	ID3D10Blob* pResult = 0;

@@ -12,6 +12,7 @@ namespace Craze
 		class DepthStencil;
 		class UAVBuffer;
 		class Buffer;
+		class SRVBuffer;
 		class TextureResource;
 
 		class LVFirstBounceEffect : IEffect
@@ -48,7 +49,7 @@ namespace Craze
 			virtual const D3D11_INPUT_ELEMENT_DESC* getLayout(int& count);
 		private:
 			std::shared_ptr<const TessShaderResource> m_tessShaders;
-			std::shared_ptr<Buffer> m_argBuffer;
+			std::shared_ptr<SRVBuffer> m_argBuffer;
 			ID3D11BlendState* m_blendState;
 			ID3D11RasterizerState* m_rasterizerState;
 		};

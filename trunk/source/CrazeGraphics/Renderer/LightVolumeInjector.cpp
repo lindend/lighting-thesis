@@ -197,7 +197,7 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 	Vector3 slicePt = cam->GetPosition() + cam->GetDirection() * zSlice;
 	float upVecScale = Tan(cam->GetFovY() * 0.5f) * zSlice;
 	Vector3 rightVec = Cross(cam->GetDirection(), cam->GetUp()) * upVecScale * cam->GetAspect();
-	Vector3 upVec = cam->GetUp() * upVecScale;
+	Vector3 upVec = Normalize(Cross(rightVec, cam->GetDirection())) * upVecScale;
 
 	Vector3 corners[] = {
 		slicePt + rightVec + upVec,

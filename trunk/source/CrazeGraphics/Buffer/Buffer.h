@@ -79,6 +79,7 @@ namespace Craze
 
 			static std::shared_ptr<SRVBuffer> CreateStructured(Device *pDevice, int elemSize, int numElems, const void *pData, bool dynamic, const char *pDebugName);
 			static std::shared_ptr<SRVBuffer> CreateRaw(Device *pDevice, DXGI_FORMAT format, int size, const void *pData, const char *pDebugName);
+			static std::shared_ptr<SRVBuffer> CreateRawArg(Device *pDevice, int size, const void *pData, const char *pDebugName);
 
 			~SRVBuffer()
 			{
