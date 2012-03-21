@@ -1,6 +1,7 @@
 #include "RayTracing/PhotonRay.incl"
 
 StructuredBuffer<PhotonRay> Rays : register(t0);
+Buffer<uint4> NumRays : register(t1);
 
 struct VS_OUT
 {
@@ -16,7 +17,7 @@ VS_OUT main(uint idx : SV_VertexID, uint inst : SV_InstanceID)
 {
 	VS_OUT output;
 
-	uint numRays = 5856;
+	uint numRays = NumRays[0].x;
 	
 	PhotonRay ray = Rays[floor((idx + numRays * inst) / 2)];
 	output.position.xyz = idx % 2 == 0 ? ray.origin : ray.dir;

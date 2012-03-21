@@ -16,7 +16,7 @@ void main(point GS_INPUT input[1], inout LineStream<GS_OUTPUT> stream)
 {
 	GS_OUTPUT output0, output1;
 	output0.pos = input[0].begin;
-	output1.pos = input[0].begin;
+	output1.pos = input[0].end;
 	output0.color = input[0].color;
 	output1.color = input[0].color;
 	

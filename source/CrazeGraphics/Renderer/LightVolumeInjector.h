@@ -41,9 +41,9 @@ namespace Craze
 			void traceRays();
 			void injectToLV(const Camera* c);
 
-			static const int RSMResolution = 128;
+			static const int RSMResolution = 64;
 			static const int LightVolumeResolution = 16;
-			static const int MaxPhotonRays = RSMResolution * RSMResolution;
+			static const int MaxPhotonRays = RSMResolution * RSMResolution * 4;
 
 			static const int NumRSMs = 2;
 			std::shared_ptr<RenderTarget> m_RSMs[NumRSMs];

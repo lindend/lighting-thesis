@@ -22,6 +22,12 @@ float3 fromPolar(float theta, float phi)
 	sincos(phi, sinPhi, cosPhi);
 	return float3(cosTheta * sinPhi, sinTheta * sinPhi, cosPhi);
 }
+float3 fromPolar(float2 thetaPhi)
+{
+	return fromPolar(thetaPhi.x, thetaPhi.y);
+}
+
+#define RAYS_PER_TEXEL 4
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
@@ -33,73 +39,72 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 	float3 color = ColorSpec.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
-
 	float3 position = DepthToPos(depth, uv);
 
-
-	const float3 normals[6] =
-	{
-		float3(1.f,		0.f,	0.f), 
-		float3(-1.f,	0.f,	0.f),
-		float3(0.f,		1.f,	0.f),
-		float3(0.f,		-1.f,	0.f),
-		float3(0.f,		0.f,	1.f),
-		float3(0.f,		0.f,	-1.f),
-	};
-
 	float3 lvSize = LVCellSize.xyz * LVCellSize.w;
+	//Check if the pixel is inside the light volume
+	float3 lvSpacePos = (position - LVStart) / lvSize;
+	if (max(lvSpacePos.x, max(lvSpacePos.y, lvSpacePos.z)) <= 1.f &&
+		min(lvSpacePos.x, min(lvSpacePos.y, lvSpacePos.z)) >= 0.f)
+	{ 
+		for(int j = 0; j < RAYS_PER_TEXEL; ++j)
+		{
+			float4 random = Random.SampleLevel(Point, uv + 0.1f * j, 0.f);
 
-	float lightVolumeSideArea[] =
+			//Emit the photon!
+			PhotonRay pr;
+			//float3 target = LVStart + lvSize * random.yzw;
+			//pr.dir = normalize(target - position);
+			pr.dir = fromPolar(random.zw * float2(2.f * 3.141592f, 3.141592f));
+			if (dot(pr.dir, normal) > 0.f)
+			{
+				//Just move out the ray a bit
+				pr.origin = position + normal * 10.f;
+				pr.power = color;//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
+				OutRays.Append(pr);
+			}
+		}
+	} else
 	{
-		lvSize.y * lvSize.z,
-		lvSize.x * lvSize.z,
-		lvSize.x * lvSize.y,
-	};
 
-	float3 sideCenter[] = 
-	{
-		//Right
-		LVStart + lvSize * float3(1.f, 0.5f, 0.5f),
-		//Left
-		LVStart + lvSize * float3(0.f, 0.5f, 0.5f),
-		//Up
-		LVStart + lvSize * float3(0.5f, 1.0f, 0.5f),
-		//Down
-		LVStart + lvSize * float3(0.5f, 0.f, 0.5f),
-		//Forward
-		LVStart + lvSize * float3(0.5f, 0.5f, 1.f),
-		//Backward
-		LVStart + lvSize * float3(0.5f, 0.5f, 0.f),
-	};
-	
-	float power = 0;
-	for(int i = 0; i < 6; i++) //for each side of the volume
-	{
-		float3 texelToVolumeSide = sideCenter[i] - position;
-		float distSq = dot(texelToVolumeSide, texelToVolumeSide);
-		float angle = saturate(dot(normals[i], texelToVolumeSide));
-		power += lightVolumeSideArea[floor(i * 0.5f)] * angle / distSq;
-	}
+		float3 center = LVStart + lvSize * 0.5f;
+		float distSphere = distance(center, position);
+		float radSphere = distance(LVStart, center);
+		//tan v = radSphere / distSphere
+		//v = atan(radSphere / distSphere)
+		float v = atan(radSphere / distSphere);
+		//See wikipedia on solid angle for cone
+		float power = 1.f - cos(v);
 
-	if(power < .0001f)
-	{
-		discard;
-	}
-	color *= power;
+		if(power < .0001f)
+		{
+			discard;
+		}
+		//color *= power;
 
-	int RAYS_PER_TEXEL = 5;
-	for(int i = 0; i < RAYS_PER_TEXEL; i++)
-	{
-		float4 random = Random.Sample(Point, uv * 0.01f * i);
+		float3 dirToSphere = normalize(center - position);
+		float3 sphereRight = dirToSphere.y < 0.9f ? float3(0.f, 1.f, 0.f) : float3(1.f, 0.f, 0.f);
+		float3 sphereUp = cross(sphereRight, dirToSphere);
+		sphereRight = cross(dirToSphere, sphereUp);
 
-		//Emit the photon!
-		PhotonRay pr;
-		float3 target = LVStart + (LVCellSize.xyz * LVCellSize.w) * random.xyz;
-		pr.dir = normalize(target - position);
-		//Just move out the ray a bit
-		pr.origin = position + normal * 10.f;
-		pr.power = color;
-		OutRays.Append(pr);
+		for(int j = 0; j < RAYS_PER_TEXEL; ++j)
+		{
+			float4 random = Random.SampleLevel(Point, uv + 0.1f * j, 0.f);
+
+			//Emit the photon!
+			PhotonRay pr;
+			//float3 target = LVStart + (LVCellSize.xyz * LVCellSize.w) * random.xyz;
+			float2 discRandom = (random.xy * 2.f - 1.f) * radSphere;
+			float3 target = center + sphereRight * discRandom.x + sphereUp * discRandom.y;
+			pr.dir = normalize(target - position);
+			if (dot(pr.dir, normal) > 0.f)
+			{
+				//Just move out the ray a bit
+				pr.origin = position + normal * 10.f;
+				pr.power = color * power;//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
+				OutRays.Append(pr);
+			}
+		}
 	}
 
 	return 1.f.xxxx;
