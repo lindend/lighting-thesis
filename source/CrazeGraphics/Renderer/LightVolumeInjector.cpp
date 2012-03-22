@@ -79,7 +79,13 @@ void LightVolumeInjector::setTriangles(Vec3* tris, int numTris)
 Camera findSMCamera(const Light& l, Scene* scene)
 {
 	Camera c;
-	c.SetPosition(Vector3(0, 1000, 0));
+	
+	Vector3 lpos = Vector3(l.dir.x, l.dir.y, l.dir.z);
+	lpos = Normalize(lpos);
+	lpos*=-1;
+	lpos *= 2000;
+	c.SetPosition(lpos);
+
 	c.SetDirection(l.dir);
 	if (Dot(c.GetDirection(), Vector3::UP) > 0.9f)
 	{
@@ -110,7 +116,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	*/
 
 	//Create a fake light that we can use for testing, 
-	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
+	Light dir = createDirectionalLight(Vector3(.002f, -1.0f, .002f), Vector3::ONE);
 
 	PIXMARKER(L"Create lighting volumes");
 
