@@ -95,7 +95,7 @@ Camera findSMCamera(const Light& l, Scene* scene)
 		c.SetUp(Vector3::UP);
 	}
 	
-	c.SetProjection(3.14f / 2.f, 1, 10, 100000);
+	c.SetOrthoProjection(1000.f, 1000.f, 10.f, 10000.f);
 	return c;
 }
 
@@ -115,13 +115,11 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	  5. Return the light volumes and rejoice! :D (maybe we should instead light the scene here directly or something...)
 	*/
 
-	//Create a fake light that we can use for testing, 
-	Light dir = createDirectionalLight(Vector3(.002f, -1.0f, .002f), Vector3::ONE);
 
 	PIXMARKER(L"Create lighting volumes");
 
-	Camera c = findSMCamera(dir, scene);
-	Matrix4 viewProj = c.GetView()*c.GetProjection();
+	Camera c = findSMCamera(scene->getSun(), scene);
+	Matrix4 viewProj = c.GetView() * c.GetProjection();
 
 	renderRSMs(scene, &c, viewProj);
 	spawnRays(viewProj);

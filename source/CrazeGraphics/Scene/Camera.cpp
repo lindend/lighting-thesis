@@ -59,6 +59,16 @@ void Camera::SetProjection(float fovY, float aspect, float nearPlane, float farP
 	m_Near = nearPlane;
 }
 
+void Camera::SetOrthoProjection(float width, float height, float znear, float zfar)
+{
+	m_Proj = Matrix4::CreateOrtho(width, height, znear, zfar);
+	m_InvProj = m_Proj.GetInverse();
+	m_FOV = 1.f;
+	m_Aspect = width / height;
+	m_Near = znear;
+	m_Far = zfar;
+}
+
 Matrix4 Camera::GetProjection() const
 {
 	return m_Proj;

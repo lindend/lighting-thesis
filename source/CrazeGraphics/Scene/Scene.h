@@ -54,8 +54,9 @@ namespace Craze
 			Camera* getCamera() { return m_camera; }
 
 			Light* addLight(const Light& l);
-			void addSun(const Light& l);
+			void addSun(const Light& l) { m_sunLight = l; }
 			void removeLight(Light* light);
+			const Light& getSun() const { return m_sunLight; }
 
 			Vector3 AmbientLight;
 			BoundingBox* m_bounds;

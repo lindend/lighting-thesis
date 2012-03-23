@@ -13,6 +13,7 @@ namespace Craze
 		public:
 			Camera();
 			void SetProjection(float fovY, float aspect, float nearPlane, float farPlane);
+			void SetOrthoProjection(float width, float height, float znear, float zfar);
 			Matrix4 GetProjection() const;
 			Matrix4 GetInvProjection() const { return m_InvProj; }
 

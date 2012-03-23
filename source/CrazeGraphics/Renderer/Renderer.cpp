@@ -218,6 +218,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	mainScene.clear();
 	shadowScene.clear();
 
+	pScene->addSun(createDirectionalLight(Vector3(0.2, -1.f, 0.2f), Vector3::ONE));
+
 	pScene->update();
 
 	//If we should redraw the UI, begin creating a deferred device context with the rendering for it now
@@ -274,7 +276,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		}
 	}
 	
-	Light dir = createDirectionalLight(-Vector3::ONE, Vector3::ONE);
+	Light dir = pScene->getSun();
 
 
 	//The gbuffers are ready, perform lighting
