@@ -218,12 +218,13 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 		lvinfo.start = Min(lvinfo.start, corners[i]);
 		lvinfo.end = Max(lvinfo.end, corners[i]);
 	}
+	const float gridFit = 500.f;
+	lvinfo.start = Floor(lvinfo.start / gridFit) * gridFit;
+	lvinfo.end = Ceil(lvinfo.end / gridFit) * gridFit;
+
 	Vector3 delta = lvinfo.end - lvinfo.start;
 	lvinfo.cellSize = delta / (float)LightVolumeResolution;
-	Vector3 start = lvinfo.start;
-	start = start / lvinfo.cellSize;
-	start = Vector3((int)start->x, (int)start->y, (int)start->z);
-	lvinfo.start = start  * lvinfo.cellSize;
+
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
 }

@@ -55,12 +55,12 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			PhotonRay pr;
 			//float3 target = LVStart + lvSize * random.yzw;
 			//pr.dir = normalize(target - position);
-			pr.dir = fromPolar(random.zw * float2(2.f * 3.141592f, 3.141592f));
+			pr.dir = fromPolar(random.wz * float2(2.f * 3.141592f, 3.141592f));
 			if (dot(pr.dir, normal) > 0.f)
 			{
 				//Just move out the ray a bit
 				pr.origin = position + normal * 10.f;
-				pr.power = color;//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
+				pr.power = color * dot(pr.dir, normal);//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
 				OutRays.Append(pr);
 			}
 		}
@@ -101,7 +101,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			{
 				//Just move out the ray a bit
 				pr.origin = position + normal * 10.f;
-				pr.power = color * power;//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
+				pr.power = color * power * dot(pr.dir, normal);//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
 				OutRays.Append(pr);
 			}
 		}

@@ -53,15 +53,15 @@ PATCHCONSTANT constDataFunct(InputPatch<INPUT, 2> patch, uint patchId : SV_Primi
 	clampRelZ = processRelZ(clampRelZ);
 	int numZ = clampRelZ.y - clampRelZ.x;
 
-	float2 lvSpace0 = ceil(toLVSpaceBase0(patch[0].pos.xy));
-	float2 lvSpace1 = ceil(toLVSpaceBase0(patch[1].pos.xy));
+	float2 lvSpace0 = floor(toLVSpaceBase0(patch[0].pos.xy));
+	float2 lvSpace1 = floor(toLVSpaceBase0(patch[1].pos.xy));
 	
-	//lvSpace will contain 1 if the point is inside the LV
+	//lvSpace will contain 0 if the point is inside the LV,
 	float2 insideLV = lvSpace0 * lvSpace1;
 
 	PATCHCONSTANT output;
 	//Set the density tessellation to numZ, this will basically generate numZ instances of our line
-	output.tess[0] = numZ * (insideLV.x * insideLV.y <= 1 ? 1 : 0);
+	output.tess[0] = numZ * (max(insideLV.x, insideLV.y) <= 0.f ? 1 : 0);
 	//Do not split the line by setting the detail tessellation to 1
 	output.tess[1] = 1.f;
 	//output.color = parseColor(patch[0].pos.w);
