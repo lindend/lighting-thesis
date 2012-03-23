@@ -76,7 +76,16 @@ bool LVInjectRaysEffect::initialize()
 
 	gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_blendState);
 
-	CD3D11_RASTERIZER_DESC rsDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
+	D3D11_RASTERIZER_DESC rsDesc;//(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
+	rsDesc.AntialiasedLineEnable = true;
+	rsDesc.CullMode = D3D11_CULL_NONE;
+	rsDesc.DepthBias = 0.f;
+	rsDesc.DepthBiasClamp = 0.f;
+	rsDesc.FillMode = D3D11_FILL_SOLID;
+	rsDesc.FrontCounterClockwise = true;
+	rsDesc.MultisampleEnable = false;
+	rsDesc.ScissorEnable = false;
+	rsDesc.SlopeScaledDepthBias = 0.f;
 	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
 
 	return IEffect::initialize("RayTracing/LightInject.vsh", "RayTracing/RasterizeSH.psh", "RayTracing/LineDraw.gsh");
