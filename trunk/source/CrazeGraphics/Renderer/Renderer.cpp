@@ -39,6 +39,11 @@ namespace Craze
 	namespace Graphics2
 	{
 		Renderer* gpRenderer = nullptr;
+		bool gUseIndirectLighting = true;
+		bool gUseDirectLighting = true;
+		bool gUseConstantAmbient = false;
+		bool gUseShadows = true;
+		bool gDrawRays = false;
 	}
 }
 
@@ -291,6 +296,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 
+	if (gUseDirectLighting)
 	{
 		PIXMARKER(L"Do lighting");
 		ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
@@ -300,7 +306,10 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
 	}
 	
-	gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo(pCam));
+	if (gUseIndirectLighting)
+	{
+		gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo(pCam));
+	}
 
 	/*gFxAmbientLighting.set();
 	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -318,8 +327,11 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gpDevice->SetRenderTargets(&m_pOutputTarget, 1, gpDevice->GetDefaultDepthBuffer());
 
 	{
-		PIXMARKER(L"Draw rays");
-		m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
+		if (gDrawRays)
+		{
+			PIXMARKER(L"Draw rays");
+			m_rayDrawer->render(m_lightVolumeInjector.getCollidedRays(), viewProj);
+		}
 	}
 
 	gFxCopyToBack.doCopy(m_pOutputTarget);

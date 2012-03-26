@@ -67,5 +67,11 @@ namespace Craze
 
 			Scene* m_pScene;
 		};
+
+		extern bool gUseIndirectLighting;
+		extern bool gUseShadows;
+		extern bool gUseDirectLighting;
+		extern bool gUseConstantAmbient;
+		extern bool gDrawRays;
 	}
 }

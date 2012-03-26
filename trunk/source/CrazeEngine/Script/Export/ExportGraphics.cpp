@@ -8,6 +8,7 @@
 #include "Scene/Scene.h"
 #include "CameraController/FreeFlyCamera.h"
 #include "Device.h"
+#include "Graphics.h"
 
 using namespace luabind;
 using namespace Craze;
@@ -29,6 +30,20 @@ Vec3 camUnproject(Camera* pCam, const Vector2& v)
 	return pCam->GetPointerDirection(pos);
 }
 
+void useIndirect(bool v)
+{
+	gUseIndirectLighting = v;
+}
+
+void useDirect(bool v)
+{
+	gUseDirectLighting = v;
+}
+void drawRays(bool v)
+{
+	gDrawRays = v;
+}
+
 void craze_open_graphics(lua_State* L)
 {
 	luabind::
@@ -48,6 +63,9 @@ void craze_open_graphics(lua_State* L)
 		class_<ICameraController>("CameraController"),
 		class_<FreeFlyCamera, ICameraController*>("FreeFlyCamera")
 			.def(constructor<>())
-			.property("speed", &FreeFlyCamera::GetSpeed, &FreeFlyCamera::SetSpeed)
+			.property("speed", &FreeFlyCamera::GetSpeed, &FreeFlyCamera::SetSpeed),
+		def("useIndirectLighting", &useIndirect),
+		def("useDirectLighting", &useDirect),
+		def("drawRays", &drawRays)
 	];
 }
