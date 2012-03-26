@@ -11,6 +11,7 @@
 #include "Buffer/Buffer.h"
 #include "EffectUtil/EffectHelper.h"
 #include "EffectUtil/CBufferHelper.hpp"
+#include "Scene/Scene.h"
 
 #include "PIXHelper.h"
 
@@ -20,16 +21,27 @@ using namespace Craze::Graphics2;
 bool LVFirstBounceEffect::initialize()
 {
 	m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.png")));
+	m_frustumCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 8);
 
 	return IEffect::initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh");
 }
 
-void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj)
+void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam)
 {
 	if (!m_random.get())
 	{
 		return;
 	}
+
+	Vector3 corners[8];
+	cam->GetFrustumCorners(0.f, 1000.f, corners);
+	CBufferHelper cb(gpDevice, m_frustumCBuffer);
+	for (int i = 0; i < 8; ++i)
+	{
+		cb[i] = corners[i].v;
+	}
+	cb.Unmap();
+	gpDevice->GetDeviceContext()->PSSetConstantBuffers(1, 1, &m_frustumCBuffer);
 
 	IEffect::set();
 

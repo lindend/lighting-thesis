@@ -33,7 +33,7 @@ namespace Craze
 
 		class Scene
 		{
-			CRAZE_ALLOC();
+			CRAZE_ALLOC_ALIGN(16);
 		public:
 			Scene(Device* device);
 			~Scene();

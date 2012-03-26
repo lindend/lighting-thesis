@@ -122,7 +122,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	Matrix4 viewProj = c.GetView() * c.GetProjection();
 
 	renderRSMs(scene, &c, viewProj);
-	spawnRays(viewProj);
+	spawnRays(viewProj, scene->getCamera());
 	traceRays();
 	injectToLV(scene->getCamera());
 
@@ -150,10 +150,10 @@ void LightVolumeInjector::renderRSMs(Scene* scene, const Camera* c, const Matrix
 	}
 }
 
-void LightVolumeInjector::spawnRays(const Matrix4& viewProj)
+void LightVolumeInjector::spawnRays(const Matrix4& viewProj, const Camera* cam)
 {
 	PIXMARKER(L"Spawn rays");
-	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj);
+	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj, cam);
 }
 
 /*void injectToLightVolumes()
@@ -197,23 +197,15 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 {
 	LightVolumeInfo lvinfo;
 	
-	float zSlice =  2000.f;
-	Vector3 slicePt = cam->GetPosition() + cam->GetDirection() * zSlice;
-	float upVecScale = Tan(cam->GetFovY() * 0.5f) * zSlice;
-	Vector3 rightVec = Cross(cam->GetDirection(), cam->GetUp()) * upVecScale * cam->GetAspect();
-	Vector3 upVec = Normalize(Cross(rightVec, cam->GetDirection())) * upVecScale;
-
-	Vector3 corners[] = {
-		slicePt + rightVec + upVec,
-		slicePt + rightVec - upVec,
-		slicePt - rightVec + upVec,
-		slicePt - rightVec - upVec
-	};
-
+	float zSlice = 2000.f;
+	
 	lvinfo.start = cam->GetPosition();
 	lvinfo.end = cam->GetPosition();
 
-	for (int i = 0; i < 4; ++i)
+	Vector3 corners[8];
+	cam->GetFrustumCorners(0.f, zSlice, corners);
+
+	for (int i = 4; i < 8; ++i)
 	{
 		lvinfo.start = Min(lvinfo.start, corners[i]);
 		lvinfo.end = Max(lvinfo.end, corners[i]);

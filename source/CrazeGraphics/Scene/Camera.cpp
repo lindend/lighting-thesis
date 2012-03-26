@@ -90,3 +90,21 @@ Vector3 Camera::GetPointerDirection(Vector2 scrPos)
 	return ((Vector3)world - m_Position).Normalized();
 }
 
+void Camera::GetFrustumCorners(float znear, float zfar, Vector3 frustumCorners[8]) const
+{
+		Vector3 farSlicePt = m_Position + m_Direction * zfar;
+		Vector3 nearSlicePt = m_Position + m_Direction * znear;
+		float upVecScale = Tan(m_FOV * 0.5f);
+		Vector3 rightVec = Cross(m_Direction, m_Up) * upVecScale * m_Aspect;
+		Vector3 upVec = Normalize(Cross(rightVec, m_Direction)) * upVecScale;
+
+		frustumCorners[0] = nearSlicePt - rightVec * znear + upVec * znear;
+		frustumCorners[1] = nearSlicePt + rightVec * znear + upVec * znear;
+		frustumCorners[2] = nearSlicePt + rightVec * znear - upVec * znear;
+		frustumCorners[3] = nearSlicePt - rightVec * znear - upVec * znear;
+
+		frustumCorners[4] = farSlicePt - rightVec * zfar + upVec * zfar;
+		frustumCorners[5] = farSlicePt + rightVec * zfar + upVec * zfar;
+		frustumCorners[6] = farSlicePt + rightVec * zfar - upVec * zfar;
+		frustumCorners[7] = farSlicePt - rightVec * zfar - upVec * zfar;
+}

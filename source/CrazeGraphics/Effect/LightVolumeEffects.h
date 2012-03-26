@@ -14,18 +14,20 @@ namespace Craze
 		class Buffer;
 		class SRVBuffer;
 		class TextureResource;
+		class Camera;
 
 		class LVFirstBounceEffect : IEffect
 		{
 		public:
 			bool initialize();
-			void doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj);
+			void doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam);
 
 			void setObjectProperties(const Matrix4& world, const Material& material) {}
 
 			void destroy() { IEffect::destroy(); }
 		private:
 			TexturePtr m_random;
+			ID3D11Buffer* m_frustumCBuffer;
 		};
 
 		struct LightVolumeInfo

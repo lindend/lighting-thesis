@@ -50,6 +50,8 @@ namespace Craze
 
 			Vector3 GetPointerDirection(Vector2 scrPos);
 
+			void GetFrustumCorners(float znear, float zfar, Vector3 frustumCorners[8]) const;
+
 		private:
 			Matrix4 m_Proj;
 			Matrix4 m_InvProj;

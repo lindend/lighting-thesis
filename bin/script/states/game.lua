@@ -167,6 +167,22 @@ listener = event.mouseMove.Listener(function (pos)
 											marker.transform.pos = hit
 										end
 									end)
+useIndirect = true
+useDirect = true
+drawRays = false
+keyActions = { 
+		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
+		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect) end,
+		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end
+	 }
+function onKey(kc, ks)
+	if ks == 0 then
+		if keyActions[kc] ~= nil then
+			keyActions[kc]()
+		end
+	end
+end
+keyListener = event.keyboard.Listener(onKey)
 
 --event.mouseMove.stopListen(listener)
 --[[
