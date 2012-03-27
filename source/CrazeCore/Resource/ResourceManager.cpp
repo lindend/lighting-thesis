@@ -268,7 +268,7 @@ std::shared_ptr<const Resource> ResourceManager::loadResource(u64 fileId, std::f
     if (!dataLoader)
     {
         char buf[255];
-		sprintf_s(buf, "Unable to locate the resource: %u", fileId);
+		sprintf_s(buf, "Unable to locate the resource: %I64u", fileId);
 		//itoa(buf, fileId);
         LOG_ERROR(buf);
         return nullptr;

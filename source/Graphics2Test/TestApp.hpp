@@ -10,7 +10,7 @@ public:
 	bool Initialize(int argc, const char* argv[])
 	{
 		bool result = Application::Initialize(argc, argv);
-		ShowCursor(true);
+		ShowCursor(false);
 		return result;
 	}
 };
