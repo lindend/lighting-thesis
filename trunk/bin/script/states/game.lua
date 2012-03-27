@@ -10,8 +10,7 @@ function Static(pos, mesh)
 	print("Adding static " .. mesh .. " at " .. pos.x .. " " .. pos.y .. " " .. pos.z)
 	counter = counter + 1
 	return level:add("static" .. counter, {	component.transform(pos),
-											component.mesh{file = mesh},
-											component.navmesh{file = mesh}})
+											component.mesh{file = mesh}})
 end
 function Object(name, params)
 	print("Adding object " .. name)
