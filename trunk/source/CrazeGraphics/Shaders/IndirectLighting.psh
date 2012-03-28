@@ -11,7 +11,20 @@ float3 cellFromPos(float3 worldPos)
 {
 	float3 localPos = (worldPos - LVStart) / (LVCellSize.w * LVCellSize.xyz);
 	//localPos.z *= LVCellSize.w;
+	localPos.y = 1.f - localPos.y;
 	return localPos;
+}
+
+float3 evalIndirectLightAt(float3 cell, float3 normal)
+{
+	float4 redSH = LightVolumeR.Sample(BilinearBorder, cell);
+	float4 greenSH = LightVolumeG.Sample(BilinearBorder, cell);
+	float4 blueSH = LightVolumeB.Sample(BilinearBorder, cell);
+
+	float4 sh = EvalSH(-normal);
+
+	return max(0.f, float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)) * 0.3f);
+
 }
 
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
@@ -22,20 +35,24 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float3 pos = DepthToPos(depth, uv);
 
 	float3 cell = cellFromPos(pos);
-	cell.y = 1.f - cell.y;
 
 	if (max(cell.x, cell.y) > 1.f || min(cell.x, cell.y) < 0.f || cell.z < 0.f || cell.z > 1.f)
 	{
 		discard;
 	}
 
-	float4 redSH = LightVolumeR.Sample(BilinearBorder, cell);
-	float4 greenSH = LightVolumeG.Sample(BilinearBorder, cell);
-	float4 blueSH = LightVolumeB.Sample(BilinearBorder, cell);
+	float3 light = evalIndirectLightAt(cell, normal);
 
-	float4 sh = EvalSH(-normal);
-
-	float3 light = max(0.f, float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)) * 0.3f);
+	/*float3 toCam = normalize(CameraPos.xyz - pos);
+	float ptDist = distance(pos, CameraPos.xyz);
+	float splits = min(30.f, ptDist / 100.f);
+	float3 eLight = 0.f;
+	[unroll(30)]
+	for (int i = 0; i < splits; ++i)
+	{
+		eLight += 0.03f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+	}
+	eLight *= splits / floor(splits);*/
 
 	return float4(light * color, 1.0f);
 }

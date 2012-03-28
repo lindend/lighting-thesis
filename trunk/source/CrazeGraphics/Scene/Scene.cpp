@@ -14,16 +14,17 @@
 
 using namespace Craze;
 using namespace Craze::Graphics2;
-Scene::Scene(Device* device) : m_device(device), m_numLights(0), m_maxLightIndex(-1)
+Scene::Scene(Device* device) : m_device(device), m_numPointLights(0), m_hlightPool(sizeof(u32)), m_numDirLights(0), m_numSpotLights(0)
 {
 	m_meshBBs = (BoundingBox*)gMemory.AllocateAligned(16, sizeof(BoundingBox) * MaxMeshesInScene, __FILE__, __LINE__);;
 	m_bounds = CrNew BoundingBox();
 	m_camera = CrNew Camera();
 
-	memset(m_activeLights, 0, sizeof(m_activeLights));
 }
 Scene::~Scene()
 {
+	clearLights();
+
 	gMemory.FreeAligned(m_meshBBs);
 	delete m_bounds;
 	delete m_camera;
@@ -34,67 +35,78 @@ Scene::~Scene()
 	}
 }
 
-Light* Scene::addLight(const Light& l)
+template<typename T> void Scene::freeAllLights(T lights, int numLights)
 {
-	PROFILEF();
-
-	if (m_numLights >= MaxLightsInScene)
+	for (int i = 0; i < numLights; ++i)
 	{
-		return nullptr;
+		m_hlightPool.free(lights[i].handle);
 	}
-
-	int idx = 0;
-	if (m_maxLightIndex + 1 == m_numLights)
-	{
-		idx = m_numLights;
-	} else
-	{
-		idx = findFirstFreeLightSlot();
-	}
-	m_maxLightIndex = Max(m_maxLightIndex, idx);
-	++m_numLights;
-	m_lights[idx] = l;
-	m_activeLights[idx / 32] |= 1 << idx % 32;
-	return &m_lights[idx];
 }
 
-void Scene::removeLight(Light* pLight)
+void Scene::clearLights()
 {
-	PROFILEF();
+	freeAllLights(m_pointLights, m_numPointLights);
+	freeAllLights(m_spotLights, m_numSpotLights);
 
-	int idx = (pLight - m_lights) / sizeof(Light);
-
-	assert(idx >= 0 && idx < MaxLightsInScene);
-
-	if (idx == m_maxLightIndex)
-	{
-		--m_maxLightIndex;
-	}
-
-	m_activeLights[idx / 32] &= ~(1 << idx % 32);
+	m_numPointLights = 0;
+	m_numSpotLights = 0;
+	m_numDirLights = 0;
 }
 
-inline int firstBitNotSet(int v)
+HLIGHT Scene::addLight(const PointLight& l)
 {
-	//http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
-	static const int MultiplyDeBruijnBitPosition[32] =
-	{
-	  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-	  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-	};
-	return MultiplyDeBruijnBitPosition[((unsigned __int32)((v & -v) * 0x077CB531U)) >> 27];
+	assert(m_numPointLights != MaxPointLights);
+	HLIGHT hlight = (HLIGHT)m_hlightPool.malloc();
+	*hlight = m_numPointLights++;
+	m_pointLights[*hlight].light = l;
+	m_pointLights[*hlight].handle = hlight;
+	return hlight;
 }
 
-int Scene::findFirstFreeLightSlot() const
+PointLight* Scene::getPointLight(HLIGHT light)
 {
-	assert(m_numLights < MaxLightsInScene);
+	return &m_pointLights[*light].light;
+}
 
-	int i = 0;
-	for ( ; m_activeLights[i] == 0xFFFFFFFF && i < MaxLightsInScene; ++i);
+void Scene::removePointLight(HLIGHT light)
+{
+	m_pointLights[*light] = m_pointLights[m_numPointLights - 1];
+	*m_pointLights[*light].handle = *light;
+	m_hlightPool.free(light);
+	--m_numPointLights;
+}
 
-	assert(m_activeLights[i] != 0xFFFFFFFF);
+HLIGHT Scene::addLight(const SpotLight& l)
+{
+	assert(m_numSpotLights != MaxSpotLights);
+	HLIGHT hlight = (HLIGHT)m_hlightPool.malloc();
+	*hlight = m_numSpotLights++;
+	m_spotLights[*hlight].light = l;
+	m_spotLights[*hlight].handle = hlight;
+	return hlight;
+}
 
-	return i * 32 + firstBitNotSet(m_activeLights[i]);
+SpotLight* Scene::getSpotLight(HLIGHT light)
+{
+	return &m_spotLights[*light].light;
+}
+
+void Scene::remoteSpotLight(HLIGHT light)
+{
+	m_spotLights[*light] = m_spotLights[m_numSpotLights - 1];
+	*m_spotLights[*light].handle = *light;
+	m_hlightPool.free(light);
+	--m_numSpotLights;
+}
+
+HLIGHT Scene::addLight(const DirectionalLight& l)
+{
+	assert(m_numDirLights != MaxDirectionalLights);
+	HLIGHT hlight = (HLIGHT)m_hlightPool.malloc();
+	*hlight = m_numDirLights++;
+	m_dirLights[*hlight].light = l;
+	m_dirLights[*hlight].handle = hlight;
+	return hlight;
 }
 
 ModelNode* Scene::addModel(std::shared_ptr<const Model> model, NODEFLAGS flags)
@@ -169,55 +181,74 @@ void Scene::buildDrawList(DrawList* drawList, const Matrix4& viewProj) const
 	}
 }
 
-bool isLightVisible(const Matrix4& viewProj, const Light& l)
+bool isLightVisible(const Matrix4& viewProj, const DirectionalLight& l)
 {
 	return true;
 }
 
-LightArray Scene::getVisibleLights(const Matrix4& viewProj)
+bool isLightVisible(const Matrix4& viewProj, const SpotLight& l)
+{
+	return true;
+}
+
+bool isLightVisible(const Matrix4& viewProj, const PointLight& l)
+{
+	return true;
+}
+
+
+const PointLightArray Scene::getVisiblePointLights(const Matrix4& viewProj) const
 {
 	PROFILEF();
-	int numSoAs = m_numLights / 4 + Min<int>(1, m_numLights % 4);
 
-	LightArray out;
+	PointLightArray out;
+	out.pointLights = (PointLight*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(PointLight) * m_numPointLights + 15));
+	out.numLights = 0;
 
-	out.pPositions = (SoAV3*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(SoAV3) * numSoAs + 15));
-	out.pColors = (Vector4*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(Vector4) * m_numLights + 15));
-	out.pRanges = (float*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(float) * m_numLights + 15));
-	out.numPosSoA = numSoAs;
-
-	int n = 0;
 	int outIdx = 0;
-	int i = 0;
-	for (; i <= m_maxLightIndex && n < m_numLights; ++i)
+	for (int i = 0; i < m_numPointLights; ++i)
 	{
-		if (m_activeLights[i / 32] == 0xFFFFFFFF || m_activeLights[i / 32] & (1 << (i % 32)))
+		if (isLightVisible(viewProj, m_pointLights[i].light))
 		{
-			++n;
-			Light l = m_lights[i];
-			if (isLightVisible(viewProj, l))
-			{
-				out.pPositions[outIdx / 4].xs.m128_f32[outIdx % 4] = l.pos->x;
-				out.pPositions[outIdx / 4].ys.m128_f32[outIdx % 4] = l.pos->y;
-				out.pPositions[outIdx / 4].zs.m128_f32[outIdx % 4] = l.pos->z;
-
-				out.pRanges[outIdx] = l.pos->w;
-				out.pColors[outIdx] = l.color;
-
-				++outIdx;
-			}
+			out.pointLights[outIdx] = m_pointLights[i].light;
+			++outIdx;
 		}
 	}
-	m_maxLightIndex = i - 1;
 
 	out.numLights = outIdx;
 
-	for (; outIdx % 4; ++outIdx)
-	{
-		out.pPositions[outIdx / 4].xs.m128_f32[outIdx % 4] = 0.f;
-		out.pPositions[outIdx / 4].ys.m128_f32[outIdx % 4] = 0.f;
-		out.pPositions[outIdx / 4].zs.m128_f32[outIdx % 4] = 0.f;
-	}
-
 	return out;
+}
+
+const SpotLightArray Scene::getVisibleSpotLights(const Matrix4& viewProj) const
+{
+	PROFILEF();
+
+	SpotLightArray out;
+	out.spotLights = (SpotLight*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(SpotLight) * m_numSpotLights + 15));
+	out.numLights = 0;
+
+	int outIdx = 0;
+	for (int i = 0; i < m_numSpotLights; ++i)
+	{
+		if (isLightVisible(viewProj, m_spotLights[i].light))
+		{
+			out.spotLights[outIdx] = m_spotLights[i].light;
+			++outIdx;
+		}
+	}
+	out.numLights = outIdx;
+	return out;
+}
+
+const DirectionalLight* Scene::getDirectionalLights(int& numLights) const
+{
+	numLights = m_numDirLights;
+	
+	DirectionalLight* lights = (DirectionalLight*)Next16ByteAddr(gMemory.FrameAlloc(sizeof(DirectionalLight) * m_numDirLights + 15));
+	for (int i = 0; i < m_numDirLights; ++i)
+	{
+		lights[i] = m_dirLights[i].light;
+	}
+	return lights;
 }

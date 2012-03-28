@@ -31,6 +31,15 @@ namespace Craze
 			NODE_ALLFLAGS = NODE_DYNAMIC | NODE_DISPLAYABLE,
 		};
 
+		typedef u32* HLIGHT;
+
+		template <typename T>
+		struct LightItem
+		{
+			T light;
+			HLIGHT handle;
+		};
+
 		class Scene
 		{
 			CRAZE_ALLOC_ALIGN(16);
@@ -49,30 +58,49 @@ namespace Craze
 			void build() {}
 			void buildDrawList(DrawList* drawList, const Matrix4& viewProj) const;
 
-			LightArray getVisibleLights(const Matrix4& viewProj);
+			const PointLightArray getVisiblePointLights(const Matrix4& viewProj) const;
+			const SpotLightArray getVisibleSpotLights(const Matrix4& viewProj) const;
+			const DirectionalLight* getDirectionalLights(int& numLights) const;
 
 			Camera* getCamera() { return m_camera; }
 
-			Light* addLight(const Light& l);
-			void addSun(const Light& l) { m_sunLight = l; }
-			void removeLight(Light* light);
-			const Light& getSun() const { return m_sunLight; }
+			HLIGHT addLight(const DirectionalLight& l);
+			HLIGHT addLight(const SpotLight& l);
+			HLIGHT addLight(const PointLight& l);
+			
+			PointLight* getPointLight(HLIGHT l);
+			SpotLight* getSpotLight(HLIGHT l);
+			DirectionalLight* getDirectionalLight(HLIGHT l);
 
+			void removePointLight(HLIGHT light);
+			void remoteSpotLight(HLIGHT light);
+			void removeDirectionalLight(HLIGHT light);
+
+			void clearLights();
+			
 			Vector3 AmbientLight;
 			BoundingBox* m_bounds;
 
 			std::vector<MeshItem> getModels(NODEFLAGS match = (NODEFLAGS)0) const;
 		private:
+			template <typename T> void freeAllLights(T lights, int numLights);
+
 			int findFirstFreeLightSlot() const;
 
-			static const int MaxLightsInScene = 3200;
-			Light m_lights[MaxLightsInScene];
-			int m_numLights;
-			int m_activeLights[MaxLightsInScene / 32];
-			int m_maxLightIndex;
+			boost::pool<> m_hlightPool;
 
-			Light m_sunLight;
-			bool m_hasSun;
+			static const int MaxPointLights = 3200;
+			static const int MaxSpotLights = 2000;
+			static const int MaxDirectionalLights = 10;
+
+			LightItem<PointLight> m_pointLights[MaxPointLights];
+			int m_numPointLights;
+			
+			LightItem<SpotLight> m_spotLights[MaxSpotLights];
+			int m_numSpotLights;
+
+			LightItem<DirectionalLight> m_dirLights[MaxDirectionalLights];
+			int m_numDirLights;
 
 			static const int MaxMeshesInScene = 3200;
 

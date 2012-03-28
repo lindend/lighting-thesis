@@ -5,10 +5,7 @@
 
 #include "../Texture/RenderTarget.h"
 
-#include "../Light/SpotLight.h"
-#include "../Light/PointLight.h"
-#include "../Light/ProjectedLight.h"
-#include "../Light/DirectionalLight.h"
+#include "../Light/Light.h"
 
 using namespace Craze::Graphics2;
 using namespace Craze;

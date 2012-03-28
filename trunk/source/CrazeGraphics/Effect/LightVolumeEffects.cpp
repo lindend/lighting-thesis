@@ -34,7 +34,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	}
 
 	Vector3 corners[8];
-	cam->GetFrustumCorners(0.f, 1000.f, corners);
+	cam->GetFrustumCorners(1.f, 1000.f, corners);
 	CBufferHelper cb(gpDevice, m_frustumCBuffer);
 	for (int i = 0; i < 8; ++i)
 	{
@@ -91,7 +91,7 @@ bool LVInjectRaysEffect::initialize()
 	D3D11_RASTERIZER_DESC rsDesc;//(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
 	rsDesc.AntialiasedLineEnable = true;
 	rsDesc.CullMode = D3D11_CULL_NONE;
-	rsDesc.DepthBias = 0.f;
+	rsDesc.DepthBias = 0;
 	rsDesc.DepthBiasClamp = 0.f;
 	rsDesc.FillMode = D3D11_FILL_SOLID;
 	rsDesc.FrontCounterClockwise = true;
@@ -126,11 +126,6 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	float bf[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_blendState, bf, 0xFFFFFFFF);
-
-	float black[] = { 0.f, 0.f, 0.f, 0.f };
-	dc->ClearRenderTargetView(LVs[0]->GetRenderTargetView(), black);
-	dc->ClearRenderTargetView(LVs[1]->GetRenderTargetView(), black);
-	dc->ClearRenderTargetView(LVs[2]->GetRenderTargetView(), black);
 
 	dc->RSSetState(m_rasterizerState);
 

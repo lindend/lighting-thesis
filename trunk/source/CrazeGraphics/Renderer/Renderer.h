@@ -57,13 +57,11 @@ namespace Craze
 			static const int NumGBuffers = 3;
 			std::shared_ptr<RenderTarget> m_GBuffers[NumGBuffers];
 			std::shared_ptr<RenderTarget> m_pOutputTarget;
-			std::shared_ptr<RenderTarget> m_rsmTargets[2];
 
 			std::shared_ptr<RenderTarget> m_pShadowMap;
 			std::shared_ptr<DepthStencil> m_pShadowDS;
 
 			std::shared_ptr<Mesh> m_pScreenQuad;
-
 
 			//std::auto_ptr<SpotLight> m_pSpotLight;
 			std::auto_ptr<DirectionalLight> m_pDirLight;

@@ -5,21 +5,21 @@ using namespace Craze;
 using namespace Craze::Graphics2;
 
 
-Light Craze::Graphics2::CreatePointLight(const Vector3& pos, float range, const Vector3& color)
+PointLight Craze::Graphics2::CreatePointLight(const Vector3& pos, float range, const Vector3& color)
 {
-	Light l;
-	l.type = POINTLIGHT;
+	PointLight l;
 	l.pos = pos;
-	l.pos->w = range;
+	l.range = range;
 	l.color = color;
+	l.specular = 1.f;
 	return l;
 }
 
-Light Craze::Graphics2::createDirectionalLight(const Vector3& dir, const Vector3& color)
+DirectionalLight Craze::Graphics2::createDirectionalLight(const Vector3& dir, const Vector3& color)
 {
-	Light l;
-	l.type = DIRECTIONALLIGHT;
+	DirectionalLight l;
 	l.dir = dir;
 	l.color = color;
+	l.specular = 1.f;
 	return l;
 }

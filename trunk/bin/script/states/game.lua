@@ -169,10 +169,12 @@ listener = event.mouseMove.Listener(function (pos)
 useIndirect = true
 useDirect = true
 drawRays = false
+useShadows = true
 keyActions = { 
 		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
 		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect) end,
-		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end
+		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end,
+		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end
 	 }
 function onKey(kc, ks)
 	if ks == 0 then

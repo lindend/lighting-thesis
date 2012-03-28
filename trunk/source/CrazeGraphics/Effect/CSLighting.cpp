@@ -22,7 +22,7 @@ bool CSLighting::initialize()
 	{
 		return false;
 	}
-	m_lightBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(Light), MaxLights, nullptr, true, "Light buffer");
+	m_lightBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(PointLight), MaxLights, nullptr, true, "Light buffer");
 
     m_cs = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("Lighting.csh");
     return (m_cs != 0);
@@ -35,7 +35,7 @@ void CSLighting::destroy()
 	m_lightBuffer = nullptr;
 }
 
-void CSLighting::run(const Camera* camera, ID3D11ShaderResourceView* gbufSrvs[4], ID3D11UnorderedAccessView* target, const LightArray& lights)
+void CSLighting::run(const Camera* camera, ID3D11ShaderResourceView* gbufSrvs[4], ID3D11UnorderedAccessView* target, const PointLightArray& lights)
 {
 	PROFILEF();
 	if (lights.numLights > MaxLights)
@@ -49,15 +49,8 @@ void CSLighting::run(const Camera* camera, ID3D11ShaderResourceView* gbufSrvs[4]
 		D3D11_MAPPED_SUBRESOURCE mapped;
 		gpDevice->GetDeviceContext()->Map(m_lightBuffer->GetBuffer(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
 
-		Light* data = (Light*)mapped.pData;
-		for (int i = 0; i < lights.numLights; ++i)
-		{
-			data[i].pos = Vector4(	lights.pPositions[i / 4].xs.m128_f32[i % 4],
-									lights.pPositions[i / 4].ys.m128_f32[i % 4],
-									lights.pPositions[i / 4].zs.m128_f32[i % 4],
-									lights.pRanges[i]);
-			data[i].color = lights.pColors[i];
-		}
+		PointLight* data = (PointLight*)mapped.pData;
+		memcpy(data, lights.pointLights, sizeof(PointLight) * lights.numLights);
 	}
 
 	gpDevice->GetDeviceContext()->Unmap(m_lightBuffer->GetBuffer(), 0);

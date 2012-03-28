@@ -37,6 +37,35 @@ float3 clampToHemisphere(float3 v, float3 n)
 	return dot(v, n) < 0.f ? normalize(v - n * dot(n, v)) : normalize(v);
 }
 
+float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
+{
+	float3 e0 = v1 - v0;
+	float3 e1 = v2 - v0;
+	float3 e2 = v3 - v0;
+	float a0 = length(cross(e0, e1)) * 0.5f;
+	float a1 = length(cross(e1, e2)) * 0.5f;
+
+	float invAtot = 1.f / (a0 + a1);
+	a0 *= invAtot;
+
+	//Check if triangle a1 got selected
+	if (random.z < a0)
+	{
+		v1 = v2;
+		v2 = v3;
+	}
+
+	float3 p3 = v2 + v1 - v0;
+	float3 x = v0 + (v1 - v0) * random.x + (v2 - v0) * random.y;
+	//if (dot(normalize(x - v1), normalize(v2 - v1)) <= dot(normalize(v2 - v1), normalize(v0 - v1)))
+
+	if (distance(x, v0) < distance(x, v3))
+	{
+		x = v0 - (x - p3);
+	}
+	return x;
+}
+
 #define RAYS_PER_TEXEL 1
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
@@ -92,19 +121,21 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 		float power = solidAngle / (2.0f * 3.14159265358979f);
 
-		if (power > 0.01f)
+		if (power > 0.00001f)
 		{
 			float4 random = Random.Sample(Point, uv + i * 0.1f);
 			//Emit the photon!
 			PhotonRay pr;
+			
 			float3 rndL0 = v0 + (v1 - v0) * random.x;
 			float3 rndL1 = v2 + (v3 - v0) * random.x;
-			float3 target = rndL0 + (rndL1 - rndL0) * random.y;
+			//float3 target = rndL0 + (rndL1 - rndL0) * random.y;
+			float3 target = randomInQuad(v0, v1, v2, v3, random);
 			pr.dir = normalize(target - position);
 			if (dot(pr.dir, normal) > 0.f)
 			{
 				//Just move out the ray a bit
-				pr.origin = position + normal * 10.f;
+				pr.origin = position + normal * 50.f;
 				pr.power = color * power * dot(pr.dir, normal);//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
 				OutRays.Append(pr);
 			}

@@ -1,14 +1,32 @@
 #include "globals.incl"
 
+float3 DepthToPos(float depth, float2 uv)
+{
+	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
+	return worldPos.xyz / worldPos.w;
+}
+
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
 	
 	float4 color = ColorSpec.Sample(Point, uv);
 	float4 normRough = NormalRough.Sample(Point, uv);
+	float depth = Depth.Sample(Point, uv).x;
 	float3 normal = normRough.xyz;
 	float roughness = normRough.w;
 
+	float3 wpos = DepthToPos(depth, uv);
+	float4 lightProjSpace = mul(float4(wpos, 1.f), LightViewProj);
+	lightProjSpace.xyz /= lightProjSpace.w;
+
+	lightProjSpace.xy = lightProjSpace.xy * 0.5f + 0.5f;
+	lightProjSpace.y = 1.f - lightProjSpace.y;
+
+	float shadowDepth = ShadowMap.Sample(BilinearBorder, lightProjSpace.xy).x;
+
+	float shadowFactor = shadowDepth + 0.001f > lightProjSpace.z ? 1.f : 0.f;
+
 	float shading = saturate(dot(normalize(LightDir), normalize(-normal)));// + 0.03f;
 
-	return float4(color.xyz * shading, 1.f);
+	return float4(color.xyz * shading * shadowFactor * 2.0f, 1.f);
 }

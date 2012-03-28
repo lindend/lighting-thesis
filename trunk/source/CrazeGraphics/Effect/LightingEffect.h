@@ -21,7 +21,7 @@ namespace Craze
 
 			void setObjectProperties(const Matrix4& world, const Material& material) {}
 
-			void doLighting(const Light& l, const Matrix4& view, std::shared_ptr<RenderTarget> shadowMap);
+			void doLighting(const DirectionalLight& l, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> shadowMap);
 
 			void destroy() { IEffect::destroy(); }
 		};

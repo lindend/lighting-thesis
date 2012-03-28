@@ -9,7 +9,7 @@ namespace Craze
 	{
 		class Camera;
 		class SRVBuffer;
-		struct LightArray;
+		struct PointLightArray;
 
 		class CSLighting
 		{
@@ -17,7 +17,7 @@ namespace Craze
 			bool initialize();
 			void destroy();
 
-			void run(const Camera* pCamera, ID3D11ShaderResourceView* pGBufSRVs[4], ID3D11UnorderedAccessView* pTarget, const LightArray& lights);
+			void run(const Camera* pCamera, ID3D11ShaderResourceView* pGBufSRVs[4], ID3D11UnorderedAccessView* pTarget, const PointLightArray& lights);
 		private:
 			std::shared_ptr<SRVBuffer> m_lightBuffer;
 			std::shared_ptr<const ComputeShaderResource> m_cs;

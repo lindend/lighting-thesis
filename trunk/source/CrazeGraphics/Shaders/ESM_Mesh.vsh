@@ -16,7 +16,7 @@ VS_OUTPUT main(VS_INPUT input)
 	VS_OUTPUT output;
 	float4 wsPos = mul(input.pos, ObjTransform);
 	output.pos = mul(wsPos, LightViewProj);
-	output.depth = float2(0.f, length(LightPos - wsPos.xyz));
+	output.depth = output.pos.zw;//float2(0.f, distance(LightPos, wsPos.xyz));
 
 	return output;
 }
