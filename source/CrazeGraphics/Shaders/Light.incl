@@ -30,15 +30,29 @@
 	#define POINTLIGHT LOCAL_POINT_ID
 #endif
 
-struct Light
+struct DirectionalLight
 {
-	uint type;
-	//The fourth component gives the squared range of the light
-	float4 pos;
-	//If using a spotlight, the fourth component gives the cone angle
-	float4 dir;
-	//A is the specular factor of the light
-	float4 color;
+	float3 dir;
+	float specular;
+	float3 color;
+};
+
+struct PointLight
+{
+	float3 pos;
+	float range;
+	float3 color;
+	float specular;
+};
+
+struct SpotLight
+{
+	float3 pos;
+	float range;
+	float3 direction;
+	float angle;
+	float3 color;
+	float specular;
 };
 
 #ifdef float4

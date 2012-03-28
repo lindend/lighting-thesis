@@ -4,8 +4,8 @@
 #include "../Graphics.h"
 #include "EffectHelper.h"
 #include "CBufferHelper.hpp"
-#include "../Light/SpotLight.h"
-#include "../Light/DirectionalLight.h"
+#include "Light/Light.h"
+#include "V3Math.h"
 
 using namespace Craze::Graphics2;
 using namespace Craze;
@@ -97,10 +97,9 @@ void CBufferManager::SetFrame(const CBPerFrame& data)
 CBPerLight CBufferManager::GetLightData(const DirectionalLight& light)
 {
 	CBPerLight data;
-	data.lightWorld = light.GetWorld();
-	data.lightColor = light.GetDiffuse();
-	data.lightDir = light.GetDirection();
-	data.lightSpecular = light.GetSpecular();
+	data.lightColor = light.color;
+	data.lightDir = light.dir;
+	data.lightSpecular = light.specular;
 
 	return data;
 }
@@ -115,14 +114,14 @@ void CBufferManager::SetLight(const CBPerLight& data)
 void CBufferManager::SetLight(const SpotLight& light, float texelSize)
 {
 	CBPerLight data;
-	data.lightViewProj = light.GetViewProj();
-	data.lightWorld = light.GetWorld();
-	data.lightAngle = light.GetFOV();
-	data.lightColor = light.GetDiffuse();
-	data.lightDir = light.GetDirection();
-	data.lightPos = light.GetPosition();
-	data.lightRange = light.GetRange();
-	data.lightSpecular = light.GetSpecular();
+	data.lightViewProj = Matrix4::CreateView(light.pos, light.direction + light.pos, Vector3::UP) * Matrix4::CreatePerspectiveFov(light.angle, 1.f, 1.f, light.range);
+	data.lightWorld = Matrix4::CreateFromRightUpForward(Cross(light.direction, Vector3::UP), Vector3::UP, light.direction);
+	data.lightAngle = light.angle;
+	data.lightColor = light.color;
+	data.lightDir = light.direction;
+	data.lightPos = light.pos;
+	data.lightRange = light.range;
+	data.lightSpecular = light.specular;
 	data.texelSize = texelSize;
 
 	CBufferHelper cbuffer(m_pDevice, m_pPerLight);

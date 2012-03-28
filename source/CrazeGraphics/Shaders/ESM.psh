@@ -4,12 +4,12 @@ float4 main(float2 depth : NORMAL0) : SV_Target0
 {
 	float4 color;
 
-	if (UseESM)
+	if (UseESM && false)
 	{
 		color = exp(depth.y * INVFar * ESMc);
 	} else
 	{
-		color = depth.y;
+		color = depth.x / depth.y;
 	}
 
 	return color;

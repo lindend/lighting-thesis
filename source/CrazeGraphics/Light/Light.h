@@ -11,16 +11,19 @@ namespace Craze
 {
 	namespace Graphics2
 	{
-		Light CreatePointLight(const Vector3& pos, float range, const Vector3& color);
-		Light createDirectionalLight(const Vector3& dir, const Vector3& color);
+		PointLight CreatePointLight(const Vector3& pos, float range, const Vector3& color);
+		DirectionalLight createDirectionalLight(const Vector3& dir, const Vector3& color);
 
-		struct LightArray
+		struct PointLightArray
 		{
-			SoAV3* pPositions;
-			Vector4* pColors;
-			float* pRanges;
+			PointLight* pointLights;
 			int numLights;
-			int numPosSoA;
+		};
+
+		struct SpotLightArray
+		{
+			SpotLight* spotLights;
+			int numLights;
 		};
 	}
 }

@@ -9,8 +9,6 @@
 #include "../Device.h"
 #include "../DrawList.h"
 #include "../Scene/Scene.h"
-#include "../Light/SpotLight.h"
-#include "../Light/DirectionalLight.h"
 #include "../Light/Light.h"
 #include "Texture/RenderTarget.h"
 #include "Texture/DepthStencil.h"
@@ -77,11 +75,7 @@ void Renderer::Initialize()
 	m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);
 
 	m_pShadowMap = RenderTarget::Create2D(gpDevice, 4096, 4096, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
-
-	m_rsmTargets[0] = RenderTarget::Create2D(gpDevice, 128, 128, 1, TEXTURE_FORMAT_COLOR_LINEAR, "RSM color");
-	m_rsmTargets[1] = RenderTarget::Create2D(gpDevice, 128, 128, 1, TEXTURE_FORMAT_VECTOR4, "RSM normal");
-
-	m_pShadowDS = DepthStencil::Create2D(gpDevice, 128, 128, DEPTHSTENCIL_FORMAT_D24S8);
+	m_pShadowDS = DepthStencil::Create2D(gpDevice, 4096, 4096, DEPTHSTENCIL_FORMAT_D24S8);
 
 	m_pScreenQuad = Mesh::createScreenQuad(gpDevice);
 
@@ -93,11 +87,6 @@ void Renderer::Initialize()
 	m_pSpotLight->SetDirection(pos * -1.0f, Vector3::UP);
 	m_pSpotLight->SetProjection(PI / 5.0f, 90.0f, 0.1f);
 	m_pSpotLight->SetSpecular(0.5f);*/
-
-	m_pDirLight.reset(CrNew DirectionalLight());
-	m_pDirLight->SetDiffuse(Vector3::ONE * 2.f);
-	m_pDirLight->SetDirection(Vector3::Normalize(Vector3(1.6f, -2.0f, -1.6f)), Vector3::UP);
-	m_pDirLight->SetSpecular(0.5f);
 
 	D3D11_DEPTH_STENCIL_DESC dsdesc;
 	ZeroMemory(&dsdesc, sizeof(dsdesc));
@@ -223,7 +212,13 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	mainScene.clear();
 	shadowScene.clear();
 
-	pScene->addSun(createDirectionalLight(Vector3(0.2, -1.f, 0.2f), Vector3::ONE));
+	//hax
+	static bool first = false;
+	if (!first)
+	{
+		pScene->addLight(createDirectionalLight(Vector3(0.2, -1.f, 0.2f), Vector3::ONE));
+		first = true;
+	}
 
 	pScene->update();
 
@@ -232,39 +227,17 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	const Camera* pCam = pScene->getCamera();
 	Matrix4 viewProj = pCam->GetView() * pCam->GetProjection();
 
-	Vector3 pos = pCam->GetPosition() + pCam->GetDirection() * pCam->GetFar() * 0.5f - m_pDirLight->GetDirection() * pCam->GetFar() * 2.f;
-	Matrix4 lightViewProj = Matrix4::CreateView(pos, m_pDirLight->GetDirection() + pos, Vector3::UP) * Matrix4::CreateOrtho(pCam->GetFar(), pCam->GetFar(), 10.f, pCam->GetFar() * 4.f);
+	int numDirLights;
+	const DirectionalLight* dirLights = pScene->getDirectionalLights(numDirLights);
 
 	std::shared_ptr<RenderTarget>* lightVolumes = m_lightVolumeInjector.getLightingVolumes(pScene);
 
 	//Thread this...
 	pScene->buildDrawList(&mainScene, viewProj);
 
-	//Move this somewhere else
-	pScene->buildDrawList(&shadowScene, lightViewProj);
-
-	LightArray visibleLights = pScene->getVisibleLights(viewProj);
-	Transform(pCam->GetView(), visibleLights.pPositions, visibleLights.numPosSoA);
-
 	float color[] = {0.5f, 0.5f, 0.5f, 0.f};
 	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_GBuffers[0]->GetRenderTargetView(), color);
 	gpDevice->Clear(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
-
-	/*if (!gpGraphics->Params.DisableDirect)
-	{
-		gpDevice->GetDeviceContext()->ClearDepthStencilView(m_pShadowDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
-		gpDevice->SetRenderTarget(m_pShadowMap, m_pShadowDS);
-
-		gpDevice->GetCbuffers()->SetLight(*m_pDirLight, lightViewProj, pos);
-
-		gFxShadow.set();
-
-		for (auto i = shadowScene.begin(); i != shadowScene.end(); ++i)
-		{
-			gFxShadow.setObjectProperties(*i->second.m_transform, *i->second.m_material);
-			i->second.m_mesh->draw();
-		}
-	}*/
 
 	gpDevice->SetRenderTargets(m_GBuffers, NumGBuffers, gpDevice->GetDefaultDepthBuffer());
 	gpDevice->ClearCache();
@@ -281,39 +254,65 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		}
 	}
 	
-	Light dir = pScene->getSun();
-
-
 	//The gbuffers are ready, perform lighting
 	ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
 	//gFxCSLighting.run(pCam, pSRVs, m_pOutputTarget->GetUAV(), visibleLights);
 
 	//Do the other lights, with shadows
-	gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
 	float black[] = { 0.f, 0.f, 0.f, 0.f };
 	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_pOutputTarget->GetRenderTargetView(), black);
 
 	const float bf[4] = {1.f, 1.f, 1.f, 1.f};
-	gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
+	
+	ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
+	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
 
 	if (gUseDirectLighting)
 	{
 		PIXMARKER(L"Do lighting");
-		ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
-		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
-		gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
+		for (int i = 0; i < numDirLights; ++i)
+		{
+			const DirectionalLight& light = dirLights[i];
+			Matrix4 lightViewProj = Matrix4::CreateView(light.dir * -2000.f, Vector3::ZERO, Vector3::UP) * Matrix4::CreateOrtho(2000.f, 2000.f, 1.f, 10000.f);
+			
+			if (gUseShadows)
+			{
+				PIXMARKER(L"Render shadow map");			
+				shadowScene.clear();
+				pScene->buildDrawList(&shadowScene, lightViewProj);
 
-		gFxLighting.doLighting(dir, pCam->GetView(), nullptr);
+				gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+
+				gpDevice->GetDeviceContext()->ClearRenderTargetView(m_pShadowMap->GetRenderTargetView(), bf);
+				gpDevice->GetDeviceContext()->ClearDepthStencilView(m_pShadowDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
+				gpDevice->SetRenderTarget(m_pShadowMap, m_pShadowDS);
+
+				gpDevice->GetCbuffers()->SetLight(light, lightViewProj, light.dir * -1000.f);
+
+				gFxShadow.set();
+
+				for (auto i = shadowScene.begin(); i != shadowScene.end(); ++i)
+				{
+					gFxShadow.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+					i->second.m_mesh->draw();
+				}
+			}
+
+			gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+			gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
+			
+			gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
+			gFxLighting.doLighting(light, lightViewProj, gUseShadows ? m_pShadowMap : nullptr);
+		}
 	}
 	
 	if (gUseIndirectLighting)
 	{
+		PIXMARKER(L"Do indirect lighting");
+		gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
 		gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo(pCam));
 	}
-
-	/*gFxAmbientLighting.set();
-	gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	gpDevice->GetDeviceContext()->Draw(3, 0);*/
 
 	pSRVs[0] = nullptr;
 	pSRVs[1] = nullptr;

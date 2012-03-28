@@ -155,12 +155,7 @@
     <ClInclude Include="Renderer\LightVolumeInjector.h" />
     <ClInclude Include="Scene\ModelNode.h" />
     <ClInclude Include="VertexStreams.h" />
-    <ClInclude Include="Light\DirectionalLight.h" />
-    <ClInclude Include="Light\ILight.h" />
     <ClInclude Include="Light\Light.h" />
-    <ClInclude Include="Light\PointLight.h" />
-    <ClInclude Include="Light\ProjectedLight.h" />
-    <ClInclude Include="Light\SpotLight.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Renderer\Renderer.h" />
     <ClInclude Include="DrawList.h" />
@@ -226,9 +221,7 @@
     <ClCompile Include="kdTree\kdTree.cpp" />
     <ClCompile Include="kdTree\kdTreeRayTrace.cpp" />
     <ClCompile Include="Lighting\SkyVisibility.cpp" />
-    <ClCompile Include="Light\DirectionalLight.cpp" />
     <ClCompile Include="Light\Light.cpp" />
-    <ClCompile Include="Light\SpotLight.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
     <ClCompile Include="Scene\Camera.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />

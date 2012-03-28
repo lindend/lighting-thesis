@@ -21,6 +21,7 @@ namespace Craze
 		{
             CRAZE_POOL_ALLOC(Model);
         public:
+			~Model() { onDestroy(); }
             virtual void onDestroy();
 
             const std::vector<MeshItem>& getMeshes() const { return m_meshes; }

@@ -63,7 +63,7 @@ Texture2D ColorSpec :					register(t0);
 Texture2D NormalRough :					register(t1);
 Texture2D LightMap :					register(t2);
 Texture2D Depth :						register(t3);
-//Texture2D ShadowMap :					register(t7);
+Texture2D ShadowMap :					register(t7);
 //Texture2DArray ShadowCascades :		register(t6);
 
 Texture2D Random :						register(t2);

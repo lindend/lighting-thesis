@@ -76,7 +76,7 @@ void LightVolumeInjector::setTriangles(Vec3* tris, int numTris)
 	m_numTriangles = numTris;
 }
 
-Camera findSMCamera(const Light& l, Scene* scene)
+Camera findSMCamera(const DirectionalLight& l, Scene* scene)
 {
 	Camera c;
 	
@@ -99,34 +99,62 @@ Camera findSMCamera(const Light& l, Scene* scene)
 	return c;
 }
 
+Camera findSMCamera(const SpotLight& l, Scene* scene)
+{
+	return Camera();
+}
+
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 {
 	return m_collidedRays;
 }
 
+template<typename T> void findSMCams(T lights, int numLights, Scene* scene, Camera* outCams)
+{
+	for (int i = 0; i < numLights; ++i)
+	{
+		outCams[i] = findSMCamera(lights[i], scene);
+	}
+}
+
+void LightVolumeInjector::injectAll(const Camera* cams, int numCams, Scene* scene)
+{
+	for (int i = 0; i < numCams; ++i)
+	{
+		const Camera& c = cams[i];
+		Matrix4 viewProj = c.GetView() * c.GetProjection();
+
+		renderRSMs(scene, &c, viewProj);
+		spawnRays(viewProj, scene->getCamera());
+
+		traceRays();
+		injectToLV(scene->getCamera());
+	}
+}
+
 std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* scene)
 {
-	/*
-	Algorithm overview:
-	X 1. Render RSMs
-	X 2. Spawn the photons from the RSM into m_toTestRays
-	X 3. Test all the rays in m_toTestRays against the triangles in m_triangleBuffer and store the result in m_collidedRays
-	X 4. Inject all the rays in m_collidedRays into the light volumes
-	  5. Return the light volumes and rejoice! :D (maybe we should instead light the scene here directly or something...)
-	*/
-
-
 	PIXMARKER(L"Create lighting volumes");
 
-	Camera c = findSMCamera(scene->getSun(), scene);
-	Matrix4 viewProj = c.GetView() * c.GetProjection();
+	float black[] = { 0.f, 0.f, 0.f, 0.f };
+	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[0]->GetRenderTargetView(), black);
+	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[1]->GetRenderTargetView(), black);
+	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[2]->GetRenderTargetView(), black);
 
-	renderRSMs(scene, &c, viewProj);
-	spawnRays(viewProj, scene->getCamera());
-	traceRays();
-	injectToLV(scene->getCamera());
+	MEM_AUTO_MARK_STACK;
 
+	int numDirLights;
+	const DirectionalLight* lights = scene->getDirectionalLights(numDirLights);
+	Camera* dirCams = (Camera*)gMemory.StackAlloc(Align(16), sizeof(Camera) * numDirLights);
+	findSMCams(lights, numDirLights, scene, dirCams);
+	injectAll(dirCams, numDirLights, scene);
 
+	const Camera* cam = scene->getCamera();
+	const SpotLightArray spotLights = scene->getVisibleSpotLights(cam->GetView() * cam->GetProjection());
+	Camera* spotCams = (Camera*)gMemory.StackAlloc(Align(16), sizeof(Camera) * spotLights.numLights);
+	findSMCams(spotLights.spotLights, spotLights.numLights, scene, spotCams);
+	injectAll(spotCams, spotLights.numLights, scene);
+	
 	return m_lightingVolumes;
 }
 

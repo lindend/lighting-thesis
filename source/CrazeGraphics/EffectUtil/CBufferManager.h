@@ -49,8 +49,8 @@ namespace Craze
 
 
 		class Device;
-		class SpotLight;
-		class DirectionalLight;
+		struct SpotLight;
+		struct DirectionalLight;
 
 		class CBufferManager
 		{

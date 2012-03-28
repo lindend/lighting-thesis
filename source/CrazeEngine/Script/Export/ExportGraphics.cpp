@@ -43,6 +43,10 @@ void drawRays(bool v)
 {
 	gDrawRays = v;
 }
+void useShadows(bool v)
+{
+	gUseShadows = v;
+}
 
 void craze_open_graphics(lua_State* L)
 {
@@ -66,6 +70,7 @@ void craze_open_graphics(lua_State* L)
 			.property("speed", &FreeFlyCamera::GetSpeed, &FreeFlyCamera::SetSpeed),
 		def("useIndirectLighting", &useIndirect),
 		def("useDirectLighting", &useDirect),
-		def("drawRays", &drawRays)
+		def("drawRays", &drawRays),
+		def("useShadows", &useShadows)
 	];
 }
