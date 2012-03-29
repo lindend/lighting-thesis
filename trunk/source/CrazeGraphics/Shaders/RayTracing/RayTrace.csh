@@ -64,7 +64,8 @@ float rayTriIntersect(float3 rayStartPos, float3 rayDirection, float3 v0, float3
 void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, uint3 threadId : SV_GroupThreadId, uint groupIdx : SV_GroupIndex)
 {
 	PhotonRay r = Rays.Consume();
-
+	//OutRays.Append(r);
+	//return;
 	uint NumTriangles, stride;
 	Triangles.GetDimensions(NumTriangles, stride);
 

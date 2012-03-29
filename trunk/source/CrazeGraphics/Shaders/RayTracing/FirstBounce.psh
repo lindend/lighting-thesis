@@ -37,6 +37,14 @@ float3 clampToHemisphere(float3 v, float3 n)
 	return dot(v, n) < 0.f ? normalize(v - n * dot(n, v)) : normalize(v);
 }
 
+float side(float3 v0, float3 v1, float3 ref, float3 p)
+{
+	float3 e = v1 - v0;
+	float3 up = cross(e, ref - v0);
+	float3 perp = cross(up, e);
+	return dot(ref - v0, p - v0);
+}
+
 float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
 {
 	float3 e0 = v1 - v0;
@@ -49,7 +57,7 @@ float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
 	a0 *= invAtot;
 
 	//Check if triangle a1 got selected
-	if (random.z < a0)
+	if (random.z > a0)
 	{
 		v1 = v2;
 		v2 = v3;
@@ -57,9 +65,7 @@ float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
 
 	float3 p3 = v2 + v1 - v0;
 	float3 x = v0 + (v1 - v0) * random.x + (v2 - v0) * random.y;
-	//if (dot(normalize(x - v1), normalize(v2 - v1)) <= dot(normalize(v2 - v1), normalize(v0 - v1)))
-
-	if (distance(x, v0) < distance(x, v3))
+	if (side(v1, v2, v0, x) <= 0.f)
 	{
 		x = v0 - (x - p3);
 	}
@@ -84,17 +90,17 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	
 	const uint4 indices[] = 
 	{
-		uint4(0, 1, 2, 3),
-		uint4(5, 4, 7, 6),
-		uint4(1, 0, 4, 5),
-		uint4(1, 5, 2, 6),
-		uint4(2, 6, 7, 3),
-		uint4(3, 7, 4, 0)
+		uint4(0, 1, 2, 3), //Front
+		uint4(5, 4, 7, 6), //Back
+		uint4(1, 0, 4, 5), //Top
+		uint4(1, 5, 6, 2), //Right
+		uint4(2, 6, 7, 3), //Bottom
+		uint4(3, 7, 4, 0) //Left
 	};
 
 	float sideWeights[6];
 
-	for (int i = 0; i < 6; ++i)
+	for (int i = 1; i < 6; ++i)
 	{
 		uint4 sideIdx = indices[i];
 		float3 v0 = corners[sideIdx.x];
@@ -120,10 +126,10 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 		float solidAngle = 4.f * asin(sin(a * .5f) * sin(b * .5f));
 
 		float power = solidAngle / (2.0f * 3.14159265358979f);
-
+		
 		if (power > 0.00001f)
 		{
-			float4 random = Random.Sample(Point, uv + i * 0.1f);
+			float4 random = Random.SampleLevel(Point, uv + i * 0.010543245653456324f, 0.f);
 			//Emit the photon!
 			PhotonRay pr;
 			
@@ -135,7 +141,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			if (dot(pr.dir, normal) > 0.f)
 			{
 				//Just move out the ray a bit
-				pr.origin = position + normal * 50.f;
+				pr.origin = position;// + normal * 50.f;
 				pr.power = color * power * dot(pr.dir, normal);//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
 				OutRays.Append(pr);
 			}
