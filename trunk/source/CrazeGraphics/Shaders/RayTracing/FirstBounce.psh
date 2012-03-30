@@ -37,42 +37,58 @@ float3 clampToHemisphere(float3 v, float3 n)
 	return dot(v, n) < 0.f ? normalize(v - n * dot(n, v)) : normalize(v);
 }
 
-float side(float3 v0, float3 v1, float3 ref, float3 p)
+static const uint4 indices[] = 
 {
-	float3 e = v1 - v0;
-	float3 up = cross(e, ref - v0);
-	float3 perp = cross(up, e);
-	return dot(ref - v0, p - v0);
+	uint4(0, 1, 2, 3), //back
+	uint4(5, 4, 7, 6), //forward
+	uint4(1, 0, 4, 5), //top
+	uint4(1, 5, 2, 6), //right
+	uint4(2, 6, 7, 3), //bottom
+	uint4(3, 7, 4, 0) //left
+};
+
+float3 calcFrustumNormal(int frustumIndex)
+{
+	//(V2 - V1) x (V3 - V1)
+	uint4 side = indices[frustumIndex];
+	float3 v0 = corners[side.x];
+	float3 v1 = corners[side.y];
+	float3 v2 = corners[side.w];
+	return cross(v1 - v0, v2 - v0);
+	return cross(corners[indices[frustumIndex].y] - corners[indices[frustumIndex].x] , corners[indices[frustumIndex].w] - corners[indices[frustumIndex].x]);
 }
 
-float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
+bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir)
 {
-	float3 e0 = v1 - v0;
-	float3 e1 = v2 - v0;
-	float3 e2 = v3 - v0;
-	float a0 = length(cross(e0, e1)) * 0.5f;
-	float a1 = length(cross(e1, e2)) * 0.5f;
+	float maxEnter = -21332121321122131.0f;
+	float minExit = 13121313213321.0f;
 
-	float invAtot = 1.f / (a0 + a1);
-	a0 *= invAtot;
-
-	//Check if triangle a1 got selected
-	if (random.z > a0)
+	for(int i = 0; i < 6; i++)
 	{
-		v1 = v2;
-		v2 = v3;
+		//-n dot w / n dot u
+		//w = P0 - V0
+		//u = P1 - P0
+
+		if(dot(calcFrustumNormal(i), rayDir) != 0.f) //if == 0, ray is parallel to plane so they either always intersect or never does
+		{
+			float3 frustumN = calcFrustumNormal(i);
+			float intersection = dot(-frustumN , rayOrigin - corners[indices[i].x]) / dot(frustumN , rayDir);
+
+			if(dot(frustumN, rayDir) > 0)
+			{
+				maxEnter = max(intersection, maxEnter);
+			}
+			else
+			{
+				minExit = min(intersection, minExit);
+			}
+		}
 	}
 
-	float3 p3 = v2 + v1 - v0;
-	float3 x = v0 + (v1 - v0) * random.x + (v2 - v0) * random.y;
-	if (side(v1, v2, v0, x) <= 0.f)
-	{
-		x = v0 - (x - p3);
-	}
-	return x;
+	return maxEnter < minExit;
 }
 
-#define RAYS_PER_TEXEL 1
+#define RAYS_PER_TEXEL 20
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
@@ -86,68 +102,30 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	float depth = Depth.Sample(Point, uv).x;
 	float3 position = DepthToPos(depth, uv);
 
-	float3 lvSize = LVCellSize.xyz * LVCellSize.w;
-	
-	const uint4 indices[] = 
+	for(int i = 0; i < RAYS_PER_TEXEL; ++i)
 	{
-		uint4(0, 1, 2, 3), //Front
-		uint4(5, 4, 7, 6), //Back
-		uint4(1, 0, 4, 5), //Top
-		uint4(1, 5, 6, 2), //Right
-		uint4(2, 6, 7, 3), //Bottom
-		uint4(3, 7, 4, 0) //Left
-	};
+		//sample direction based on RSM texel world space
+		float3 dir = Random.SampleLevel(Point, (uv) + .019542945134f * i, 0.f); //TODO
 
-	float sideWeights[6];
+		float power = 1.0f; //TEMP
 
-	for (int i = 1; i < 6; ++i)
-	{
-		uint4 sideIdx = indices[i];
-		float3 v0 = corners[sideIdx.x];
-		float3 v1 = corners[sideIdx.y];
-		float3 v2 = corners[sideIdx.z];
-		float3 v3 = corners[sideIdx.w];
-
-		float3 sideNormal = cross(v1 - v0, v3 - v0);
-
-		float3 tv0 = clampToHemisphere(v0 - position, normal);
-		float3 tv1 = clampToHemisphere(v1 - position, normal);
-		float3 tv2 = clampToHemisphere(v2 - position, normal);
-		float3 tv3 = clampToHemisphere(v3 - position, normal);
-
-		float3 p0 = tv0 + (tv1 - tv0) * .5f;
-		float3 p1 = tv1 + (tv2 - tv1) * .5f;
-		float3 p2 = tv2 + (tv3 - tv2) * .5f;
-		float3 p3 = tv3 + (tv0 - tv3) * .5f;
-
-		float a = acos(dot(p0, p2));
-		float b = acos(dot(p1, p3));
-
-		float solidAngle = 4.f * asin(sin(a * .5f) * sin(b * .5f));
-
-		float power = solidAngle / (2.0f * 3.14159265358979f);
-		
-		if (power > 0.00001f)
+		if(rayIntersectsFrustum(position, dir))
 		{
-			float4 random = Random.SampleLevel(Point, uv + i * 0.010543245653456324f, 0.f);
-			//Emit the photon!
+			//no rejection, so let us emit photon
 			PhotonRay pr;
 			
-			float3 rndL0 = v0 + (v1 - v0) * random.x;
-			float3 rndL1 = v2 + (v3 - v0) * random.x;
-			//float3 target = rndL0 + (rndL1 - rndL0) * random.y;
-			float3 target = randomInQuad(v0, v1, v2, v3, random);
-			pr.dir = normalize(target - position);
+			pr.dir = dir;
 			if (dot(pr.dir, normal) > 0.f)
 			{
 				//Just move out the ray a bit
-				pr.origin = position;// + normal * 50.f;
-				pr.power = color * power * dot(pr.dir, normal);//abs(sphereRight * discRandom.x + sphereUp * discRandom.y) * 1.f;
+				pr.origin = position + normal * 10.f;
+				pr.power = color * power * dot(pr.dir, normal);
 				OutRays.Append(pr);
 			}
 		}
+		//failed frustum check
 	}
-
+	//end of ray per texel iterator
 
 	return 1.f.xxxx;
 }
