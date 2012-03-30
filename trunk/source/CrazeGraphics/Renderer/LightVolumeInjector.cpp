@@ -232,19 +232,26 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 
 	Vector3 corners[8];
 	cam->GetFrustumCorners(0.f, zSlice, corners);
+	
 
-	for (int i = 4; i < 8; ++i)
+	float size = 0.f;
+	Vector3 minCorner = corners[0];
+	for (int i = 0; i < 8; ++i)
 	{
-		lvinfo.start = Min(lvinfo.start, corners[i]);
-		lvinfo.end = Max(lvinfo.end, corners[i]);
+		for (int j = i + 1; j < 8; ++j)
+		{
+			size = Max(size, LengthSquared(corners[i] - corners[j]));
+		}
+		minCorner = Min(minCorner, corners[i]);
 	}
-	const float gridFit = 500.f;
-	lvinfo.start = Floor(lvinfo.start / gridFit) * gridFit;
-	lvinfo.end = Ceil(lvinfo.end / gridFit) * gridFit;
+	size = Sqrt(size) / (float)LightVolumeResolution;
 
-	Vector3 delta = lvinfo.end - lvinfo.start;
-	lvinfo.cellSize = delta / (float)LightVolumeResolution;
+	lvinfo.start = minCorner;
+	lvinfo.end = lvinfo.start + Vector3(size) * LightVolumeResolution;
 
+	lvinfo.start = Floor(lvinfo.start / size) * size;
+	lvinfo.end = Floor(lvinfo.end / size) * size;
+	lvinfo.cellSize = Vector3(size, size, size);
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
 }
