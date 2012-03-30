@@ -88,7 +88,7 @@ bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir)
 	return maxEnter < minExit;
 }
 
-#define RAYS_PER_TEXEL 20
+#define RAYS_PER_TEXEL 5
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
@@ -105,9 +105,10 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	for(int i = 0; i < RAYS_PER_TEXEL; ++i)
 	{
 		//sample direction based on RSM texel world space
-		float3 dir = Random.SampleLevel(Point, (uv) + .019542945134f * i, 0.f); //TODO
+		float3 dir = Random.SampleLevel(Point, (uv) + .019542945134f * i, 0.f).xyz * 2.f - 1.f; //TODO
+		dir = dot(dir, normal) > 0 ? dir : -dir;
 
-		float power = 1.0f; //TEMP
+		float power = 7.0f / RAYS_PER_TEXEL;
 
 		if(rayIntersectsFrustum(position, dir))
 		{
@@ -115,13 +116,12 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			PhotonRay pr;
 			
 			pr.dir = dir;
-			if (dot(pr.dir, normal) > 0.f)
-			{
-				//Just move out the ray a bit
-				pr.origin = position + normal * 10.f;
-				pr.power = color * power * dot(pr.dir, normal);
-				OutRays.Append(pr);
-			}
+
+			//Just move out the ray a bit
+			pr.origin = position + normal * 0.f;
+			pr.power = color * power * dot(pr.dir, normal);
+			OutRays.Append(pr);
+
 		}
 		//failed frustum check
 	}

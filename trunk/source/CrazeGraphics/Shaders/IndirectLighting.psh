@@ -41,18 +41,18 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		discard;
 	}
 
-	float3 light = evalIndirectLightAt(cell, normal);
+	float3 light = evalIndirectLightAt(cell, normal) * 0.1f;
 
-	/*float3 toCam = normalize(CameraPos.xyz - pos);
+	float3 toCam = normalize(CameraPos.xyz - pos);
 	float ptDist = distance(pos, CameraPos.xyz);
-	float splits = min(30.f, ptDist / 100.f);
+	float splits = min(30.f, ptDist / 50.f);
 	float3 eLight = 0.f;
 	[unroll(30)]
 	for (int i = 0; i < splits; ++i)
 	{
-		eLight += 0.03f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+		eLight += 0.001f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
 	}
-	eLight *= splits / floor(splits);*/
+	eLight *= splits / floor(splits); 
 
-	return float4(light * color, 1.0f);
+	return float4(light * color + eLight, 1.0f);
 }
