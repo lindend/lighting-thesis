@@ -97,17 +97,6 @@ end
 
 function onLoaded()
 	level:build()
-	--[[
-	cubeman = level:add("cubeman", {component.transform{x=1, y=0, z=0},
-									component.mesh{file="Library/cubeman_0.crazemesh"}})
-									
-	cubessa = level:add("cubessa", {component.transform{x=6, y=0, z=-3},
-									component.mesh{file="Library/cubessa_0.crazemesh"},
-									{type="script", name="onClick", trigger=function() showDialog("Help me, Cubeman!") end}})
-									
-	marker = level:add("marker", {	component.transform{x=0, y=0, z=0},
-									component.mesh{file="Library/minicube_0.crazemesh
-									]]--
 end
 
 follower = nil
@@ -166,9 +155,23 @@ listener = event.mouseMove.Listener(function (pos)
 											marker.transform.pos = hit
 										end
 									end)
-useIndirect = true
+
+showUI = true;
 useDirect = true
+useIndirect = true
 drawRays = false
+
+if showUI then
+	toggleDirectLabel = ui.Label("K - toggle direct " .. toString(useDirect), 20, 20, 50, 15)
+	toggleIndirectLabel = ui.Label("L - toggle indirect " .. toString(useIndirect), 20, 35, 50, 15)
+	toggleRaysLabel = ui.Label("O - toggle rays " .. toString(drawRays), 20, 50, 50, 15)
+
+	startDirectionalLightTravel = ui.Label("T - start directional light travel", 20, 80, 50, 15)
+	stopDirectionalLightTravel = ui.Label("Y - stop directional light travel", 20, 95, 50, 15)
+	resetDirectionalLightLabel = ui.Label("R - reset directional light", 20, 110, 50, 15)
+end
+
+
 useShadows = true
 keyActions = { 
 		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
@@ -184,6 +187,8 @@ function onKey(kc, ks)
 	end
 end
 keyListener = event.keyboard.Listener(onKey)
+
+
 
 --event.mouseMove.stopListen(listener)
 --[[

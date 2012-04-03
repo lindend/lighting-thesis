@@ -93,6 +93,12 @@ float length(Vec3& v)
 	return Length(Vector3(v));
 }
 
+std::string toString(bool b)
+{
+	return b == true ? "true" : "false";
+}
+
+
 void craze_open_core(lua_State* L)
 {
 	module(L, "resource")
@@ -137,6 +143,7 @@ void craze_open_core(lua_State* L)
 	module(L)
 	[
 		def("print", &print),
-		def("Vector3", &makeV3)
+		def("Vector3", &makeV3),
+		def("toString", &toString)
 	];
 }
