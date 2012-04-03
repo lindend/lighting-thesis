@@ -88,60 +88,17 @@ function followPath(obj, path, speed)
 							end)
 end
 
-function showDialog(str)
-	local lblBg = ui.Image("Library/UI/dialogbg.png", 100, 100, 300, 100)
-	local lbl = ui.Label(str, 10, 10, 100, 50)
-	lbl:setParent(lblBg)
-	setTimer(function() lblBg = nil end, 3)
-end
-
 function onLoaded()
 	level:build()
 end
-
-follower = nil
 
 function onMouseDown(pos, button, isDown)
 	if isDown == false and button == 0 and 1 == 2 then
 		local dir = level.scene.camera:unproject(pos)
 		local origin = level.scene.camera.pos
-		
-		local obj,hit = level:rayCast(origin, dir, 100)
-		
-		if obj then
-			if obj.onClick then
-				obj.onClick.trigger()
-			else
-				local begin = cubeman.transform.pos
-				if follower then
-					game.stopUpdate(follower)
-				end
-				local p = level:findPath(begin, hit)
-				follower = followPath(cubeman, p, 1.5)
-			end
-		end
 	end
 end
---[[
-exitGame = ui.Button("Exit game", 100, 350, 100, 30, function() game.shutDown() end)
 
-ui_x = 20
-ui_y = 0
-ui_w = 50
-ui_h = 15
-
-s = {"display gui", " ", "show indirect illumination" , "show simplified geo", "build frequency", "RSM size", "number of rays", "bounces per ray", " ", "ray trace time", "final gather time", "total time"}
-lbls = {}
-
-for i = 1, 12, 1 do
-	lbls[i] =  ui.Label(s[i], ui_x, ui_y+(ui_h*i), ui_w, ui_h)
-end
-
-btn1 =  ui.Button("ON", ui_x + 150, ui_y+(ui_h*1), ui_w, ui_h, function() game.shutdown() end)
-btn2 = ui.Button("ON", ui_x + 150, ui_y+(ui_h*3), ui_w, ui_h, function() game.shutdown() end)
-btn3 = ui.Button("ON", ui_x + 150, ui_y+(ui_h*4), ui_w, ui_h, function() game.shutdown() end)
-
-]]--
 print("Pending: " .. resource.getNumPending())
 waitFor(function() return resource.getNumPending() == 0 end, onLoaded)
 
@@ -187,30 +144,3 @@ function onKey(kc, ks)
 	end
 end
 keyListener = event.keyboard.Listener(onKey)
-
-
-
---event.mouseMove.stopListen(listener)
---[[
-bouncer = level:add("bouncer", {component.transform{x=-3,y=4.3,z=0.8}, 
-								component.mesh{file="Library/Models/cube_0.crazemesh"},
-								{type="script", name="test", update=function(delta) print("Pos: " .. bouncer.transform:getPos().x) end}})]]--
-
---This builds the level. Building a level means that (at least) the following is calculated:
---Navigation mesh
---kd-trees for lighting
---possibly sky occlusion, but it would best to compute it in the editor
---If more static objects are added later, level:rebuild CAN be called. Preferably it should not as it's a very expensive operation.
---level:build()
-
---obj = level:add("object", {	component.transform{x=10, y=10, z=10},
---							component.mesh{file = "Library/cubemania4_0.crazemesh"} })
-
-
-
---Event listeners and such...
---Lua: listner = event.mouseClick.listen(function(pos, button, isPressed) print("Mouse button pressed at " .. pos.x .. " " .. pos.y) end)
---listener:close()
-
---C++: def("
---
