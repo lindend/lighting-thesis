@@ -42,7 +42,7 @@ static const uint4 indices[] =
 	uint4(0, 1, 2, 3), //back
 	uint4(5, 4, 7, 6), //forward
 	uint4(1, 0, 4, 5), //top
-	uint4(1, 5, 2, 6), //right
+	uint4(1, 5, 6, 2), //right
 	uint4(2, 6, 7, 3), //bottom
 	uint4(3, 7, 4, 0) //left
 };
@@ -55,26 +55,25 @@ float3 calcFrustumNormal(int frustumIndex)
 	float3 v1 = corners[side.y];
 	float3 v2 = corners[side.w];
 	return cross(v1 - v0, v2 - v0);
-	return cross(corners[indices[frustumIndex].y] - corners[indices[frustumIndex].x] , corners[indices[frustumIndex].w] - corners[indices[frustumIndex].x]);
 }
 
-bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir)
+bool rayIntersectsFrustum1(float3 rayOrigin, float3 rayDir)
 {
-	float maxEnter = -21332121321122131.0f;
-	float minExit = 13121313213321.0f;
+	float maxEnter = -213321456621321122131.0f;
+	float minExit = 1315677621313213321.0f;
 
-	for(int i = 0; i < 6; i++)
+	for(int i = 0; i < 6; ++i)
 	{
 		//-n dot w / n dot u
 		//w = P0 - V0
 		//u = P1 - P0
-
-		if(dot(calcFrustumNormal(i), rayDir) != 0.f) //if == 0, ray is parallel to plane so they either always intersect or never does
+		float3 frustumN = calcFrustumNormal(i);
+		float frustDotDir = dot(frustumN, rayDir);
+		if(abs(frustDotDir) > 0.00001f) //if == 0, ray is parallel to plane so they either always intersect or never does
 		{
-			float3 frustumN = calcFrustumNormal(i);
-			float intersection = dot(-frustumN , rayOrigin - corners[indices[i].x]) / dot(frustumN , rayDir);
-
-			if(dot(frustumN, rayDir) > 0)
+			float intersection = dot(frustumN , corners[indices[i].x] - rayOrigin) / frustDotDir;
+			
+			if(frustDotDir > 0.f)
 			{
 				maxEnter = max(intersection, maxEnter);
 			}
@@ -88,7 +87,30 @@ bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir)
 	return maxEnter < minExit;
 }
 
-#define RAYS_PER_TEXEL 5
+float3 toPSpace(float3 v, float w = 1.f)
+{
+	float4 ps = mul(float4(v, w), ViewProj);
+	ps.xyz /= ps.w;
+	return ps.xyz;
+}
+bool rayIntersectsFrustum(float3 psOrigin, float3 o, float3 d)
+{
+	float3 dir = toPSpace(d, 0.f);
+	float3 toMin = float3(-1.f, -1.f, 0.f) - psOrigin;
+	float3 toMax = float3(1.f, 1.f, 1.f) - psOrigin;
+	float3 tMins = toMin / dir;
+	float3 tMaxs = toMax / dir;
+
+	float3 dirSign = sign(dir);
+	float3 posDirMask = max(0.f, dirSign);
+	float3 negDirMask = max(0.f, -dirSign);
+	float3 enters = posDirMask * tMins + negDirMask * tMaxs;
+	float3 exits = negDirMask * tMins + posDirMask * tMaxs;
+
+	return max(enters.x, max(enters.y, enters.z)) <= min(exits.x, min(exits.y, exits.z));
+}
+
+#define RAYS_PER_TEXEL 7
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
@@ -101,16 +123,20 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	float3 color = ColorSpec.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 position = DepthToPos(depth, uv);
+	float3 psPos = toPSpace(position);
+
+	float2 rndUvBase = floor(frac(position.xz * 0.001f) * 32.f) / 32.f;
 
 	for(int i = 0; i < RAYS_PER_TEXEL; ++i)
 	{
 		//sample direction based on RSM texel world space
-		float3 dir = Random.SampleLevel(Point, (uv) + .019542945134f * i, 0.f).xyz * 2.f - 1.f; //TODO
+		float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f; //TODO
 		dir = dot(dir, normal) > 0 ? dir : -dir;
 
 		float power = 7.0f / RAYS_PER_TEXEL;
 
-		if(rayIntersectsFrustum(position, dir))
+		if (rayIntersectsFrustum1(position, dir))
+		//if(rayIntersectsFrustum(psPos.xyz, position, dir))
 		{
 			//no rejection, so let us emit photon
 			PhotonRay pr;

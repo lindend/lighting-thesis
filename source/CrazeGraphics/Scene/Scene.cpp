@@ -108,6 +108,10 @@ HLIGHT Scene::addLight(const DirectionalLight& l)
 	m_dirLights[*hlight].handle = hlight;
 	return hlight;
 }
+DirectionalLight* Scene::getDirectionalLight(HLIGHT light)
+{
+	return &m_dirLights[*light].light;
+}
 
 ModelNode* Scene::addModel(std::shared_ptr<const Model> model, NODEFLAGS flags)
 {

@@ -99,6 +99,13 @@ function onMouseDown(pos, button, isDown)
 	end
 end
 
+
+fpsLabel = ui.Label("FPS: ", 580, 10, 60, 30)
+fpsUpd = game.beginUpdate(	function(delta)
+								fpsLabel:setText("FPS: " .. game.getFps())
+								return true
+							end)
+
 print("Pending: " .. resource.getNumPending())
 waitFor(function() return resource.getNumPending() == 0 end, onLoaded)
 

@@ -42,6 +42,7 @@ Script *pStateScript = nullptr;
 std::string statePath = "";
 std::vector<IUpdateable*> updateables;
 ICameraController* pCamCtrl = nullptr;
+float lastFps;
 
 bool switchState = false;
 std::string newState;
@@ -86,6 +87,8 @@ void changeState()
 }
 void Craze::sgame_update(float delta)
 {
+	lastFps = 1.f / delta;
+
 	if (switchState)
 	{
 		changeState();
@@ -169,4 +172,9 @@ void Craze::sgame_setCameraController(ICameraController* pCtrl)
 	{
 		pCamCtrl->BindCamera(pSGame->GetLevel()->GetGraphicsScene()->getCamera());
 	}
+}
+
+float Craze::sgame_getfps()
+{
+	return lastFps;
 }

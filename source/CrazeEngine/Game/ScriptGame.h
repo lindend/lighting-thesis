@@ -27,6 +27,7 @@ namespace Craze
 
 	void sgame_setCameraController(ICameraController* pCamCtrl);
 
+	float sgame_getfps();
 	class ScriptGame : public Game
 	{
 		CRAZE_ALLOC();
