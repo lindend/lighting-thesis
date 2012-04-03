@@ -3,6 +3,14 @@
 
 #include "Effect/LightVolumeEffects.h"
 
+//#define CRAZE_USE_SH_LV
+
+#ifdef CRAZE_USE_SH_LV
+#define CRAZE_NUM_LV 3
+#else
+#define CRAZE_NUM_LV 6
+#endif
+
 namespace Craze
 {
 	namespace Graphics2
@@ -42,7 +50,7 @@ namespace Craze
 			void traceRays();
 			void injectToLV(const Camera* c);
 
-			static const int RSMResolution = 100;
+			static const int RSMResolution = 128;
 			static const int LightVolumeResolution = 16;
 			static const int MaxPhotonRays = RSMResolution * RSMResolution * 4;
 
@@ -53,7 +61,7 @@ namespace Craze
 			std::shared_ptr<RenderTarget> m_dummy;
 
 			//One lighting volume for each color
-			std::shared_ptr<RenderTarget> m_lightingVolumes[3];
+			std::shared_ptr<RenderTarget> m_lightingVolumes[CRAZE_NUM_LV];
 
 			int m_numTriangles;
 			std::shared_ptr<SRVBuffer> m_triangleBuffer;

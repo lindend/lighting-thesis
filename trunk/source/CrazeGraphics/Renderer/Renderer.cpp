@@ -126,9 +126,9 @@ void Renderer::Initialize()
 	gpDevice->GetDeviceContext()->VSSetSamplers(3, 1, &m_pPointSampler);
 	gpDevice->GetDeviceContext()->GSSetSamplers(3, 1, &m_pPointSampler);
 
-	smDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-	smDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-	smDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	smDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	smDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	smDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 
 	gpDevice->GetDevice()->CreateSamplerState(&smDesc, &m_pPointBorderSampler);
 	gpDevice->GetDeviceContext()->PSSetSamplers(4, 1, &m_pPointBorderSampler);
@@ -214,8 +214,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	//hax
 	static bool first = false;
-	static float rx = 0.f;
-	static float rz = 0.f;
+	static float rx = 0.5f;
+	static float rz = 0.8f;
 	static HLIGHT dirlight;
 	if (!first)
 	{
@@ -223,8 +223,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		first = true;
 	} else
 	{
-		rx += 0.00565437564657f;
-		rz += 0.0073540938358f;
+		//rx += 0.00565437564657f;
+		//rz += 0.0073540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}

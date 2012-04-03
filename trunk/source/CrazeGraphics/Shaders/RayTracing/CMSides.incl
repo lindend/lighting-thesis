@@ -1,0 +1,9 @@
+static const float3 CMSides[] = 
+{
+	float3(-1.f, 0.f, 0.f),
+	float3(1.f, 0.f, 0.f),
+	float3(0.f, -1.f, 0.f),
+	float3(0.f, 1.f, 0.f),
+	float3(0.f, 0.f, 1.f),
+	float3(0.f, 0.f, -1.f)
+};
