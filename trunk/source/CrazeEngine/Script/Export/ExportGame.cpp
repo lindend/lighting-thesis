@@ -119,6 +119,7 @@ void craze_open_game(lua_State* L)
 		def("newLevel", &sgame_newLevel, adopt(result)),
 		def("loadFile", &sgame_loadFile),
 		def("setCameraController", &sgame_setCameraController),
+		def("getFps", &sgame_getfps),
 
 		class_<ScriptPath>("Path")
 			.def("getNode", &ScriptPath::GetNode)

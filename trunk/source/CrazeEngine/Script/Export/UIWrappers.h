@@ -91,6 +91,10 @@ namespace Craze
 			BringToFront();
 			//this->SetTextColor(Gwen::Color(0, 0, 0, 255));
 		}
+		void setText(const std::string& text)
+		{
+			SetText(text);
+		}
 	};
 
 #undef GWENBASE
