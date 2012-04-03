@@ -125,22 +125,20 @@ useDirect = true
 useIndirect = true
 drawRays = false
 
-if showUI then
-	toggleDirectLabel = ui.Label("K - toggle direct " .. toString(useDirect), 20, 20, 50, 15)
-	toggleIndirectLabel = ui.Label("L - toggle indirect " .. toString(useIndirect), 20, 35, 50, 15)
-	toggleRaysLabel = ui.Label("O - toggle rays " .. toString(drawRays), 20, 50, 50, 15)
 
-	startDirectionalLightTravel = ui.Label("T - start directional light travel", 20, 80, 50, 15)
-	stopDirectionalLightTravel = ui.Label("Y - stop directional light travel", 20, 95, 50, 15)
-	resetDirectionalLightLabel = ui.Label("R - reset directional light", 20, 110, 50, 15)
-end
+directLabel = ui.Label("", 20, 20, 50, 15)
+directLabel:setText("K - direct: " .. toString(useDirect))
+indirectLabel = ui.Label("", 20, 35, 50, 15)
+indirectLabel:setText("L - indirect: " .. toString(useIndirect))
+raysLabel = ui.Label("", 20, 50, 50, 15)
+raysLabel:setText("O - toggle rays " .. toString(drawRays))
 
 
 useShadows = true
 keyActions = { 
-		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
-		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect) end,
-		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end,
+		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect); indirectLabel:setText("L - indirect: " .. toString(useIndirect)) end,
+		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect); directLabel:setText("K - direct: " .. toString(useDirect)) end,
+		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays); raysLabel:setText("O - render rays: " .. toString(drawRays)) end,
 		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end
 	 }
 function onKey(kc, ks)
