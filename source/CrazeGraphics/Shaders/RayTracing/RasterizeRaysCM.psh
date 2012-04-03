@@ -1,0 +1,34 @@
+#include "RayTracing/CMSides.incl"
+
+struct PS_OUT
+{
+	float4 Right : SV_Target0;
+	float4 Left : SV_Target1;
+	float4 Top : SV_Target2;
+	float4 Bot : SV_Target3;
+	float4 Front : SV_Target4;
+	float4 Back : SV_Target5;
+};
+
+float3 parseColor(float v)
+{
+	uint color = asuint(v);
+	return float3(	(color & 0xFF) / 255.f,
+					((color >> 8) & 0xFF) / 255.f,
+					((color >> 16) & 0xFF) / 255.f);
+}
+
+PS_OUT main(nointerpolation float4 direction : DIRECTION)
+{
+	PS_OUT output; 
+	float3 color = parseColor(direction.w);
+
+	output.Right =	float4(saturate(dot(CMSides[0], direction.xyz)) * color, 0.f);
+	output.Left =	float4(saturate(dot(CMSides[1], direction.xyz)) * color, 0.f);
+	output.Top =	float4(saturate(dot(CMSides[2], direction.xyz)) * color, 0.f);
+	output.Bot =	float4(saturate(dot(CMSides[3], direction.xyz)) * color, 0.f);
+	output.Front =	float4(saturate(dot(CMSides[4], direction.xyz)) * color, 0.f);
+	output.Back =	float4(saturate(dot(CMSides[5], direction.xyz)) * color, 0.f);
+
+	return output;
+}

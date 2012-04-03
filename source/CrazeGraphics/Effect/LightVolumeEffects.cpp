@@ -1,5 +1,6 @@
 #include "CrazeGraphicsPCH.h"
 #include "LightVolumeEffects.h"
+#include "Renderer/LightVolumeInjector.h"
 
 #include "Resource/ResourceManager.h"
 #include "Resource/FileDataLoader.h"
@@ -100,7 +101,13 @@ bool LVInjectRaysEffect::initialize()
 	rsDesc.SlopeScaledDepthBias = 0.f;
 	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
 
-	return IEffect::initialize("RayTracing/LightInject.vsh", "RayTracing/RasterizeSH.psh", "RayTracing/LineDraw.gsh");
+	return IEffect::initialize("RayTracing/LightInject.vsh",
+#ifdef CRAZE_USE_SH_LV
+		"RayTracing/RasterizeSH.psh",
+#else
+		"RayTracing/RasterizeRaysCM.psh",
+#endif
+		"RayTracing/LineDraw.gsh");
 }
 
 const D3D11_INPUT_ELEMENT_DESC* LVInjectRaysEffect::getLayout(int& count)
@@ -140,7 +147,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	ID3D11ShaderResourceView* srv = rays->GetSRV();
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
 
-	gpDevice->SetRenderTargets(LVs, 3, nullptr);
+	gpDevice->SetRenderTargets(LVs, CRAZE_NUM_LV, nullptr);
 
 	//Draw the rays
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
@@ -171,11 +178,20 @@ void LVAmbientLightingEffect::doLighting(std::shared_ptr<RenderTarget> LVs[], st
 
 	auto dc = gpDevice->GetDeviceContext();
 
-	ID3D11ShaderResourceView* srvs[] = { gbuffers[0]->GetResourceView(), gbuffers[1]->GetResourceView(), nullptr, depth, LVs[0]->GetResourceView(), LVs[1]->GetResourceView(), LVs[2]->GetResourceView() };
+	ID3D11ShaderResourceView* srvs[10];
+	memset(srvs, 0, sizeof(nullptr) * 10);
+	srvs[0] = gbuffers[0]->GetResourceView();
+	srvs[1] = gbuffers[1]->GetResourceView();
+	srvs[3] = depth;
+	
+	for (int i = 0; i < CRAZE_NUM_LV; ++i)
+	{
+		srvs[4 + i] = LVs[i]->GetResourceView();
+	}
 
-	dc->PSSetShaderResources(0, 7, srvs);
+	dc->PSSetShaderResources(0, 10, srvs);
 	dc->Draw(3, 0);
 
-	ZeroMemory(srvs, sizeof(void*) * 7);
-	dc->PSSetShaderResources(0, 7, srvs);
+	ZeroMemory(srvs, sizeof(void*) * 10);
+	dc->PSSetShaderResources(0, 10, srvs);
 }

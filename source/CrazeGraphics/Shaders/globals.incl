@@ -72,6 +72,13 @@ Texture3D LightVolumeR :				register(t4);
 Texture3D LightVolumeG :				register(t5);
 Texture3D LightVolumeB :				register(t6);
 
+Texture3D LightVolumeRight :			register(t4);
+Texture3D LightVolumeLeft :				register(t5);
+Texture3D LightVolumeTop :				register(t6);
+Texture3D LightVolumeBot :				register(t7);
+Texture3D LightVolumeFront :			register(t8);
+Texture3D LightVolumeBack :				register(t9);
+
 SamplerState Bilinear :					register(s0);
 SamplerState Trilinear :				register(s1);
 SamplerState BilinearBorder :			register(s2);

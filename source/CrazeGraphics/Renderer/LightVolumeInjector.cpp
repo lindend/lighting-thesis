@@ -44,7 +44,7 @@ bool LightVolumeInjector::initialize()
 
 	m_dummy = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_8BIT_UNORM, "Dummy light volume render target");
 
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < CRAZE_NUM_LV; ++i)
 	{
 		m_lightingVolumes[i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "Light volume");
 	}
@@ -95,7 +95,7 @@ Camera findSMCamera(const DirectionalLight& l, Scene* scene)
 		c.SetUp(Vector3::UP);
 	}
 	
-	c.SetOrthoProjection(1000.f, 1000.f, 10.f, 10000.f);
+	c.SetOrthoProjection(1500.f, 1500.f, 10.f, 10000.f);
 	return c;
 }
 
@@ -137,9 +137,10 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	PIXMARKER(L"Create lighting volumes");
 
 	float black[] = { 0.f, 0.f, 0.f, 0.f };
-	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[0]->GetRenderTargetView(), black);
-	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[1]->GetRenderTargetView(), black);
-	gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[2]->GetRenderTargetView(), black);
+	for (int i = 0; i < CRAZE_NUM_LV; ++i)
+	{
+		gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[i]->GetRenderTargetView(), black);
+	}
 
 	MEM_AUTO_MARK_STACK;
 
@@ -231,7 +232,7 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 	lvinfo.end = cam->GetPosition();
 
 	Vector3 corners[8];
-	cam->GetFrustumCorners(0.f, zSlice, corners);
+	cam->GetFrustumCorners(1.f, zSlice, corners);
 	
 
 	float size = 0.f;
@@ -244,14 +245,15 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 		}
 		minCorner = Min(minCorner, corners[i]);
 	}
-	size = Sqrt(size) / (float)LightVolumeResolution;
+	size = Sqrt(size);
+	float cellSize = size / (float)LightVolumeResolution;
 
 	lvinfo.start = minCorner;
-	lvinfo.end = lvinfo.start + Vector3(size) * LightVolumeResolution;
+	lvinfo.end = lvinfo.start + Vector3(size);
 
-	lvinfo.start = Floor(lvinfo.start / size) * size;
-	lvinfo.end = Floor(lvinfo.end / size) * size;
-	lvinfo.cellSize = Vector3(size, size, size);
+	lvinfo.start = Floor(lvinfo.start / cellSize) * cellSize;
+	lvinfo.end = Floor(lvinfo.end / cellSize) * cellSize;
+	lvinfo.cellSize = Vector3(cellSize);
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
 }

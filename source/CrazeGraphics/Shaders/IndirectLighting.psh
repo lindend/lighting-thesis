@@ -1,5 +1,8 @@
 #include "globals.incl"
 #include "SHMath.incl"
+#include "RayTracing/CMSides.incl"
+
+//#define CRAZE_USE_SH_LV
 
 float3 DepthToPos(float depth, float2 uv)
 {
@@ -14,7 +17,7 @@ float3 cellFromPos(float3 worldPos)
 	localPos.y = 1.f - localPos.y;
 	return localPos;
 }
-
+#ifdef CRAZE_USE_SH_LV
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 {
 	float4 redSH = LightVolumeR.Sample(BilinearBorder, cell);
@@ -26,7 +29,43 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 	return max(0.f, float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)) * 0.3f);
 
 }
+#else
+float3 evalIndirectLightAt(float3 cell, float3 normal)
+{
+	float sideWeights[6];
+	for (int i = 0; i < 6; ++i)
+	{
+		sideWeights[i] = max(0.f, dot(CMSides[i], -normal));
+	}
 
+	float3 color = 0.f;
+	if (sideWeights[0] > 0.f)
+	{
+		color += sideWeights[0] * LightVolumeRight.Sample(BilinearBorder, cell).xyz;
+	} else if (sideWeights[1] > 0.f)
+	{
+		color += sideWeights[1] * LightVolumeLeft.Sample(BilinearBorder, cell).xyz;
+	}
+
+	if (sideWeights[2] > 0.f)
+	{
+		color += sideWeights[2] * LightVolumeTop.Sample(BilinearBorder, cell).xyz;
+	} else if(sideWeights[3] > 0.f)
+	{
+		color += sideWeights[3] * LightVolumeBot.Sample(BilinearBorder, cell).xyz;
+	}
+
+	if (sideWeights[4] > 0.f)
+	{
+		color += sideWeights[4] * LightVolumeFront.Sample(BilinearBorder, cell).xyz;
+	} else if(sideWeights[5] > 0.f)
+	{
+		color += sideWeights[5] * LightVolumeBack.Sample(BilinearBorder, cell).xyz;
+	}
+
+	return color * 0.3f;
+}
+#endif
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
 {
 	float3 color = ColorSpec.Sample(Point, uv).xyz;
@@ -47,12 +86,12 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float ptDist = distance(pos, CameraPos.xyz);
 	float splits = min(30.f, ptDist / 50.f);
 	float3 eLight = 0.f;
-	[unroll(30)]
+	/*[unroll(30)]
 	for (int i = 0; i < splits; ++i)
 	{
-		eLight += 0.001f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+		eLight += 0.00000001f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
 	}
-	eLight *= splits / floor(splits); 
+	eLight *= splits / floor(splits); */
 
 	return float4(light * color + eLight, 1.0f);
 }
