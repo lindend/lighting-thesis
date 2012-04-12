@@ -26,11 +26,12 @@ namespace Craze
 		class LVFirstBounceEffect;
 		class LVInjectRaysEffect;
 		class Camera;
+		class Renderer;
 
 		class LightVolumeInjector
 		{
 		public:
-			LightVolumeInjector() {}
+			LightVolumeInjector(Renderer* renderer) : m_renderer(renderer) {}
 
 			bool initialize();
 
@@ -49,6 +50,7 @@ namespace Craze
 			void spawnRays(const Matrix4& viewProj, const Camera* cam);
 			void traceRays();
 			void injectToLV(const Camera* c);
+			void mergeToTarget();
 
 			static const int RSMResolution = 128;
 			static const int LightVolumeResolution = 16;
@@ -62,6 +64,7 @@ namespace Craze
 
 			//One lighting volume for each color
 			std::shared_ptr<RenderTarget> m_lightingVolumes[CRAZE_NUM_LV];
+			std::shared_ptr<RenderTarget> m_targetLightVolumes[CRAZE_NUM_LV];
 
 			int m_numTriangles;
 			std::shared_ptr<SRVBuffer> m_triangleBuffer;
@@ -73,6 +76,15 @@ namespace Craze
 
 			std::unique_ptr<LVFirstBounceEffect> m_fxFirstBounce;
 			std::unique_ptr<LVInjectRaysEffect> m_fxInjectRays;
+			std::unique_ptr<IEffect> m_fxMergeLV;
+
+			ID3D11BlendState* m_addBS;
+			ID3D11BlendState* m_mergeBS;
+			ID3D11RasterizerState* m_AALinesRS;
+
+			ID3D11SamplerState* m_lowMipSampler;
+
+			Renderer* m_renderer;
 		};
 	}
 }

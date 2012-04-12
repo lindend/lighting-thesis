@@ -108,7 +108,7 @@
     </CustomBuildStep>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)/lib/freetype;$(SolutionDir)/lib/cegui;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib;CEGUIBase.lib;CEGUILuaScriptModule.lib;CEGUIDirect3D11Renderer_Static.lib</AdditionalDependencies>
+      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;$(SolutionDir)/lib/gwen/gwen_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -134,6 +134,9 @@
     <ClInclude Include="Effect\GBufferEffect.h" />
     <ClInclude Include="Effect\IEffect.h" />
     <ClInclude Include="Font\FontVertex.h" />
+    <ClInclude Include="GPUProfiler\Frame.h" />
+    <ClInclude Include="GPUProfiler\GPUProfiler.h" />
+    <ClInclude Include="GPUProfiler\TimingBlock.h" />
     <ClInclude Include="LayoutManager.h" />
     <ClInclude Include="Effect\LightAccumulationEffect.h" />
     <ClInclude Include="Effect\Shaders.h" />
@@ -154,6 +157,9 @@
     <ClInclude Include="Renderer\DrawRays.h" />
     <ClInclude Include="Renderer\LightVolumeInjector.h" />
     <ClInclude Include="Scene\ModelNode.h" />
+    <ClInclude Include="UI\CrazeGwenRenderer.h" />
+    <ClInclude Include="UI\UISystem.h" />
+    <ClInclude Include="UI\Wrappers.h" />
     <ClInclude Include="VertexStreams.h" />
     <ClInclude Include="Light\Light.h" />
     <ClInclude Include="Material.h" />
@@ -172,9 +178,6 @@
     <ClInclude Include="Texture\RenderTarget.h" />
     <ClInclude Include="Texture\Texture.h" />
     <ClInclude Include="Texture\TextureArray.h" />
-    <ClInclude Include="UI\CrazeGwenRenderer.h" />
-    <ClInclude Include="UI\UISystem.h" />
-    <ClInclude Include="UI\Wrappers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Buffer\Buffer.cpp" />
@@ -191,6 +194,8 @@
     <ClCompile Include="Effect\IEffect.cpp" />
     <ClCompile Include="Effect\LightingEffect.cpp" />
     <ClCompile Include="Effect\LightVolumeEffects.cpp" />
+    <ClCompile Include="GPUProfiler\Frame.cpp" />
+    <ClCompile Include="GPUProfiler\GPUProfiler.cpp" />
     <ClCompile Include="LayoutManager.cpp" />
     <ClCompile Include="Effect\LightAccumulationEffect.cpp" />
     <ClCompile Include="EffectUtil\ShaderResourceHandler.cpp" />
@@ -212,9 +217,9 @@
     <ClCompile Include="Renderer\DrawRays.cpp" />
     <ClCompile Include="Renderer\LightVolumeInjector.cpp" />
     <ClCompile Include="Scene\ModelNode.cpp" />
-    <ClCompile Include="VertexStreams.cpp" />
     <ClCompile Include="UI\CrazeGwenRenderer.cpp" />
     <ClCompile Include="UI\UISystem.cpp" />
+    <ClCompile Include="VertexStreams.cpp" />
     <ClInclude Include="kdTree\kdTree.inl">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -239,6 +244,7 @@
     <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
     <VertexShader Include="Shaders\RayTracing\DrawRay.vsh" />
     <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
+    <VertexShader Include="Shaders\RayTracing\MergeLVs.vsh" />
     <VertexShader Include="Shaders\ScreenQuad.vsh" />
     <VertexShader Include="Shaders\Terrain.vsh" />
     <VertexShader Include="Shaders\UI.vsh" />
@@ -265,6 +271,7 @@
     </None>
     <PixelShaders Include="Shaders\RayTracing\DrawRay.psh" />
     <PixelShaders Include="Shaders\RayTracing\FirstBounce.psh" />
+    <PixelShaders Include="Shaders\RayTracing\MergeLVs.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeRaysCM.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeSH.psh" />
     <PixelShaders Include="Shaders\Simple.psh" />
@@ -282,6 +289,7 @@
     <GeometryShaders Include="Shaders\Font.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\DrawRay.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\LineDraw.gsh" />
+    <GeometryShaders Include="Shaders\RayTracing\MergeLVs.gsh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

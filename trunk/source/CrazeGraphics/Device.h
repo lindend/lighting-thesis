@@ -68,6 +68,7 @@ namespace Craze
 			D3D_FEATURE_LEVEL GetFeatureLevel() const;
 			ID3D11DepthStencilView* GetDefaultDepthBuffer() const { return m_pDepthStencilBuffer; }
 			ID3D11ShaderResourceView* GetDefaultDepthSRV() const { return m_pDepthShaderResource; }
+			ID3D11RenderTargetView* getBackBufferRTV() const { return m_pBackBuffer; }
 
 			CBufferManager* GetCbuffers() { return &m_CBufferManager; }
 

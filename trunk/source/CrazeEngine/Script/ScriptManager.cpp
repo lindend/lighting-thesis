@@ -4,6 +4,10 @@
 #include <iostream>
 
 #include "luabind/luabind.hpp"
+extern "C"
+{
+#include "lua/lualib.h"
+}
 
 #include "Script.h"
 
@@ -30,6 +34,7 @@ namespace Craze
 bool ScriptManager::Initialize()
 {
 	L = luaL_newstate();
+	luaL_openlibs(L);
 	
 	luabind::open(L);
 

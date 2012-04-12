@@ -3,6 +3,8 @@
 #include "gwen/Controls/ImagePanel.h"
 #include "gwen/Controls/Button.h"
 #include "gwen/Controls/Label.h"
+#include "gwen/Controls/GroupBox.h"
+#include "gwen/Controls/WindowControl.h"
 
 #include "luabind/luabind.hpp"
 
@@ -94,6 +96,20 @@ namespace Craze
 		void setText(const std::string& text)
 		{
 			SetText(text);
+		}
+	};
+
+	class Window : public Base, Gwen::Controls::WindowControl
+	{
+		GWENBASE;
+	public:
+		Window(const std::string& name, int x, int y, int w, int h) : Gwen::Controls::WindowControl(Graphics2::ui_getCanvas())
+		{
+			SetBounds(x, y, w, h);
+			SetTitle(StrToW(name));
+			BringToFront();
+			SetDeleteOnClose(false);
+			SetClosable(false);
 		}
 	};
 

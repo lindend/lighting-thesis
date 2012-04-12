@@ -1,0 +1,39 @@
+#include "globals.incl"
+
+struct PS_OUT
+{
+	float4 Right : SV_Target0;
+	float4 Left : SV_Target1;
+	float4 Top : SV_Target2;
+	float4 Bot : SV_Target3;
+	float4 Front : SV_Target4;
+	float4 Back : SV_Target5;
+};
+
+Texture3D Right	: register(t0);
+Texture3D Left	: register(t1);
+Texture3D Top	: register(t2);
+Texture3D Bot	: register(t3);
+Texture3D Front : register(t4);
+Texture3D Back	: register(t5);
+
+
+PS_OUT main(float3 uv : TEXCOORD)
+{
+	float Alpha = 1.f;
+
+	float w, h, d;
+	Right.GetDimensions(w, h, d);
+
+	uv.z *= rcp(d - 1.f);
+
+	PS_OUT output;
+	output.Right = float4(Right	.Sample(Point, uv).xyz, Alpha);
+	output.Left	 = float4(Left	.Sample(Point, uv).xyz, Alpha);
+	output.Top	 = float4(Top	.Sample(Point, uv).xyz, Alpha);
+	output.Bot	 = float4(Bot	.Sample(Point, uv).xyz, Alpha);
+	output.Front = float4(Front .Sample(Point, uv).xyz, Alpha);
+	output.Back	 = float4(Back	.Sample(Point, uv).xyz, Alpha);
+
+	return output;
+}

@@ -32,6 +32,10 @@ void craze_open_ui(lua_State* L)
 		
 		class_<Label, Base>("Label")
 			.def(constructor<const std::string&, int, int, int, int>())
-			.def("setText", &Label::setText)
+			.def("setText", &Label::setText),
+
+		class_<Window, Base>("Window")
+			.def(constructor<const std::string&, int, int, int, int>())
+		
 	];
 }
