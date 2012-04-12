@@ -18,10 +18,16 @@ namespace Craze
 			IEffect() : m_vs(0), m_gs(0), m_ps(0), m_byteCode(0), m_inputLayout(0) {}
 			virtual ~IEffect() { destroy(); }
 
-			virtual void setObjectProperties(const Matrix4& world, const Material& material) = 0;
+			virtual void setObjectProperties(const Matrix4& world, const Material& material) { }
 
 			ID3DBlob* getShaderByteCode() { return m_byteCode; }
 			ID3D11InputLayout* getInputLayout() { return m_inputLayout; }
+
+			void set();
+			void destroy();
+			void reset();
+
+			bool initialize(const char* vsFile, const char* psFile, const char* gsFile = 0);
 
 		protected:
 
@@ -33,12 +39,6 @@ namespace Craze
 			std::shared_ptr<const VertexShaderResource> m_vs;
 			std::shared_ptr<const GeometryShaderResource> m_gs;
 			std::shared_ptr<const PixelShaderResource> m_ps;
-
-			void set();
-			void destroy();
-			void reset();
-
-			bool initialize(const char* vsFile, const char* psFile, const char* gsFile = 0);
 
 		private:
 			IEffect(const IEffect&);

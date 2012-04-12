@@ -3,12 +3,14 @@
 #include "luabind/luabind.hpp"
 #include "luabind/tag_function.hpp"
 #include "luabind/adopt_policy.hpp"
+#include "luabind/iterator_policy.hpp"
 
 #include "Scene/Camera.h"
 #include "Scene/Scene.h"
 #include "CameraController/FreeFlyCamera.h"
 #include "Device.h"
 #include "Graphics.h"
+#include "GPUProfiler/GPUProfiler.h"
 
 using namespace luabind;
 using namespace Craze;
@@ -47,6 +49,24 @@ void useShadows(bool v)
 {
 	gUseShadows = v;
 }
+void takeScreenshot(const std::string& path)
+{
+	gSaveScreenShot = true;
+	gScreenShotPath = path;
+}
+
+const std::vector<TimingBlock>& getProfile()
+{
+	static auto empty = std::vector<TimingBlock>();
+	auto timings = gpGraphics->m_profiler->getTimings();
+	if (timings)
+	{
+		return *timings;
+	} else
+	{
+		return empty;
+	}
+}
 
 void craze_open_graphics(lua_State* L)
 {
@@ -55,6 +75,11 @@ void craze_open_graphics(lua_State* L)
 	[
 		class_<Scene, Scene*>("Scene")
 			.def_readonly("camera", &Scene::getCamera),
+
+		class_<TimingBlock>("TimingBlock")
+			.def_readonly("name", &TimingBlock::name)
+			.def_readonly("level", &TimingBlock::level)
+			.def_readonly("time", &TimingBlock::time),
 			
 		class_<Camera, Camera*>("Camera")
 			.def("setProjection", &Camera::SetProjection)
@@ -71,6 +96,8 @@ void craze_open_graphics(lua_State* L)
 		def("useIndirectLighting", &useIndirect),
 		def("useDirectLighting", &useDirect),
 		def("drawRays", &drawRays),
-		def("useShadows", &useShadows)
+		def("useShadows", &useShadows),
+		def("captureScreenShot", &takeScreenshot),
+		def("getTimings", &getProfile, return_stl_iterator)
 	];
 }

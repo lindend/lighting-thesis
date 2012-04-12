@@ -27,6 +27,8 @@
 #include "Effect/DebugDrawEffect.h"
 #include "Effect/LightVolumeEffects.h"
 
+#include "GPUProfiler/GPUProfiler.h"
+
 #include "EffectUtil/ShaderResourceHandler.h"
 #include "UI/UISystem.h"
 
@@ -187,6 +189,8 @@ bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int 
 	gpRenderer = CrNew Renderer();
 	gpRenderer->Initialize();
 
+	gpGraphics->m_profiler = new GPUProfiler();
+
 	return true;
 }
 
@@ -199,6 +203,9 @@ void Graphics::BindScene(Scene* pScene)
 void Graphics::Render()
 {
 	PROFILEF();
+
+	m_profiler->beginFrame();
+	int frblock = m_profiler->beginBlock("Frame");
 
 	CBPerFrame cbuffer;
 
@@ -224,7 +231,12 @@ void Graphics::Render()
 		gpRenderer->RenderScene(m_pScene);
 	}
 
+	int uiblock = m_profiler->beginBlock("UI");
 	ui_render();
+	m_profiler->endBlock(uiblock);
+
+	m_profiler->endBlock(frblock);
+	m_profiler->endFrame();
 
 	gpDevice->ResetCounters();
 
@@ -236,6 +248,7 @@ void Craze::Graphics2::ShutdownGraphics()
 
 	if (gpGraphics)
 	{
+		delete gpGraphics->m_profiler;
 		if (gpRenderer)
 		{
 			gpRenderer->Shutdown();

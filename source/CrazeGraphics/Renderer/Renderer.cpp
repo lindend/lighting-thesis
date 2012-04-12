@@ -26,6 +26,7 @@
 #include "Effect/CopyToBackBuffer.h"
 #include "Buffer/Buffer.h"
 #include "Renderer/DrawRays.h"
+#include "GPUProfiler/GPUProfiler.h"
 
 #include "PIXHelper.h"
 
@@ -42,10 +43,13 @@ namespace Craze
 		bool gUseConstantAmbient = false;
 		bool gUseShadows = true;
 		bool gDrawRays = false;
+
+		bool gSaveScreenShot;
+		std::string gScreenShotPath;
 	}
 }
 
-Renderer::Renderer()
+Renderer::Renderer() : m_lightVolumeInjector(this)
 {
 	m_pLightPassDSS = 0;
 	m_pShadingPassDSS = 0;
@@ -74,8 +78,8 @@ void Renderer::Initialize()
 
 	m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);
 
-	m_pShadowMap = RenderTarget::Create2D(gpDevice, 4096, 4096, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
-	m_pShadowDS = DepthStencil::Create2D(gpDevice, 4096, 4096, DEPTHSTENCIL_FORMAT_D24S8);
+	m_pShadowMap = RenderTarget::Create2D(gpDevice, 1024, 1024, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
+	m_pShadowDS = DepthStencil::Create2D(gpDevice, 1024, 1024, DEPTHSTENCIL_FORMAT_D24S8);
 
 	m_pScreenQuad = Mesh::createScreenQuad(gpDevice);
 
@@ -215,7 +219,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	//hax
 	static bool first = false;
 	static float rx = 0.5f;
-	static float rz = 0.8f;
+	static float rz = 0.2f;
 	static HLIGHT dirlight;
 	if (!first)
 	{
@@ -223,8 +227,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		first = true;
 	} else
 	{
-		//rx += 0.00565437564657f;
-		//rz += 0.0073540938358f;
+		//rx += 0.00265437564657f;
+		//rz += 0.0013540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}
@@ -239,7 +243,14 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	int numDirLights;
 	const DirectionalLight* dirLights = pScene->getDirectionalLights(numDirLights);
 
-	std::shared_ptr<RenderTarget>* lightVolumes = m_lightVolumeInjector.getLightingVolumes(pScene);
+	std::shared_ptr<RenderTarget>* lightVolumes = nullptr;
+
+	int genIIVolProf = gpGraphics->m_profiler->beginBlock("Create lighting volumes");
+	if (gUseIndirectLighting)
+	{
+		lightVolumes = m_lightVolumeInjector.getLightingVolumes(pScene);
+	}
+	gpGraphics->m_profiler->endBlock(genIIVolProf);
 
 	//Thread this...
 	pScene->buildDrawList(&mainScene, viewProj);
@@ -250,6 +261,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 	gpDevice->SetRenderTargets(m_GBuffers, NumGBuffers, gpDevice->GetDefaultDepthBuffer());
 	gpDevice->ClearCache();
+
+	int gbProf = gpGraphics->m_profiler->beginBlock("G-buffers");
 	{
 		PIXMARKER(L"Create g-buffers");
 		gFxGBuffer.set(pCam);
@@ -262,7 +275,9 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 			i->second.m_mesh->draw();
 		}
 	}
+	gpGraphics->m_profiler->endBlock(gbProf);
 	
+
 	//The gbuffers are ready, perform lighting
 	ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
 	//gFxCSLighting.run(pCam, pSRVs, m_pOutputTarget->GetUAV(), visibleLights);
@@ -276,6 +291,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	ID3D11ShaderResourceView* pOutSRVs[] = { nullptr, nullptr };
 	gpDevice->GetDeviceContext()->PSSetShaderResources(4, 2, pOutSRVs);
 
+	int lightProf = gpGraphics->m_profiler->beginBlock("Direct lighting");
 	if (gUseDirectLighting)
 	{
 		PIXMARKER(L"Do lighting");
@@ -314,7 +330,9 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 			gFxLighting.doLighting(light, lightViewProj, gUseShadows ? m_pShadowMap : nullptr);
 		}
 	}
+	gpGraphics->m_profiler->endBlock(lightProf);
 	
+	int useIIprof = gpGraphics->m_profiler->beginBlock("Add indirect lighting");
 	if (gUseIndirectLighting)
 	{
 		PIXMARKER(L"Do indirect lighting");
@@ -322,6 +340,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
 		gFxLVAmbientLighting.doLighting(lightVolumes, m_GBuffers, gpDevice->GetDefaultDepthSRV(), m_lightVolumeInjector.getLVInfo(pCam));
 	}
+	gpGraphics->m_profiler->endBlock(useIIprof);
 
 	pSRVs[0] = nullptr;
 	pSRVs[1] = nullptr;
@@ -345,6 +364,36 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	gFxCopyToBack.doCopy(m_pOutputTarget);
 
 	gpDevice->GetDeviceContext()->OMSetDepthStencilState(0, 0);
+
+	if (gSaveScreenShot)
+	{
+		ID3D11Resource* backbufferRes;
+		gpDevice->getBackBufferRTV()->GetResource(&backbufferRes);
+
+		D3D11_TEXTURE2D_DESC texDesc;
+		texDesc.ArraySize = 1;
+		texDesc.BindFlags = 0;
+		texDesc.CPUAccessFlags = 0;
+		texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		Vector2 res = gpDevice->GetViewPort();
+		texDesc.Width = (int)res.x; 
+		texDesc.Height = (int)res.y;
+		texDesc.MipLevels = 1;
+		texDesc.MiscFlags = 0;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		ID3D11Texture2D* texture;
+		gpDevice->GetDevice()->CreateTexture2D(&texDesc, nullptr, &texture);
+		gpDevice->GetDeviceContext()->CopyResource(texture, backbufferRes);
+
+		D3DX11SaveTextureToFileA(gpDevice->GetDeviceContext(), texture, D3DX11_IFF_PNG, gScreenShotPath.c_str());
+		texture->Release();
+		backbufferRes->Release();
+
+		gSaveScreenShot = false;
+	}
 
 }
 

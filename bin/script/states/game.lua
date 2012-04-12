@@ -62,6 +62,15 @@ function v3str(v)
 end
 
 UP = Vector3{x=0,y=1,z=0}
+function v3(x, y, z)
+	return Vector3{x=x, y=y, z=z}
+end
+
+cmPath = { v3(1000, 70, 0), v3(-1000, 70, 0) }
+cmPath.numNodes = 2
+function cmPath:getNode(node)
+	return cmPath[node]
+end
 
 function followPath(obj, path, speed)
 	local currentTarget = 2
@@ -77,7 +86,7 @@ function followPath(obj, path, speed)
 									currentTarget = currentTarget + 1
 									print("New target! : " .. currentTarget)
 									if currentTarget > path.numNodes then
-										return false
+										currentTarget = 1
 									end
 								else
 									local newPos = dir * travelLen + currentPos
@@ -88,8 +97,12 @@ function followPath(obj, path, speed)
 							end)
 end
 
+cubeman = nil
 function onLoaded()
+	cubeman = level:add("cubeman", {component.transform{x=1, y=70, z=0},
+									component.mesh{file="cubeman.crm"}})
 	level:build()
+	--followPath(cubeman, cmPath, 100)
 end
 
 function onMouseDown(pos, button, isDown)
@@ -99,10 +112,15 @@ function onMouseDown(pos, button, isDown)
 	end
 end
 
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
 
 fpsLabel = ui.Label("FPS: ", 580, 10, 60, 30)
 fpsUpd = game.beginUpdate(	function(delta)
-								fpsLabel:setText("FPS: " .. game.getFps())
+								fpsLabel:setText(string.format("FPS: %.1f", game.getFps()))
 								return true
 							end)
 
@@ -120,25 +138,28 @@ listener = event.mouseMove.Listener(function (pos)
 										end
 									end)
 
-showUI = true;
+showUI = true
 useDirect = true
 useIndirect = true
 drawRays = false
 
+if showUI then
+	toggleDirectLabel = ui.Label("K - toggle direct " .. toString(useDirect), 20, 20, 50, 15)
+	toggleIndirectLabel = ui.Label("L - toggle indirect " .. toString(useIndirect), 20, 35, 50, 15)
+	toggleRaysLabel = ui.Label("O - toggle rays " .. toString(drawRays), 20, 50, 50, 15)
 
-directLabel = ui.Label("", 20, 20, 50, 15)
-directLabel:setText("K - direct: " .. toString(useDirect))
-indirectLabel = ui.Label("", 20, 35, 50, 15)
-indirectLabel:setText("L - indirect: " .. toString(useIndirect))
-raysLabel = ui.Label("", 20, 50, 50, 15)
-raysLabel:setText("O - toggle rays " .. toString(drawRays))
+	startDirectionalLightTravel = ui.Label("T - start directional light travel", 20, 80, 50, 15)
+	stopDirectionalLightTravel = ui.Label("Y - stop directional light travel", 20, 95, 50, 15)
+	resetDirectionalLightLabel = ui.Label("R - reset directional light", 20, 110, 50, 15)
+end
 
 
 useShadows = true
 keyActions = { 
-		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect); indirectLabel:setText("L - indirect: " .. toString(useIndirect)) end,
-		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect); directLabel:setText("K - direct: " .. toString(useDirect)) end,
-		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays); raysLabel:setText("O - render rays: " .. toString(drawRays)) end,
+		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
+		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect) end,
+		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end,
+		[113] = function() graphics.captureScreenShot("screenshot.png") end,
 		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end
 	 }
 function onKey(kc, ks)
@@ -149,3 +170,33 @@ function onKey(kc, ks)
 	end
 end
 keyListener = event.keyboard.Listener(onKey)
+
+
+--[[
+##############################################
+			GPU PROFILING GUI
+#############################################
+]]--
+
+profGUIWnd = ui.Window("GPU timings", 10, 200, 200, 250)
+
+profGUI = {}
+function updateProfGUI(delta)
+	timings = graphics.getTimings()
+	y = 5
+	for b in timings do
+		lbl = profGUI[b.name]
+		if lbl == nil then
+			lbl =  ui.Label("", 10 + b.level * 10, y, 500, 20)
+			lbl:setParent(profGUIWnd)
+			profGUI[b.name] = lbl
+		end
+
+		lbl:setText(string.format("%s - %.2f ms", b.name, b.time))
+
+		y = y + 20
+	end
+	return true
+end
+
+guiUpd = game.beginUpdate(updateProfGUI)

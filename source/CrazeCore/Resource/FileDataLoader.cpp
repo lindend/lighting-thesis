@@ -8,10 +8,11 @@
 #include <Shlwapi.h>
 
 #include "Resource.h"
-#include "../SystemInfo/SystemInfo.h"
-#include "../StrUtil.hpp"
-#include "../Util/CrazeHash.h"
+#include "SystemInfo/SystemInfo.h"
+#include "StrUtil.hpp"
+#include "Util/CrazeHash.h"
 #include "ResourceManager.h"
+#include "EventLogger.h"
 
 int getFileSize(const std::string& fileName)
 {
@@ -85,6 +86,7 @@ bool FileDataLoader::has(u64 fileId)
             return true;
         }
     }
+	LOG_ERROR("File data loader: Unable to open file " + fileName);
     return false;
 }
 

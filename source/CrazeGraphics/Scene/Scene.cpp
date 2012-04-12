@@ -165,9 +165,9 @@ void Scene::buildDrawList(DrawList* drawList, const Matrix4& viewProj) const
 	    {
             const u32 maxIdx = model->getNumMeshes() + model->getFirstMesh();
 
-            for (u32 j = 0; j < maxIdx; ++j)
+            for (u32 j = model->getFirstMesh(); j < maxIdx; ++j)
             {
-                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth) || true)
+                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth))
                 {
                     const MeshItem& mi = m_meshes[j];
 					//if (mi.material.m_decal.get() != NULL)

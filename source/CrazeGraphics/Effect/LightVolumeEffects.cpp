@@ -27,6 +27,18 @@ bool LVFirstBounceEffect::initialize()
 	return IEffect::initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh");
 }
 
+void expand(const Vector3* vs, Vector3* vout, int i0, int i1, int i2, int i3, float len)
+{
+	Vector3 d0 = Normalize(vs[i1] - vs[i0]);
+	Vector3 d1 = Normalize(vs[i2] - vs[i0]);
+	Vector3 d2 = Normalize(vs[i3] - vs[i0]);
+
+	vout[i0] = (d0 + d1 + d2) * -len;
+	vout[i1] = vout[i1] + d0 * len;
+	vout[i2] = vout[i2] + d1 * len;
+	vout[i3] = vout[i3] + d2 * len;
+}
+
 void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam)
 {
 	if (!m_random.get())
@@ -35,7 +47,22 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	}
 
 	Vector3 corners[8];
-	cam->GetFrustumCorners(1.f, 1000.f, corners);
+	cam->GetFrustumCorners(1.f, 2000.f, corners);
+
+	Vector3 cornerAdjustment[8];
+	ZeroMemory(cornerAdjustment, sizeof(Vector3) * 8);
+	float len = 200.f;
+	expand(corners, cornerAdjustment, 0, 1, 3, 4, len);
+	expand(corners, cornerAdjustment, 2, 1, 3, 6, len);
+
+	expand(corners, cornerAdjustment, 5, 1, 5, 6, len);
+	expand(corners, cornerAdjustment, 7, 3, 4, 6, len);
+	
+	for (int i = 0; i < 8; ++i)
+	{
+		corners[i] = corners[i] + cornerAdjustment[i];
+	}
+
 	CBufferHelper cb(gpDevice, m_frustumCBuffer);
 	for (int i = 0; i < 8; ++i)
 	{
@@ -75,32 +102,6 @@ bool LVInjectRaysEffect::initialize()
 
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
 
-	CD3D11_BLEND_DESC bDesc;
-	bDesc.IndependentBlendEnable = false;
-	bDesc.AlphaToCoverageEnable = false;
-	bDesc.RenderTarget[0].BlendEnable = true;
-	bDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-	bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-	bDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-
-	gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_blendState);
-
-	D3D11_RASTERIZER_DESC rsDesc;//(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
-	rsDesc.AntialiasedLineEnable = true;
-	rsDesc.CullMode = D3D11_CULL_NONE;
-	rsDesc.DepthBias = 0;
-	rsDesc.DepthBiasClamp = 0.f;
-	rsDesc.FillMode = D3D11_FILL_SOLID;
-	rsDesc.FrontCounterClockwise = true;
-	rsDesc.MultisampleEnable = false;
-	rsDesc.ScissorEnable = false;
-	rsDesc.SlopeScaledDepthBias = 0.f;
-	gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_rasterizerState);
-
 	return IEffect::initialize("RayTracing/LightInject.vsh",
 #ifdef CRAZE_USE_SH_LV
 		"RayTracing/RasterizeSH.psh",
@@ -131,11 +132,6 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	auto dc = gpDevice->GetDeviceContext();
 
-	float bf[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	gpDevice->GetDeviceContext()->OMSetBlendState(m_blendState, bf, 0xFFFFFFFF);
-
-	dc->RSSetState(m_rasterizerState);
-
 	//Prepare the argument buffer for the indirect call
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), sizeof(u32), rays->GetUAV());
 
@@ -161,9 +157,6 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
 	gpDevice->SetShader((ID3D11HullShader*)nullptr);
 	gpDevice->SetShader((ID3D11DomainShader*)nullptr);
-
-	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
-	dc->RSSetState(nullptr);
 }
 
 bool LVAmbientLightingEffect::initialize()

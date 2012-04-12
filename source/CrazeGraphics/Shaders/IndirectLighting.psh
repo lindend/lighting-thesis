@@ -32,10 +32,11 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 #else
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 {
+	float p = 1.f;
 	float sideWeights[6];
 	for (int i = 0; i < 6; ++i)
 	{
-		sideWeights[i] = max(0.f, dot(CMSides[i], -normal));
+		sideWeights[i] = pow(saturate(dot(CMSides[i], -normal)), p);
 	}
 
 	float3 color = 0.f;
@@ -63,7 +64,7 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 		color += sideWeights[5] * LightVolumeBack.Sample(BilinearBorder, cell).xyz;
 	}
 
-	return color * 0.3f;
+	return color * 3.74f;
 }
 #endif
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
@@ -81,17 +82,32 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	}
 
 	float3 light = evalIndirectLightAt(cell, normal) * 0.1f;
-
-	float3 toCam = normalize(CameraPos.xyz - pos);
-	float ptDist = distance(pos, CameraPos.xyz);
-	float splits = min(30.f, ptDist / 50.f);
-	float3 eLight = 0.f;
-	/*[unroll(30)]
-	for (int i = 0; i < splits; ++i)
+	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * 0.1f;
+	if (uv.x > 0.f)
 	{
-		eLight += 0.00000001f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+		float fr = length(lightAtNormal) / length(light);
+		fr = fr < 1.f ? fr : 1.f / fr;
+		if (!isnan(fr))
+		{
+			light *= fr;
+		}
 	}
-	eLight *= splits / floor(splits); */
+
+	float3 eLight = 0.f;
+	/*float3 toCam = normalize(CameraPos.xyz - pos);
+	float ptDist = distance(pos, CameraPos.xyz);
+	float splits = min(10.f, ptDist / 200.f);
+	[unroll(10)]
+	for (int i = 0; i < splits - 1; ++i)
+	{
+		eLight += 0.002f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+	}
+	eLight += 0.002f * evalIndirectLightAt(cellFromPos(CameraPos.xyz), 1.f) * (splits / floor(splits));
+	if (uv.x > 0.5f)
+	{
+		
+		//eLight *= 1.f / (floor(splits) / splits);
+	}*/
 
 	return float4(light * color + eLight, 1.0f);
 }

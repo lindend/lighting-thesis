@@ -9,6 +9,8 @@ namespace Craze
 	namespace Graphics2
 	{	
 		class Scene;
+		class GPUProfiler;
+
 		extern class Graphics* gpGraphics;
 		extern class Resources gGfxResources;
 		extern class Renderer* gpRenderer;
@@ -60,6 +62,7 @@ namespace Craze
 			void BindScene(Scene* pScene);
 
 			GfxParams Params;
+			GPUProfiler* m_profiler;
 
 		private:
 			Graphics();
@@ -73,5 +76,7 @@ namespace Craze
 		extern bool gUseDirectLighting;
 		extern bool gUseConstantAmbient;
 		extern bool gDrawRays;
+		extern bool gSaveScreenShot;
+		extern std::string gScreenShotPath;
 	}
 }

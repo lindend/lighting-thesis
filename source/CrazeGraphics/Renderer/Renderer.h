@@ -42,6 +42,8 @@ namespace Craze
 			class Face* m_pFontFace;
 			StaticString m_Str;
 
+			ID3D11SamplerState* getBilinearSampler() { return m_pSamplerState; }
+
 			Renderer();
 			~Renderer();
 

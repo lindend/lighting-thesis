@@ -52,8 +52,6 @@ namespace Craze
 		private:
 			std::shared_ptr<const TessShaderResource> m_tessShaders;
 			std::shared_ptr<SRVBuffer> m_argBuffer;
-			ID3D11BlendState* m_blendState;
-			ID3D11RasterizerState* m_rasterizerState;
 		};
 
 		class LVAmbientLightingEffect : IEffect

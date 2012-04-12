@@ -70,9 +70,15 @@ public:
 		try
 		{
 			return call_function<bool>(m_Function, delta);
-		} catch (luabind::error& err)
+		}
+		catch (luabind::error& err)
 		{
 			LOG_ERROR(std::string("ScriptUpdater, error while running script: ") + err.what() + lua_tostring(err.state(), -1));
+			return false;
+		}
+		catch (std::exception& err)
+		{
+			LOG_ERROR(std::string("ScriptUpdater, error while running script: ") + err.what());// + lua_tostring(err.state(), -1));
 			return false;
 		}
 	}
