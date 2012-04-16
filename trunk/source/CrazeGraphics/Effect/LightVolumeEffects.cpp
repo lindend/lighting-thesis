@@ -51,7 +51,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	Vector3 cornerAdjustment[8];
 	ZeroMemory(cornerAdjustment, sizeof(Vector3) * 8);
-	float len = 200.f;
+	float len = 1600.f;
 	expand(corners, cornerAdjustment, 0, 1, 3, 4, len);
 	expand(corners, cornerAdjustment, 2, 1, 3, 6, len);
 
@@ -78,7 +78,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	gpDevice->GetCbuffers()->SetLight(cbLight);
 
 	ID3D11RenderTargetView* rtv = dummyTarget->GetRenderTargetView();
-	ID3D11UnorderedAccessView* uav = outRays->GetUAV();
+	ID3D11UnorderedAccessView* uav = outRays->GetAppendConsumeUAV();
 	unsigned int initCount = 0;
 	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, &initCount);
 	
@@ -133,7 +133,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	auto dc = gpDevice->GetDeviceContext();
 
 	//Prepare the argument buffer for the indirect call
-	dc->CopyStructureCount(m_argBuffer->GetBuffer(), sizeof(u32), rays->GetUAV());
+	dc->CopyStructureCount(m_argBuffer->GetBuffer(), sizeof(u32), rays->GetAppendConsumeUAV());
 
 	ID3D11Buffer* vs = nullptr;
 	unsigned int stride = 0;

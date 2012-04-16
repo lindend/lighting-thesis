@@ -32,7 +32,7 @@ void DrawRays::render(std::shared_ptr<UAVBuffer> rays, const Matrix4& viewProj)
 	auto dc = gpDevice->GetDeviceContext();
 
 	//Prepare the argument buffer for the indirect call
-	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetUAV());
+	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetAppendConsumeUAV());
 
 	ID3D11Buffer* vs = nullptr;
 	unsigned int stride = 0;

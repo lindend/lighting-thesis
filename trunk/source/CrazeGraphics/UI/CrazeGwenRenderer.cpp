@@ -47,7 +47,7 @@ bool CrazeGwenRenderer::Initialize()
 	}
 
 	CD3D11_RASTERIZER_DESC rsDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
-	rsDesc.ScissorEnable = false;
+	rsDesc.ScissorEnable = true;
 	rsDesc.CullMode = D3D11_CULL_NONE;
 	if (FAILED(gpDevice->GetDevice()->CreateRasterizerState(&rsDesc, &m_pRastState)))
 	{
@@ -177,14 +177,13 @@ void CrazeGwenRenderer::DrawFilledRect(Gwen::Rect rect)
 void CrazeGwenRenderer::StartClip()
 {
 	Flush();
-	return;
 	Gwen::Rect clip = ClipRegion();
-	Translate(clip);
+	//Translate(clip);
 	D3D11_RECT r;
-	r.left = clip.x;
-	r.top = clip.y;
-	r.right = clip.x + clip.w;
-	r.bottom = clip.y + clip.h;
+	r.left = clip.x * Scale();
+	r.top = clip.y * Scale();
+	r.right = (clip.x + clip.w) * Scale();
+	r.bottom = (clip.y + clip.h) * Scale();
 
 	gpDevice->GetDeviceContext()->RSSetScissorRects(1, &r);	
 }
@@ -192,7 +191,6 @@ void CrazeGwenRenderer::StartClip()
 void CrazeGwenRenderer::EndClip()
 {
 	Flush();
-	return;
 	gpDevice->GetDeviceContext()->RSSetScissorRects(0, nullptr);
 }
 
@@ -274,7 +272,7 @@ Gwen::Point CrazeGwenRenderer::MeasureText(Gwen::Font* pFont, const Gwen::String
 
 	Face *pFace = (Face *)pFont->data;
 	unsigned int width = pFace->getStringWidth(text);
-	return Gwen::Point(width, pFace->getSize());
+	return Gwen::Point(width + 2, pFace->getSize() + 4);
 }
 
 void CrazeGwenRenderer::RenderText(Gwen::Font* pFont, Gwen::Point pos, const Gwen::String& text)

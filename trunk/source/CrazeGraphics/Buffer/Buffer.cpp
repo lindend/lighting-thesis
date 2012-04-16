@@ -155,14 +155,19 @@ std::shared_ptr<UAVBuffer> UAVBuffer::Create(Device *pDevice, int elemSize, int 
 		free(pData);
 		pData = 0;
 
-		ID3D11ShaderResourceView *pSRV = 0;
+		ID3D11ShaderResourceView *pSRV = nullptr;
 		if (pSRV = createSRV(pDevice, pBuffer, numElems, pDebugName))
 		{
-			ID3D11UnorderedAccessView * pUAV = 0;
-			CD3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = CD3D11_UNORDERED_ACCESS_VIEW_DESC(pBuffer, DXGI_FORMAT_UNKNOWN, 0, numElems, appendConsume ? D3D11_BUFFER_UAV_FLAG_APPEND : 0);
+			ID3D11UnorderedAccessView * pUAV = nullptr;
+			CD3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = CD3D11_UNORDERED_ACCESS_VIEW_DESC(pBuffer, DXGI_FORMAT_UNKNOWN, 0, numElems, 0);
 			if (SUCCEEDED(pDevice->GetDevice()->CreateUnorderedAccessView(pBuffer, &uavDesc, &pUAV)))
 			{
-				return std::shared_ptr<UAVBuffer>(CrNew UAVBuffer(pDevice, pBuffer, pSRV, pUAV));
+				ID3D11UnorderedAccessView* ACUAV = nullptr;
+				uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+				if (!appendConsume || SUCCEEDED(pDevice->GetDevice()->CreateUnorderedAccessView(pBuffer, &uavDesc, &ACUAV)))
+				{
+					return std::shared_ptr<UAVBuffer>(CrNew UAVBuffer(pDevice, pBuffer, pSRV, pUAV, ACUAV));
+				}
 			}
 		}
 	}

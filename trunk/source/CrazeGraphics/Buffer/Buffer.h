@@ -99,6 +99,7 @@ namespace Craze
 		public:
 			ID3D11UnorderedAccessView *GetUAV() const { return m_pUAV; }
 			operator ID3D11UnorderedAccessView *() const { return m_pUAV; }
+			ID3D11UnorderedAccessView* GetAppendConsumeUAV() const { return m_ACUAV; }
 
 			static std::shared_ptr<UAVBuffer> Create(Device *pDevice, int elemSize, int numElems, bool appendConsume, const char *pDebugName);
 			~UAVBuffer()
@@ -107,8 +108,10 @@ namespace Craze
 				m_pUAV = 0;
 			}
 		private:
-			UAVBuffer(Device *pDevice, ID3D11Buffer *pBuf, ID3D11ShaderResourceView *pSRV, ID3D11UnorderedAccessView *pUAV) : SRVBuffer(pDevice, pBuf, pSRV), m_pUAV(pUAV) {}
+			UAVBuffer(Device *pDevice, ID3D11Buffer *pBuf, ID3D11ShaderResourceView *pSRV, ID3D11UnorderedAccessView *pUAV, ID3D11UnorderedAccessView* ACUAV) 
+				: SRVBuffer(pDevice, pBuf, pSRV), m_pUAV(pUAV), m_ACUAV(ACUAV) {}
 			ID3D11UnorderedAccessView *m_pUAV;
+			ID3D11UnorderedAccessView* m_ACUAV;
 		};
 	}
 }
