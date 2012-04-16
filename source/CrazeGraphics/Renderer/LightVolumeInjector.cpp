@@ -158,6 +158,7 @@ Camera findSMCamera(const SpotLight& l, Scene* scene)
 
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 {
+	return m_toTestRays;
 	return m_collidedRays;
 }
 
@@ -290,7 +291,7 @@ void LightVolumeInjector::injectToLV(const Camera* cam)
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_addBS, bf, 0xFFFFFFFF);
 	gpDevice->GetDeviceContext()->RSSetState(m_AALinesRS);
 
-	m_fxInjectRays->injectRays(m_collidedRays, m_lightingVolumes);
+	m_fxInjectRays->injectRays(m_toTestRays, m_lightingVolumes);
 
 	gpDevice->GetDeviceContext()->RSSetState(nullptr);
 }
