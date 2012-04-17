@@ -10,6 +10,13 @@ struct VS_OUT
 	float4 end : POSITION1;
 };
 
+float3 parseColor(uint color)
+{
+	return float3(	(color & 0xFF) / 255.f,
+					((color >> 8) & 0xFF) / 255.f,
+					((color >> 16) & 0xFF) / 255.f);
+}
+
 VS_OUT main(uint idx : SV_VertexID)
 {
 	VS_OUT output;
@@ -17,7 +24,7 @@ VS_OUT main(uint idx : SV_VertexID)
 	PhotonRay ray = Rays[idx];
 	output.begin = mul(float4(ray.origin, 1.f), ObjTransform);
 	output.end = mul(float4(ray.dir, 1.f), ObjTransform);
-	output.color = ray.power;
+	output.color = parseColor(ray.color);
 
 	return output;
 }

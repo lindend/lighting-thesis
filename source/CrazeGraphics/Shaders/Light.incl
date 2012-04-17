@@ -55,7 +55,7 @@ struct SpotLight
 	float specular;
 };
 
-#ifdef float4
+#ifdef CRAZEGFX
 		}
 	}
 	#undef float3
