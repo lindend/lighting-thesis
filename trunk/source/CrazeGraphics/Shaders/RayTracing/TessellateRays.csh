@@ -57,9 +57,6 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 	//lvSpace will contain 0 if the point is inside the LV,
 	float2 insideLV = lvSpace0 * lvSpace1;
 
-	r.origin.xy = toLVSpace(r.origin.xy);
-	r.dir.xy = toLVSpace(r.dir.xy);
-
 	uint color = r.color;
 	if (max(insideLV.x, insideLV.y) <= 0.f)
 	{

@@ -131,8 +131,8 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies);Brigade.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/brigade/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;ws2_32.lib;d3dcompiler.lib;%(AdditionalDependencies);gwen_static.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/gwen/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

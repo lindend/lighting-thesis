@@ -15,7 +15,7 @@ VS_OUT main(uint idx : SV_VertexID, uint inst : SV_InstanceID)
 
 	PhotonRay ray = Rays[inst];
 	output.position.xyz = idx == 0 ? ray.origin : ray.dir.xyz;
-	output.position.w = ray.dir.w;
+	output.position.w = asfloat(ray.color);
 
 	return output;
 }

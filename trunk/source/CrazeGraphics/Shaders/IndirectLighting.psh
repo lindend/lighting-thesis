@@ -31,14 +31,14 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 }
 #else
 float3 evalIndirectLightAt(float3 cell, float3 normal)
-{
+{ 
 	float p = 1.f;
 	float sideWeights[6];
 	for (int i = 0; i < 6; ++i)
 	{
-		sideWeights[i] = pow(saturate(dot(CMSides[i], -normal)), p);
+		sideWeights[i] = saturate(dot(CMSides[i], -normal));
 	}
-
+	
 	float3 color = 0.f;
 	if (sideWeights[0] > 0.f)
 	{

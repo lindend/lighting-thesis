@@ -53,6 +53,7 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 
 	float closest = length(r.dir);
 	r.dir /= closest;
+	//closest = 100000000.f;
 	
 	uint startTri = 0;
 	while (startTri < NumTriangles)
