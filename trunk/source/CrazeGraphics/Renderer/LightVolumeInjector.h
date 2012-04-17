@@ -49,6 +49,7 @@ namespace Craze
 			void renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj);
 			void spawnRays(const Matrix4& viewProj, const Camera* cam);
 			void traceRays();
+			void tessellateRays();
 			void injectToLV(const Camera* c);
 			void mergeToTarget();
 
@@ -70,9 +71,10 @@ namespace Craze
 			std::shared_ptr<SRVBuffer> m_triangleBuffer;
 
 			std::shared_ptr<UAVBuffer> m_toTestRays;
-			std::shared_ptr<UAVBuffer> m_collidedRays;
+			std::shared_ptr<UAVBuffer> m_tessellatedRays;
 
 			std::shared_ptr<const ComputeShaderResource> m_rayTraceCS;
+			std::shared_ptr<const ComputeShaderResource> m_tessellateCS;
 
 			std::unique_ptr<LVFirstBounceEffect> m_fxFirstBounce;
 			std::unique_ptr<LVInjectRaysEffect> m_fxInjectRays;

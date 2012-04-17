@@ -90,7 +90,7 @@ bool Device::Init(int width, int height, bool fullScreen, HWND hWnd)
 
 
 	unsigned int flags = 0;
-#ifdef _DEBUG
+#ifdef _DEBUG__
 	flags = D3D11_CREATE_DEVICE_DEBUG;
 #endif
 	const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };

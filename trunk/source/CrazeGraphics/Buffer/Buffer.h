@@ -15,7 +15,7 @@ namespace Craze
 		{
 			CRAZE_ALLOC();
 		public:
-			~Buffer();
+			virtual ~Buffer();
 
 			ID3D11Buffer* GetBuffer() const { return m_pBuffer; }
 			operator ID3D11Buffer *() const { return m_pBuffer; }
@@ -81,7 +81,7 @@ namespace Craze
 			static std::shared_ptr<SRVBuffer> CreateRaw(Device *pDevice, DXGI_FORMAT format, int size, const void *pData, const char *pDebugName);
 			static std::shared_ptr<SRVBuffer> CreateRawArg(Device *pDevice, int size, const void *pData, const char *pDebugName);
 
-			~SRVBuffer()
+			virtual ~SRVBuffer()
 			{
 				m_pSRV->Release();
 				m_pSRV = 0;
@@ -106,6 +106,8 @@ namespace Craze
 			{
 				m_pUAV->Release();
 				m_pUAV = 0;
+				m_ACUAV->Release();
+				m_ACUAV = 0;
 			}
 		private:
 			UAVBuffer(Device *pDevice, ID3D11Buffer *pBuf, ID3D11ShaderResourceView *pSRV, ID3D11UnorderedAccessView *pUAV, ID3D11UnorderedAccessView* ACUAV) 

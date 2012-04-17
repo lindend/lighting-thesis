@@ -51,7 +51,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	Vector3 cornerAdjustment[8];
 	ZeroMemory(cornerAdjustment, sizeof(Vector3) * 8);
-	float len = 1600.f;
+	float len = 10600.f;
 	expand(corners, cornerAdjustment, 0, 1, 3, 4, len);
 	expand(corners, cornerAdjustment, 2, 1, 3, 6, len);
 
@@ -97,18 +97,18 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 bool LVInjectRaysEffect::initialize()
 {
-	unsigned int args[] = { 2, 0, 0, 0};
+	unsigned int args[] = { 0, 1, 0, 0};
 	m_argBuffer = SRVBuffer::CreateRawArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
 
 	m_tessShaders = EffectHelper::LoadShaderFromResource<TessShaderResource>("RayTracing/LineTess.tess");
 
-	return IEffect::initialize("RayTracing/LightInject.vsh",
+	return IEffect::initialize("RayTracing/InjectTessellated.vsh",
 #ifdef CRAZE_USE_SH_LV
 		"RayTracing/RasterizeSH.psh",
 #else
 		"RayTracing/RasterizeRaysCM.psh",
 #endif
-		"RayTracing/LineDraw.gsh");
+		"RayTracing/InjectTessellated.gsh");
 }
 
 const D3D11_INPUT_ELEMENT_DESC* LVInjectRaysEffect::getLayout(int& count)
@@ -127,13 +127,13 @@ const D3D11_INPUT_ELEMENT_DESC* LVInjectRaysEffect::getLayout(int& count)
 void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared_ptr<RenderTarget> LVs[])
 {
 	IEffect::set();
-	gpDevice->SetShader(m_tessShaders->m_hs);
-	gpDevice->SetShader(m_tessShaders->m_ds);
+	//gpDevice->SetShader(m_tessShaders->m_hs);
+	//gpDevice->SetShader(m_tessShaders->m_ds);
 
 	auto dc = gpDevice->GetDeviceContext();
 
 	//Prepare the argument buffer for the indirect call
-	dc->CopyStructureCount(m_argBuffer->GetBuffer(), sizeof(u32), rays->GetAppendConsumeUAV());
+	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, rays->GetAppendConsumeUAV());
 
 	ID3D11Buffer* vs = nullptr;
 	unsigned int stride = 0;
@@ -146,7 +146,8 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	gpDevice->SetRenderTargets(LVs, CRAZE_NUM_LV, nullptr);
 
 	//Draw the rays
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST);
+	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	//dc->Draw(515000, 0);
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	srv = nullptr;
@@ -154,9 +155,9 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
-	gpDevice->SetShader((ID3D11HullShader*)nullptr);
-	gpDevice->SetShader((ID3D11DomainShader*)nullptr);
+	//gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
+	//gpDevice->SetShader((ID3D11HullShader*)nullptr);
+	//gpDevice->SetShader((ID3D11DomainShader*)nullptr);
 }
 
 bool LVAmbientLightingEffect::initialize()

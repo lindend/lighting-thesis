@@ -77,9 +77,9 @@ void Renderer::Initialize()
 	m_GBuffers[2] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_COLOR_LINEAR, "GBuffer indirect illumination");
 
 	m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);
-
-	m_pShadowMap = RenderTarget::Create2D(gpDevice, 1024, 1024, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
-	m_pShadowDS = DepthStencil::Create2D(gpDevice, 1024, 1024, DEPTHSTENCIL_FORMAT_D24S8);
+	const int shadowMapRes = 1024;
+	m_pShadowMap = RenderTarget::Create2D(gpDevice, shadowMapRes, shadowMapRes, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
+	m_pShadowDS = DepthStencil::Create2D(gpDevice, shadowMapRes, shadowMapRes, DEPTHSTENCIL_FORMAT_D24S8);
 
 	m_pScreenQuad = Mesh::createScreenQuad(gpDevice);
 
@@ -227,8 +227,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		first = true;
 	} else
 	{
-		//rx += 0.00265437564657f;
-		//rz += 0.0013540938358f;
+		rx += 0.0265437564657f;
+		rz += 0.013540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}

@@ -3,9 +3,9 @@
 
 struct PhotonRay
 {
-	float3 origin;
 	float3 dir;
-	float3 power;
+	uint color;
+	float3 origin;
 	//float density; //According to ISPM, examine!
 };
 

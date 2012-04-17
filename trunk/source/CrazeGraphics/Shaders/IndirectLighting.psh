@@ -42,26 +42,26 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 	float3 color = 0.f;
 	if (sideWeights[0] > 0.f)
 	{
-		color += sideWeights[0] * LightVolumeRight.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[0] * LightVolumeRight.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	} else if (sideWeights[1] > 0.f)
 	{
-		color += sideWeights[1] * LightVolumeLeft.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[1] * LightVolumeLeft.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[2] > 0.f)
 	{
-		color += sideWeights[2] * LightVolumeTop.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[2] * LightVolumeTop.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	} else if(sideWeights[3] > 0.f)
 	{
-		color += sideWeights[3] * LightVolumeBot.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[3] * LightVolumeBot.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[4] > 0.f)
 	{
-		color += sideWeights[4] * LightVolumeFront.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[4] * LightVolumeFront.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	} else if(sideWeights[5] > 0.f)
 	{
-		color += sideWeights[5] * LightVolumeBack.Sample(BilinearBorder, cell).xyz;
+		color += sideWeights[5] * LightVolumeBack.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	}
 
 	return color * 3.74f;
@@ -81,7 +81,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		discard;
 	}
 
-	float3 light = evalIndirectLightAt(cell, normal) * 0.1f;
+	float3 light = evalIndirectLightAt(cell, normal) * 1.f;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * 0.1f;
 	if (uv.x > 0.f)
 	{

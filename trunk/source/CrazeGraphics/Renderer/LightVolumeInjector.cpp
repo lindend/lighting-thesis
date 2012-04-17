@@ -57,10 +57,11 @@ bool LightVolumeInjector::initialize()
 		gpDevice->GetDeviceContext()->ClearRenderTargetView(m_targetLightVolumes[i]->GetRenderTargetView(), black);
 	}
 
-	m_toTestRays = UAVBuffer::Create(gpDevice, sizeof(float) * 3 * 3, MaxPhotonRays, true, "To test rays");
-	m_collidedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 3 * 3, MaxPhotonRays, true, "Collided rays");
+	m_toTestRays = UAVBuffer::Create(gpDevice, sizeof(float) * 7, MaxPhotonRays, true, "To test rays");
+	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 7, MaxPhotonRays * 16, true, "Collided rays");
 
 	m_rayTraceCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/RayTrace.csh");
+	m_tessellateCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/TessellateRays.csh");
 
 	//Hard coded collision geometry!
 	std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
@@ -159,7 +160,6 @@ Camera findSMCamera(const SpotLight& l, Scene* scene)
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 {
 	return m_toTestRays;
-	return m_collidedRays;
 }
 
 template<typename T> void findSMCams(T lights, int numLights, Scene* scene, Camera* outCams)
@@ -187,6 +187,10 @@ void LightVolumeInjector::injectAll(const Camera* cams, int numCams, Scene* scen
 
 		prof = gpGraphics->m_profiler->beginBlock("Trace rays");
 		traceRays();
+		gpGraphics->m_profiler->endBlock(prof);
+
+		prof = gpGraphics->m_profiler->beginBlock("Tessellate rays");
+		tessellateRays();
 		gpGraphics->m_profiler->endBlock(prof);
 
 		prof = gpGraphics->m_profiler->beginBlock("Inject into LV");
@@ -219,7 +223,9 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	findSMCams(spotLights.spotLights, spotLights.numLights, scene, spotCams);
 	injectAll(spotCams, spotLights.numLights, scene);
 	
+	int prof = gpGraphics->m_profiler->beginBlock("Merge LVs");
 	mergeToTarget();
+	gpGraphics->m_profiler->endBlock(prof);
 
 	return m_targetLightVolumes;
 }
@@ -271,12 +277,25 @@ void LightVolumeInjector::traceRays()
 	ID3D11ShaderResourceView* triSrv = m_triangleBuffer->GetSRV();
 	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 1, &triSrv);
 
-	ID3D11UnorderedAccessView* UAVs[] = { m_toTestRays->GetUAV(), m_collidedRays->GetUAV() };
+	ID3D11UnorderedAccessView* UAV = m_toTestRays->GetUAV();
+	u32 initCount = -1;
+	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &UAV, &initCount);
+
+	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
+	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / 128, 1, 1);
+
+	UAV = nullptr;
+	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &UAV, &initCount);
+}
+void LightVolumeInjector::tessellateRays()
+{
+	PIXMARKER(L"Tessellate rays");
+	ID3D11UnorderedAccessView* UAVs[] = { m_toTestRays->GetUAV(), m_tessellatedRays->GetAppendConsumeUAV() };
 	u32 initCounts[] = { -1, 0 };
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
 
-	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
-	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / (32 * 8), 1, 1);
+	gpDevice->GetDeviceContext()->CSSetShader(m_tessellateCS->m_shader, nullptr, 0);
+	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / 128, 1, 1);
 
 	ZeroMemory(UAVs, sizeof(void*) * 2);
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
@@ -291,7 +310,7 @@ void LightVolumeInjector::injectToLV(const Camera* cam)
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_addBS, bf, 0xFFFFFFFF);
 	gpDevice->GetDeviceContext()->RSSetState(m_AALinesRS);
 
-	m_fxInjectRays->injectRays(m_toTestRays, m_lightingVolumes);
+	m_fxInjectRays->injectRays(m_tessellatedRays, m_lightingVolumes);
 
 	gpDevice->GetDeviceContext()->RSSetState(nullptr);
 }

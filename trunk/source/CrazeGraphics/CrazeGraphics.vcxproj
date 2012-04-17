@@ -241,6 +241,7 @@
     <VertexShader Include="Shaders\ESM_Mesh.vsh" />
     <VertexShader Include="Shaders\Font.vsh" />
     <VertexShader Include="Shaders\PosMap.vsh" />
+    <VertexShader Include="Shaders\RayTracing\InjectTessellated.vsh" />
     <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
     <VertexShader Include="Shaders\RayTracing\DrawRay.vsh" />
     <VertexShader Include="Shaders\RayTracing\LightInject.vsh" />
@@ -266,6 +267,7 @@
     <None Include="Shaders\RayTracing\LineTess.tess" />
     <None Include="Shaders\RayTracing\PhotonRay.incl" />
     <None Include="Shaders\RayTracing\RayTrace.csh" />
+    <None Include="Shaders\RayTracing\TessellateRays.csh" />
     <None Include="Shaders\SkyOcclusion.csh">
       <FileType>Document</FileType>
     </None>
@@ -288,6 +290,7 @@
   <ItemGroup>
     <GeometryShaders Include="Shaders\Font.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\DrawRay.gsh" />
+    <GeometryShaders Include="Shaders\RayTracing\InjectTessellated.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\LineDraw.gsh" />
     <GeometryShaders Include="Shaders\RayTracing\MergeLVs.gsh" />
   </ItemGroup>
