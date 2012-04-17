@@ -130,7 +130,7 @@ uint touint(float v)
 	return 0xFF & (uint)(v * 255.f);
 }
 
-#define RAYS_PER_TEXEL 1
+#define RAYS_PER_TEXEL 4
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
@@ -153,7 +153,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 		float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f; //TODO
 		dir = dot(dir, normal) > 0 ? dir : -dir;
 
-		float power = 1.0f / RAYS_PER_TEXEL;
+		float power = 4.0f / RAYS_PER_TEXEL;
 
 		float lastIn, firstOut;
 		if (rayIntersectsFrustum1(position, dir, lastIn, firstOut))

@@ -67,7 +67,7 @@
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
+      <Command>xcopy /s "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Copying shaders</Message>
@@ -100,7 +100,7 @@
       <AdditionalDependencies>d3d11.lib;d3dx11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>xcopy "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
+      <Command>xcopy /s "$(SolutionDir)/source/CrazeGraphics/Shaders" "$(SolutionDir)bin\Shaders\" /Y</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Message>Copying shaders</Message>

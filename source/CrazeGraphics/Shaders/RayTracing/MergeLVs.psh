@@ -20,7 +20,7 @@ Texture3D Back	: register(t5);
 
 PS_OUT main(float3 uv : TEXCOORD)
 {
-	float Alpha = 0.08f;
+	float Alpha = 0.05f;
 
 	float w, h, d;
 	Right.GetDimensions(w, h, d);
