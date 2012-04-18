@@ -24,7 +24,7 @@ CBufferManager::~CBufferManager()
 void CBufferManager::Initialize(Device* pDevice)
 {
 	m_pDevice = pDevice;
-	m_pPerFrame = EffectHelper::CreateConstantBuffer(pDevice, sizeof(Vector4) * 16);
+	m_pPerFrame = EffectHelper::CreateConstantBuffer(pDevice, sizeof(Vector4) * 17);
 	m_pPerLight = EffectHelper::CreateConstantBuffer(pDevice, sizeof(CBPerLight));
 	m_pPerObject = EffectHelper::CreateConstantBuffer(pDevice, sizeof(Vector4) * 8);
 
@@ -88,8 +88,11 @@ void CBufferManager::SetFrame(const CBPerFrame& data)
 	cbuffer[14].Y() = (unsigned int)data.DisableAO;
 	cbuffer[14].Z() = (unsigned int)data.DisableIndirect;
 	cbuffer[14].W() = (unsigned int)data.BoostIndirect;
-	cbuffer[15] = (unsigned int)data.UseESM;
-	cbuffer[15].Y() = data.NumObjects;
+	cbuffer[15] = (unsigned int)data.DisableDecal;
+	cbuffer[15].Y() = (unsigned int)data.UseESM;
+	cbuffer[15].Z() = data.NumObjects;
+
+	cbuffer[16] = data.OldLVStart;
 
 	cbuffer.Unmap();
 }

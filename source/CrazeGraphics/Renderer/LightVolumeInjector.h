@@ -31,7 +31,7 @@ namespace Craze
 		class LightVolumeInjector
 		{
 		public:
-			LightVolumeInjector(Renderer* renderer) : m_renderer(renderer) {}
+			LightVolumeInjector(Renderer* renderer) : m_renderer(renderer), m_active(0) {}
 
 			bool initialize();
 
@@ -64,8 +64,9 @@ namespace Craze
 			std::shared_ptr<RenderTarget> m_dummy;
 
 			//One lighting volume for each color
-			std::shared_ptr<RenderTarget> m_lightingVolumes[CRAZE_NUM_LV];
-			std::shared_ptr<RenderTarget> m_targetLightVolumes[CRAZE_NUM_LV];
+			std::shared_ptr<RenderTarget> m_lightVolumes[2][CRAZE_NUM_LV];
+			int m_active;
+			Vector3 m_prevLVPos;
 
 			int m_numTriangles;
 			std::shared_ptr<SRVBuffer> m_triangleBuffer;
