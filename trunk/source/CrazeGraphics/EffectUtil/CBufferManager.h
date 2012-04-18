@@ -34,9 +34,12 @@ namespace Craze
 			bool DisableDirect;
 			bool DisableAO;
 			bool DisableIndirect;
+			bool DisableDecal;
 			bool BoostIndirect;
 			bool UseESM;
 			unsigned int NumObjects;
+
+			Vec3 OldLVStart;
 		};
 
 		struct CBPerObject

@@ -77,7 +77,7 @@ void Renderer::Initialize()
 	m_GBuffers[2] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_COLOR_LINEAR, "GBuffer indirect illumination");
 
 	m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);
-	const int shadowMapRes = 1024;
+	const int shadowMapRes = 4096;
 	m_pShadowMap = RenderTarget::Create2D(gpDevice, shadowMapRes, shadowMapRes, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
 	m_pShadowDS = DepthStencil::Create2D(gpDevice, shadowMapRes, shadowMapRes, DEPTHSTENCIL_FORMAT_D24S8);
 
@@ -202,9 +202,12 @@ void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
 	cbuffer.ambientColor = pScene->AmbientLight;
 	
 	LightVolumeInfo lvInfo = m_lightVolumeInjector.getLVInfo(pCam);
+	static Vec3 prevStart = lvInfo.start;
 	cbuffer.LVStart = lvInfo.start;
 	cbuffer.LVEnd = lvInfo.end;
 	cbuffer.LVCellSize = Vector4(lvInfo.cellSize, lvInfo.numCells);
+	cbuffer.OldLVStart = prevStart;
+	prevStart = lvInfo.start;
 }
 
 void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)

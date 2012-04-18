@@ -214,6 +214,7 @@ void Graphics::Render()
 	cbuffer.DisableAO = gpGraphics->Params.DisableAO;
 	cbuffer.DisableIndirect = true;//gpGraphics->Params.DisableIndirect;
 	cbuffer.DisableDirect = gpGraphics->Params.DisableDirect;
+	cbuffer.DisableDecal = true;
 	cbuffer.BoostIndirect = gpGraphics->Params.BoostIndirect;
 	cbuffer.UseESM = gpGraphics->Params.UseESM;
 

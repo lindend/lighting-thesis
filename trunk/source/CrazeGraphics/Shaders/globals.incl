@@ -44,8 +44,11 @@ cbuffer cbPerFrame : register(b3)
 	bool DisableAO :					packoffset(c14.y);
 	bool DisableIndirect :				packoffset(c14.z);
 	bool DisableAmbient :				packoffset(c14.w);
-	bool UseESM :						packoffset(c15.x);
-	uint NumObjects :					packoffset(c15.y);
+	bool DisableDecal :					packoffset(c15.x);
+	bool UseESM :						packoffset(c15.y);
+	uint NumObjects :					packoffset(c15.z);
+
+	float3 OldLVStart	:				packoffset(c16);
 }
 
 //All shading

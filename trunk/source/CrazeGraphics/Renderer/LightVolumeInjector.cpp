@@ -49,12 +49,14 @@ bool LightVolumeInjector::initialize()
 
 	m_dummy = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_8BIT_UNORM, "Dummy light volume render target");
 
-	for (int i = 0; i < CRAZE_NUM_LV; ++i)
+	for(int j = 0; j < 2; ++j)
 	{
-		m_lightingVolumes[i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "Light volume");
-		m_targetLightVolumes[i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "Target light volume");
-		float black[] = { 0.f, 0.f, 0.f, 0.f};
-		gpDevice->GetDeviceContext()->ClearRenderTargetView(m_targetLightVolumes[i]->GetRenderTargetView(), black);
+		for (int i = 0; i < CRAZE_NUM_LV; ++i)
+		{
+			m_lightVolumes[j][i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "Light volume");
+			float black[] = { 0.f, 0.f, 0.f, 0.f};
+			gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightVolumes[j][i]->GetRenderTargetView(), black);
+		}
 	}
 
 	m_toTestRays = UAVBuffer::Create(gpDevice, sizeof(float) * 7, MaxPhotonRays, true, "To test rays");
@@ -204,9 +206,10 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	PIXMARKER(L"Create lighting volumes");
 
 	float black[] = { 0.f, 0.f, 0.f, 0.f };
+	m_active = (m_active + 1) % 2;
 	for (int i = 0; i < CRAZE_NUM_LV; ++i)
 	{
-		gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightingVolumes[i]->GetRenderTargetView(), black);
+		gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightVolumes[m_active][i]->GetRenderTargetView(), black);
 	}
 
 	MEM_AUTO_MARK_STACK;
@@ -227,7 +230,7 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 	mergeToTarget();
 	gpGraphics->m_profiler->endBlock(prof);
 
-	return m_targetLightVolumes;
+	return m_lightVolumes[m_active];
 }
 
 void LightVolumeInjector::renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj)
@@ -310,7 +313,7 @@ void LightVolumeInjector::injectToLV(const Camera* cam)
 	gpDevice->GetDeviceContext()->OMSetBlendState(m_addBS, bf, 0xFFFFFFFF);
 	gpDevice->GetDeviceContext()->RSSetState(m_AALinesRS);
 
-	m_fxInjectRays->injectRays(m_tessellatedRays, m_lightingVolumes);
+	m_fxInjectRays->injectRays(m_tessellatedRays, m_lightVolumes[m_active]);
 
 	gpDevice->GetDeviceContext()->RSSetState(nullptr);
 }
@@ -326,10 +329,10 @@ void LightVolumeInjector::mergeToTarget()
 	ID3D11ShaderResourceView* srvs[CRAZE_NUM_LV];
 	for (int i = 0; i < CRAZE_NUM_LV; ++i)
 	{
-		srvs[i] = m_lightingVolumes[i]->GetResourceView();
+		srvs[i] = m_lightVolumes[(m_active + 1) % 2][i]->GetResourceView();
 	}
 	
-	gpDevice->SetRenderTargets(m_targetLightVolumes, CRAZE_NUM_LV, nullptr);
+	gpDevice->SetRenderTargets(m_lightVolumes[m_active], CRAZE_NUM_LV, nullptr);
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, CRAZE_NUM_LV, srvs);
 	gpDevice->GetDeviceContext()->DrawInstanced(3, LightVolumeResolution, 0, 0);
 	m_fxMergeLV->reset();

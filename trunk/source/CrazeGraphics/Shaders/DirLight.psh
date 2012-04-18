@@ -8,8 +8,9 @@ float3 DepthToPos(float depth, float2 uv)
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
-	
+
 	float4 color = ColorSpec.Sample(Point, uv);
+
 	float4 normRough = NormalRough.Sample(Point, uv);
 	float depth = Depth.Sample(Point, uv).x;
 	float3 normal = normRough.xyz;

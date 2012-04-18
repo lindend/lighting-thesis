@@ -64,12 +64,13 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 		color += sideWeights[5] * LightVolumeBack.SampleLevel(BilinearBorder, cell, 0.f).xyz;
 	}
 
-	return color * 3.74f;
+	return color * 2.f * 3.74f;
 }
 #endif
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
 {
 	float3 color = ColorSpec.Sample(Point, uv).xyz;
+
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 pos = DepthToPos(depth, uv);
@@ -81,7 +82,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		discard;
 	}
 
-	float3 light = evalIndirectLightAt(cell, normal) * 1.f;
+	float3 light = evalIndirectLightAt(cell, normal) * 0.03f;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * 0.1f;
 	if (uv.x > 0.f)
 	{
