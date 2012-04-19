@@ -26,11 +26,13 @@ PS_OUT main(float3 uv : TEXCOORD)
 	uv.z *= rcp(d - 1.f);
 
 	float3 cellOffset = (OldLVStart - LVStart) / (LVCellSize.xyz * LVCellSize.w);
+	cellOffset.y = 1 - cellOffset.y;
+
 	float3 newUv = uv - cellOffset;
 
 	if(newUv.x < 0.f || newUv.x > 1.f || newUv.y < 0.f || newUv.y > 1.f || newUv.z < 0.f || newUv.z > 1.f)
 	{
-		Alpha = .5f;
+		//Alpha = .5f;
 	}
 
 	//newUv = saturate(newUv);
