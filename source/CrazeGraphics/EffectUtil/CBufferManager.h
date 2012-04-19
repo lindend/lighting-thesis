@@ -40,6 +40,7 @@ namespace Craze
 			unsigned int NumObjects;
 
 			Vec3 OldLVStart;
+			float Seed;
 		};
 
 		struct CBPerObject

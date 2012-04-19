@@ -150,7 +150,9 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	for(int i = 0; i < RAYS_PER_TEXEL; ++i)
 	{
 		//sample direction based on RSM texel world space
-		float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f; //TODO
+		//float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
+		float3 dir = Random.SampleLevel(Point, + Seed + rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
+
 		dir = dot(dir, normal) > 0 ? dir : -dir;
 
 		float power = 4.0f / RAYS_PER_TEXEL;
