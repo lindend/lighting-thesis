@@ -49,6 +49,8 @@ cbuffer cbPerFrame : register(b3)
 	uint NumObjects :					packoffset(c15.z);
 
 	float3 OldLVStart	:				packoffset(c16);
+
+	float Seed	:						packoffset(c17.x);
 }
 
 //All shading

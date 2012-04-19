@@ -192,6 +192,7 @@ void Renderer::Shutdown()
 	SAFE_RELEASE(m_pLightPassDSS);
 }
 
+float seed = 0.0f;
 void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
 {
 	const Camera* pCam = pScene->getCamera();
@@ -207,6 +208,9 @@ void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
 	cbuffer.LVEnd = lvInfo.end;
 	cbuffer.LVCellSize = Vector4(lvInfo.cellSize, lvInfo.numCells);
 	cbuffer.OldLVStart = prevStart;
+
+	seed += .0315957429834f;
+	cbuffer.Seed = seed;
 	prevStart = lvInfo.start;
 }
 
