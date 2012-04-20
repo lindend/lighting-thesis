@@ -96,7 +96,7 @@ bool LightVolumeInjector::initialize()
 	gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_mergeBS);
 
 	D3D11_RASTERIZER_DESC rsDesc;//(D3D11_FILL_SOLID, D3D11_CULL_NONE, true, 0, 0.f, 0.f, true, false, false, true);
-	rsDesc.AntialiasedLineEnable = false;
+	rsDesc.AntialiasedLineEnable = true;
 	rsDesc.CullMode = D3D11_CULL_NONE;
 	rsDesc.DepthBias = 0;
 	rsDesc.DepthBiasClamp = 0.f;
@@ -156,7 +156,13 @@ Camera findSMCamera(const DirectionalLight& l, Scene* scene)
 
 Camera findSMCamera(const SpotLight& l, Scene* scene)
 {
-	return Camera();
+	Camera c;
+	c.SetPosition(l.pos);
+	c.SetDirection(l.direction);
+	c.SetUp(Vector3::UP);
+	c.SetProjection(l.angle * 2.f, 1.f, 1.f, 100000.f);
+
+	return c;
 }
 
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
@@ -172,32 +178,16 @@ template<typename T> void findSMCams(T lights, int numLights, Scene* scene, Came
 	}
 }
 
-void LightVolumeInjector::injectAll(const Camera* cams, int numCams, Scene* scene)
+void LightVolumeInjector::injectAll(const Camera* cams, int numCams, Scene* scene, bool first)
 {
 	for (int i = 0; i < numCams; ++i)
 	{
 		const Camera& c = cams[i];
 		Matrix4 viewProj = c.GetView() * c.GetProjection();
 
-		int prof = gpGraphics->m_profiler->beginBlock("Create RSM");
 		renderRSMs(scene, &c, viewProj);
-		gpGraphics->m_profiler->endBlock(prof);
 
-		prof = gpGraphics->m_profiler->beginBlock("Spawn rays");
-		spawnRays(viewProj, scene->getCamera());
-		gpGraphics->m_profiler->endBlock(prof);
-
-		prof = gpGraphics->m_profiler->beginBlock("Trace rays");
-		traceRays();
-		gpGraphics->m_profiler->endBlock(prof);
-
-		prof = gpGraphics->m_profiler->beginBlock("Tessellate rays");
-		tessellateRays();
-		gpGraphics->m_profiler->endBlock(prof);
-
-		prof = gpGraphics->m_profiler->beginBlock("Inject into LV");
-		injectToLV(scene->getCamera());
-		gpGraphics->m_profiler->endBlock(prof);
+		spawnRays(viewProj, scene->getCamera(), first && i == 0);
 	}
 }
 
@@ -214,19 +204,34 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::getLightingVolumes(Scene* sc
 
 	MEM_AUTO_MARK_STACK;
 
+	int prof = gpGraphics->m_profiler->beginBlock("Create RSMs and spawn rays");
 	int numDirLights;
 	const DirectionalLight* lights = scene->getDirectionalLights(numDirLights);
 	Camera* dirCams = (Camera*)gMemory.StackAlloc(Align(16), sizeof(Camera) * numDirLights);
+	Vector3* lightColors = (Vector3*)gMemory.StackAlloc(Align(16), sizeof(Vector3) * numDirLights);
 	findSMCams(lights, numDirLights, scene, dirCams);
-	injectAll(dirCams, numDirLights, scene);
+	injectAll(dirCams, numDirLights, scene, true);
 
 	const Camera* cam = scene->getCamera();
 	const SpotLightArray spotLights = scene->getVisibleSpotLights(cam->GetView() * cam->GetProjection());
 	Camera* spotCams = (Camera*)gMemory.StackAlloc(Align(16), sizeof(Camera) * spotLights.numLights);
 	findSMCams(spotLights.spotLights, spotLights.numLights, scene, spotCams);
-	injectAll(spotCams, spotLights.numLights, scene);
+	injectAll(spotCams, spotLights.numLights, scene, false);
+	gpGraphics->m_profiler->endBlock(prof);
+
+	prof = gpGraphics->m_profiler->beginBlock("Trace rays");
+	traceRays();
+	gpGraphics->m_profiler->endBlock(prof);
+
+	prof = gpGraphics->m_profiler->beginBlock("Tessellate rays");
+	tessellateRays();
+	gpGraphics->m_profiler->endBlock(prof);
+
+	prof = gpGraphics->m_profiler->beginBlock("Inject into LV");
+	injectToLV(scene->getCamera());
+	gpGraphics->m_profiler->endBlock(prof);
 	
-	int prof = gpGraphics->m_profiler->beginBlock("Merge LVs");
+	prof = gpGraphics->m_profiler->beginBlock("Merge LVs");
 	mergeToTarget();
 	gpGraphics->m_profiler->endBlock(prof);
 
@@ -253,11 +258,11 @@ void LightVolumeInjector::renderRSMs(Scene* scene, const Camera* c, const Matrix
 	}
 }
 
-void LightVolumeInjector::spawnRays(const Matrix4& viewProj, const Camera* cam)
+void LightVolumeInjector::spawnRays(const Matrix4& viewProj, const Camera* cam, bool first)
 {
 	PIXMARKER(L"Spawn rays");
 	gpDevice->GetDeviceContext()->PSSetSamplers(0, 1, &m_lowMipSampler);
-	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj, cam);
+	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj, cam, first);
 	auto sampler = m_renderer->getBilinearSampler();
 	gpDevice->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 }
@@ -316,6 +321,8 @@ void LightVolumeInjector::injectToLV(const Camera* cam)
 	m_fxInjectRays->injectRays(m_tessellatedRays, m_lightVolumes[m_active]);
 
 	gpDevice->GetDeviceContext()->RSSetState(nullptr);
+
+	gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
 }
 
 void LightVolumeInjector::mergeToTarget()

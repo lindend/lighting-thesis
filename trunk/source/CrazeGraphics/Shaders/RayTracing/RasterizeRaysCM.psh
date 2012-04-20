@@ -29,6 +29,12 @@ PS_OUT main(nointerpolation float4 direction : DIRECTION)
 	output.Bot =	float4(max(0.f, dot(CMSides[3], direction.xyz)) * color, 0.f);
 	output.Front =	float4(max(0.f, dot(CMSides[4], direction.xyz)) * color, 0.f);
 	output.Back =	float4(max(0.f, dot(CMSides[5], direction.xyz)) * color, 0.f);
+	//output.Right =	float4(max(0.f, -direction.x) * color, 0.f);
+	//output.Left =	float4(max(0.f,  direction.x) * color, 0.f);
+	//output.Top =	float4(max(0.f,  direction.y) * color, 0.f);
+	//output.Bot =	float4(max(0.f, -direction.y) * color, 0.f);
+	//output.Front =	float4(max(0.f,  direction.z) * color, 0.f);
+	//output.Back =	float4(max(0.f, -direction.z) * color, 0.f);
 
 	return output;
 }

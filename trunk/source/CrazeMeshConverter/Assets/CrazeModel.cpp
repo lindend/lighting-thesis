@@ -93,14 +93,16 @@ std::vector<std::shared_ptr<Craze::Graphics2::MeshData>> loadModelAssimp(const s
 				MaterialData mat;
 				mat.type = MT_NORMAL;
 
-				const aiMaterial* pMaterial = pScene->mMaterials[pMesh->mMaterialIndex];
+				if (pScene->mNumMaterials > pMesh->mMaterialIndex)
+				{
+					const aiMaterial* pMaterial = pScene->mMaterials[pMesh->mMaterialIndex];
 
-				aiString texture;
-				pMaterial->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture);
-				mat.decalFileName = texture.data;
+					aiString texture;
+					pMaterial->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture);
+					mat.decalFileName = texture.data;
 
-				pMaterial->Get(AI_MATKEY_SHININESS, mat.specularFactor);
-
+					pMaterial->Get(AI_MATKEY_SHININESS, mat.specularFactor);
+				}
                 pMeshData->m_Material = mat;
 				res.push_back(pMeshData);
 

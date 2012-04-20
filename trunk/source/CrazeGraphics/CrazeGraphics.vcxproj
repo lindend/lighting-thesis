@@ -277,6 +277,7 @@
     <PixelShaders Include="Shaders\RayTracing\RasterizeRaysCM.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeSH.psh" />
     <PixelShaders Include="Shaders\Simple.psh" />
+    <PixelShaders Include="Shaders\SpotLight.psh" />
     <PixelShaders Include="Shaders\TerrainShading.psh" />
     <PixelShaders Include="Shaders\UI.psh" />
   </ItemGroup>

@@ -13,6 +13,7 @@ namespace Craze
 	{
 		PointLight CreatePointLight(const Vector3& pos, float range, const Vector3& color);
 		DirectionalLight createDirectionalLight(const Vector3& dir, const Vector3& color);
+		SpotLight createSpotLight(const Vector3& pos, const Vector3& dir, float angle, float range, const Vector3& color);
 
 		struct PointLightArray
 		{

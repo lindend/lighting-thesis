@@ -39,7 +39,7 @@ void expand(const Vector3* vs, Vector3* vout, int i0, int i1, int i2, int i3, fl
 	vout[i3] = vout[i3] + d2 * len;
 }
 
-void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam)
+void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam, bool first)
 {
 	if (!m_random.get())
 	{
@@ -51,7 +51,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	Vector3 cornerAdjustment[8];
 	ZeroMemory(cornerAdjustment, sizeof(Vector3) * 8);
-	float len = 10600.f;
+	float len = 600.f;
 	expand(corners, cornerAdjustment, 0, 1, 3, 4, len);
 	expand(corners, cornerAdjustment, 2, 1, 3, 6, len);
 
@@ -79,7 +79,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 
 	ID3D11RenderTargetView* rtv = dummyTarget->GetRenderTargetView();
 	ID3D11UnorderedAccessView* uav = outRays->GetAppendConsumeUAV();
-	unsigned int initCount = 0;
+	unsigned int initCount = first ? 0 : -1;
 	gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, &initCount);
 	
 	ID3D11ShaderResourceView* srvs[] = { RSMs[0]->GetResourceView(), RSMs[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
@@ -154,6 +154,7 @@ void LVInjectRaysEffect::injectRays(std::shared_ptr<UAVBuffer> rays, std::shared
 	gpDevice->GetDeviceContext()->VSSetShaderResources(0, 1, &srv);
 
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	IEffect::reset();
 
 	//gpDevice->SetShader((ID3D11GeometryShader*)nullptr);
 	//gpDevice->SetShader((ID3D11HullShader*)nullptr);

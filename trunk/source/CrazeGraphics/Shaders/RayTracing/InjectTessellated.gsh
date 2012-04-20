@@ -41,6 +41,8 @@ void main(point INPUT input[1], inout LineStream<OUTPUT> output)
 	output0.rtIdx = rtIdx;
 	output1.rtIdx = rtIdx;
 
+	//input[0].end -= input[0].dir.xyz * 100.f;
+
 	float zPos0 = calcZPos(input[0].begin.z, output0.rtIdx);
 	float zPos1 = calcZPos(input[0].end.z, output1.rtIdx);
 

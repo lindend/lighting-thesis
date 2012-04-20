@@ -228,14 +228,16 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	static float rx = 0.5f;
 	static float rz = 0.2f;
 	static HLIGHT dirlight;
+	static HLIGHT spotLight;
 	if (!first)
 	{
 		dirlight = pScene->addLight(createDirectionalLight(Vector3(0.2, -1.f, 0.2f), Vector3::ONE));
+		spotLight = pScene->addLight(createSpotLight(Vector3(-100.f, 5.f, 0.f), Vector3::LEFT, 0.3f, 100000.f, Vector3::ONE));
 		first = true;
 	} else
 	{
-		rx += 0.0265437564657f;
-		rz += 0.013540938358f;
+		//rx += 0.0265437564657f;
+		//rz += 0.013540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}
@@ -336,6 +338,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 			gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
 			gFxLighting.doLighting(light, lightViewProj, gUseShadows ? m_pShadowMap : nullptr);
 		}
+
+		drawLights(pScene->getVisibleSpotLights(viewProj));
 	}
 	gpGraphics->m_profiler->endBlock(lightProf);
 	
@@ -402,6 +406,46 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		gSaveScreenShot = false;
 	}
 
+}
+
+void Renderer::drawLights(SpotLightArray spotLights)
+{
+	for (int i = 0; i < spotLights.numLights; ++i)
+	{
+		const SpotLight& light = spotLights.spotLights[i];
+		Matrix4 lightViewProj = Matrix4::CreateView(light.pos, light.pos + light.direction, Vector3::UP) * Matrix4::CreatePerspectiveFov(1.f, light.angle, 1.f, 10000.f);
+		/*	
+		if (gUseShadows)
+		{
+			PIXMARKER(L"Render shadow map");			
+			shadowScene.clear();
+			pScene->buildDrawList(&shadowScene, lightViewProj);
+
+			gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+
+			gpDevice->GetDeviceContext()->ClearRenderTargetView(m_pShadowMap->GetRenderTargetView(), bf);
+			gpDevice->GetDeviceContext()->ClearDepthStencilView(m_pShadowDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
+			gpDevice->SetRenderTarget(m_pShadowMap, m_pShadowDS);
+
+			gpDevice->GetCbuffers()->SetLight(light, lightViewProj, light.dir * -1000.f);
+
+			gFxShadow.set();
+
+			for (auto i = shadowScene.begin(); i != shadowScene.end(); ++i)
+			{
+				gFxShadow.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+				i->second.m_mesh->draw();
+			}
+		}*/
+
+		ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
+		gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
+		gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, pSRVs);
+			
+		const float bf[4] = {1.f, 1.f, 1.f, 1.f};
+		gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
+		gFxLighting.doLighting(light, lightViewProj, nullptr);
+	}
 }
 
 void Renderer::BindScene(Scene* pScene)
