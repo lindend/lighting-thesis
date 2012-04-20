@@ -17,13 +17,17 @@ namespace Craze
 		{
 		public:
 
-			bool initialize() { return IEffect::initialize("ScreenQuad.vsh", "DirLight.psh"); }
+			bool initialize();
 
 			void setObjectProperties(const Matrix4& world, const Material& material) {}
 
 			void doLighting(const DirectionalLight& l, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> shadowMap);
+			void doLighting(const SpotLight& l, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> shadowMap);
 
 			void destroy() { IEffect::destroy(); }
+
+		private:
+			std::shared_ptr<const PixelShaderResource> m_spotLight;
 		};
 	}
 }

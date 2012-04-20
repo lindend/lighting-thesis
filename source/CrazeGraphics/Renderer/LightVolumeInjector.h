@@ -45,9 +45,9 @@ namespace Craze
 			const LightVolumeInfo getLVInfo(const Camera* cam) const;
 
 		private:
-			void injectAll(const Camera* cams, int numCams, Scene* scene);
+			void injectAll(const Camera* cams, int numCams, Scene* scene, bool first);
 			void renderRSMs(Scene* scene, const Camera* c, const Matrix4& viewProj);
-			void spawnRays(const Matrix4& viewProj, const Camera* cam);
+			void spawnRays(const Matrix4& viewProj, const Camera* cam, bool first);
 			void traceRays();
 			void tessellateRays();
 			void injectToLV(const Camera* c);
@@ -55,7 +55,7 @@ namespace Craze
 
 			static const int RSMResolution = 128;
 			static const int LightVolumeResolution = 16;
-			static const int MaxPhotonRays = RSMResolution * RSMResolution * 4;
+			static const int MaxPhotonRays = RSMResolution * RSMResolution * 8;
 
 			static const int NumRSMs = 2;
 			std::shared_ptr<RenderTarget> m_RSMs[NumRSMs];

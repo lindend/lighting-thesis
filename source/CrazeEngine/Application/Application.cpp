@@ -59,7 +59,7 @@ bool Application::Initialize(int argc, const char *argv[])
 {
 
 	unsigned int resX = 640;
-	unsigned int resY = 480;
+	unsigned int resY = 360;
 
 	gpApplication = this;
 
@@ -205,8 +205,8 @@ bool Application::VCreateWindow(int width, int height, bool windowed)
 		exstyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 	} else
 	{
-		style = WS_OVERLAPPEDWINDOW;
-		exstyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		style = WS_POPUP;
+		exstyle = WS_EX_TOPMOST;
 	}
 
 	RECT wRect;

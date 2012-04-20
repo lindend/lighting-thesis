@@ -4,6 +4,8 @@
 
 //#define CRAZE_USE_SH_LV
 
+static const SamplerState LVSampler = BilinearBorder;
+
 float3 DepthToPos(float depth, float2 uv)
 {
 	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
@@ -20,9 +22,9 @@ float3 cellFromPos(float3 worldPos)
 #ifdef CRAZE_USE_SH_LV
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 {
-	float4 redSH = LightVolumeR.Sample(BilinearBorder, cell);
-	float4 greenSH = LightVolumeG.Sample(BilinearBorder, cell);
-	float4 blueSH = LightVolumeB.Sample(BilinearBorder, cell);
+	float4 redSH = LightVolumeR.Sample(LVSampler, cell);
+	float4 greenSH = LightVolumeG.Sample(LVSampler, cell);
+	float4 blueSH = LightVolumeB.Sample(LVSampler, cell);
 
 	float4 sh = EvalSH(-normal);
 
@@ -42,29 +44,29 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 	float3 color = 0.f;
 	if (sideWeights[0] > 0.f)
 	{
-		color += sideWeights[0] * LightVolumeRight.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[0] * LightVolumeRight.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if (sideWeights[1] > 0.f)
 	{
-		color += sideWeights[1] * LightVolumeLeft.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[1] * LightVolumeLeft.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[2] > 0.f)
 	{
-		color += sideWeights[2] * LightVolumeTop.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[2] * LightVolumeTop.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if(sideWeights[3] > 0.f)
 	{
-		color += sideWeights[3] * LightVolumeBot.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[3] * LightVolumeBot.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[4] > 0.f)
 	{
-		color += sideWeights[4] * LightVolumeFront.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[4] * LightVolumeFront.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if(sideWeights[5] > 0.f)
 	{
-		color += sideWeights[5] * LightVolumeBack.SampleLevel(BilinearBorder, cell, 0.f).xyz;
+		color += sideWeights[5] * LightVolumeBack.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
-	return color * 2.f * 3.74f;
+	return color * 3.74f;
 }
 #endif
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
@@ -82,15 +84,18 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		discard;
 	}
 
-	float3 light = evalIndirectLightAt(cell, normal) * 0.03f;
-	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * 0.1f;
+	//return cell.xyzx;
+
+	float lightScale = 0.3f;
+	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
+	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * lightScale;
 	if (uv.x > 0.f)
 	{
 		float fr = length(lightAtNormal) / length(light);
 		fr = fr < 1.f ? fr : 1.f / fr;
 		if (!isnan(fr))
 		{
-			light *= fr;
+			//light *= fr;
 		}
 	}
 
@@ -101,14 +106,14 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	[unroll(10)]
 	for (int i = 0; i < splits - 1; ++i)
 	{
-		eLight += 0.002f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), 1.f);
+		eLight += 0.01f * evalIndirectLightAt(cellFromPos(lerp(pos, CameraPos.xyz, i / splits)), -1.f);
 	}
-	eLight += 0.002f * evalIndirectLightAt(cellFromPos(CameraPos.xyz), 1.f) * (splits / floor(splits));
-	if (uv.x > 0.5f)
+	eLight += 0.01f * evalIndirectLightAt(cellFromPos(CameraPos.xyz), -1.f) * (splits / floor(splits));
+	//if (uv.x > 0.5f)
 	{
 		
-		//eLight *= 1.f / (floor(splits) / splits);
+		eLight *= 1.f / (floor(splits) / splits);
 	}*/
 
-	return float4(light * color + eLight, 1.0f);
+	return float4(light * color + eLight * 0.1f, 1.0f);
 }

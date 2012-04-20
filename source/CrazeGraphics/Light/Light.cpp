@@ -23,3 +23,15 @@ DirectionalLight Craze::Graphics2::createDirectionalLight(const Vector3& dir, co
 	l.specular = 1.f;
 	return l;
 }
+
+SpotLight Craze::Graphics2::createSpotLight(const Vector3& pos, const Vector3& dir, float angle, float range, const Vector3& color)
+{
+	SpotLight l;
+	l.pos = pos;
+	l.direction = dir;
+	l.angle = angle;
+	l.color = color;
+	l.range = range;
+	l.specular = 1.f;
+	return l;
+}

@@ -2,7 +2,7 @@ level = game.newLevel()
 game.setLevel(level)
 game.setCameraController(graphics.FreeFlyCamera())
 
-level.scene.camera:setProjection(3.1415 / 4, 4 / 3, 10, 10000)
+level.scene.camera:setProjection(3.1415 / 4, 1920/1080, 10, 10000)
 
 --Load in a level, set a couple of callbacks. This code could preferably be put in a lua library for the game engine
 counter = 0
@@ -99,7 +99,7 @@ end
 
 cubeman = nil
 function onLoaded()
-	cubeman = level:add("cubeman", {component.transform{x=1, y=70, z=0},
+	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
 									component.mesh{file="cubeman.crm"}})
 	level:build()
 	--followPath(cubeman, cmPath, 100)

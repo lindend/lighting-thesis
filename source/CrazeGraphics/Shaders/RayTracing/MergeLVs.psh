@@ -23,18 +23,17 @@ PS_OUT main(float3 uv : TEXCOORD)
 	
 	float w, h, d;
 	Right.GetDimensions(w, h, d);
-	uv.z *= rcp(d - 1.f);
+	uv.z = uv.z * rcp(d) + 0.5f * rcp(d);
 
 	float3 cellOffset = (OldLVStart - LVStart) / (LVCellSize.xyz * LVCellSize.w);
-	cellOffset.y = 1 - cellOffset.y;
+	cellOffset.y = 1.f - cellOffset.y;
+	float3 newUv = uv;
 
-	float3 newUv = uv - cellOffset;
-
-	if(newUv.x < 0.f || newUv.x > 1.f || newUv.y < 0.f || newUv.y > 1.f || newUv.z < 0.f || newUv.z > 1.f)
+	if(newUv.x < 0.f || newUv.x > 1.f || newUv.y < 0.f || newUv.y > 1.f)// || newUv.z < 0.f || newUv.z > 1.f)
 	{
-		//Alpha = .5f;
+		Alpha = .5f;
 	}
-
+	newUv -= cellOffset;
 	//newUv = saturate(newUv);
 
 	PS_OUT output;
