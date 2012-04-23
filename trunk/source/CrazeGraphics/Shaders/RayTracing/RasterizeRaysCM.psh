@@ -20,7 +20,7 @@ float3 parseColor(float v)
 
 PS_OUT main(nointerpolation float4 direction : DIRECTION)
 {
-	PS_OUT output;
+	PS_OUT output; 
 	float3 color = parseColor(direction.w);
 
 	output.Right =	float4(max(0.f, dot(CMSides[0], direction.xyz)) * color, 0.f);

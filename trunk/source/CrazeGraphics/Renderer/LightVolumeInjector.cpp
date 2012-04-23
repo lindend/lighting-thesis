@@ -262,7 +262,17 @@ void LightVolumeInjector::spawnRays(const Matrix4& viewProj, const Camera* cam, 
 {
 	PIXMARKER(L"Spawn rays");
 	gpDevice->GetDeviceContext()->PSSetSamplers(0, 1, &m_lowMipSampler);
-	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj, cam, first);
+    Vec3 color;
+    if (first)
+    {
+        color = Vector3::ONE;
+    } else
+    {
+        color = Vector3::ONE * 0.01f;
+        //return;
+    }
+
+	m_fxFirstBounce->doFirstBounce(m_dummy, m_RSMs, m_RSMDS, m_toTestRays, viewProj, cam, color, first);
 	auto sampler = m_renderer->getBilinearSampler();
 	gpDevice->GetDeviceContext()->PSSetSamplers(0, 1, &sampler);
 }

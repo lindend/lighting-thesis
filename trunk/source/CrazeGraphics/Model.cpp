@@ -172,11 +172,11 @@ bool Model::createFromMemory(const char* data, unsigned int size)
 		if (flags & MATFLAG_HASDECAL)
 		{
 			std::stringstream decalName;
-			decalName << decalId << ".jpg";
+			decalName << decalId << ".dds";
 			mi.material.m_decal = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile(decalName.str())));
 			if (mi.material.m_decal == NULL)
 			{
-				mi.material.m_decal = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("textureerror.png")));;
+				mi.material.m_decal = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("textureerror.dds")));;
 			}
 		}
 

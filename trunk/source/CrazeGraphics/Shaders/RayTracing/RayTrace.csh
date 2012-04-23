@@ -53,7 +53,7 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 
 	float closest = length(r.dir);
 	r.dir /= closest;
-	//closest = 100000000.f;
+	closest = 100000000.f;
 	
 	uint startTri = 0;
 	while (startTri < NumTriangles)
@@ -83,7 +83,7 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		closest = min(intersect, closest);
 	} */
 	
-	Rays[dispatchId.x].dir = r.origin + r.dir * (closest - 2.f);
+	Rays[dispatchId.x].dir = r.origin + r.dir * closest;
 }
 /*
 struct kdTree

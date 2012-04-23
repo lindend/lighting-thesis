@@ -22,6 +22,13 @@ bool TextureResourceHandler::fileReadError(ResourceLoadData* data)
 	return false;
 }
 
+
+unsigned int currentID = 1;
+unsigned int getID()
+{
+    return InterlockedIncrement(&currentID);
+}
+
 bool TextureResourceHandler::readComplete(ResourceLoadData* data)
 {
 	std::shared_ptr<TextureResource> res = std::dynamic_pointer_cast<TextureResource>(data->res);
@@ -35,7 +42,24 @@ bool TextureResourceHandler::readComplete(ResourceLoadData* data)
 
 	if (texture)
 	{
-		texture->SetID(++m_currentID);
+		texture->SetID(getID());
+        res->m_texture = texture;
+
+		return true;
+	}
+	return res->m_texture != nullptr;
+}
+
+bool DDSTextureResourceHandler::readComplete(ResourceLoadData* data)
+{
+    std::shared_ptr<TextureResource> res = std::dynamic_pointer_cast<TextureResource>(data->res);
+    assert(res);
+
+    Texture* texture = Texture::CreateDDSFromMemory(gpDevice, data->data, data->dataSize, "Texture resource");
+
+    if (texture)
+	{
+		texture->SetID(InterlockedIncrement(&currentID));
         res->m_texture = texture;
 
 		return true;
@@ -238,6 +262,31 @@ Texture* Texture::CreateFromMemory(Craze::Graphics2::Device* pDevice, void* pDat
 	ilDeleteImage(img);
 
 	return res;
+}
+
+Texture* Texture::CreateDDSFromMemory(Device* device, void* data, unsigned long dataLength, const char* debugName)
+{
+    Texture* result = new Texture();
+    D3DX11_IMAGE_LOAD_INFO loadInfo;
+    if (FAILED(D3DX11CreateTextureFromMemory(device->GetDevice(), data, dataLength, &loadInfo, nullptr, &result->m_pTexture, nullptr)))
+    {
+        return nullptr;
+    }
+
+    result->m_Dimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    result->m_Format = loadInfo.Format;
+    result->m_Height = loadInfo.Height;
+    result->m_ID = getID();
+    result->m_NumMips = loadInfo.MipLevels;
+    result->m_pDevice = device;
+    result->m_Width = loadInfo.Width;
+
+    if (FAILED(device->GetDevice()->CreateShaderResourceView(result->m_pTexture, nullptr, &result->m_pResourceView)))
+    {
+        return nullptr;
+    }
+
+    return result;
 }
 
 Texture* Texture::CreateFromData(Device* pDevice, unsigned int width, unsigned int height, TEXTURE_FORMAT format, void* pData, const char* pDebugName)

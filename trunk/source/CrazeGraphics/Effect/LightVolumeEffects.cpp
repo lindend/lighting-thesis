@@ -22,7 +22,7 @@ using namespace Craze::Graphics2;
 bool LVFirstBounceEffect::initialize()
 {
 	m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.png")));
-	m_frustumCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 8);
+	m_frustumCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 9);
 
 	return IEffect::initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh");
 }
@@ -39,7 +39,7 @@ void expand(const Vector3* vs, Vector3* vout, int i0, int i1, int i2, int i3, fl
 	vout[i3] = vout[i3] + d2 * len;
 }
 
-void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam, bool first)
+void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarget, std::shared_ptr<RenderTarget> RSMs[], std::shared_ptr<DepthStencil> RSMdepth, std::shared_ptr<UAVBuffer> outRays, const Matrix4& viewProj, const Camera* cam, const Vec3& color, bool first)
 {
 	if (!m_random.get())
 	{
@@ -68,6 +68,7 @@ void LVFirstBounceEffect::doFirstBounce(std::shared_ptr<RenderTarget> dummyTarge
 	{
 		cb[i] = corners[i].v;
 	}
+    cb[8] = color;
 	cb.Unmap();
 	gpDevice->GetDeviceContext()->PSSetConstantBuffers(1, 1, &m_frustumCBuffer);
 
