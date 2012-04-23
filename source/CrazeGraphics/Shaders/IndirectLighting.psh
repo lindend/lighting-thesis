@@ -10,7 +10,7 @@ float3 DepthToPos(float depth, float2 uv)
 {
 	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
 	return worldPos.xyz / worldPos.w;
-}
+} 
 
 float3 cellFromPos(float3 worldPos)
 {
@@ -86,7 +86,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 
 	//return cell.xyzx;
 
-	float lightScale = 0.3f;
+	float lightScale = 0.06f;
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * lightScale;
 	if (uv.x > 0.f)
@@ -95,7 +95,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 		fr = fr < 1.f ? fr : 1.f / fr;
 		if (!isnan(fr))
 		{
-			//light *= fr;
+			light *= fr;
 		}
 	}
 

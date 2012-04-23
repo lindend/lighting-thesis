@@ -40,7 +40,8 @@ namespace Craze
 			static Texture* CreateFromFile(Device* pDevice, std::string fileName, bool gammaCorrected = true);
 			static Texture* CreateFromMemory(Device* pDevice, void* pData, unsigned long dataLength, bool gammaCorrected = true, const char* pDebugName = nullptr);
 			static Texture* CreateFromData(Device* pDevice, unsigned int width, unsigned int height, TEXTURE_FORMAT format, void* pData, const char* pDebugName);
-			
+			static Texture* CreateDDSFromMemory(Device* device, void* data, unsigned long len, const char* debugName);
+
 			ID3D11ShaderResourceView* GetResourceView();
 			ID3D11Resource* GetResource();
 
@@ -139,7 +140,7 @@ namespace Craze
 		class TextureResourceHandler : public ResourceEventHandler
 		{
 		public:
-			TextureResourceHandler() : m_currentID(0) { m_readCompleteMT = true; m_allCompleteMT = true;}
+			TextureResourceHandler() { m_readCompleteMT = true; m_allCompleteMT = true;}
 
 			virtual bool preRead(std::shared_ptr<Resource> res) { return true; }
 			virtual bool readComplete(ResourceLoadData* loadData);
@@ -148,8 +149,20 @@ namespace Craze
 			virtual bool fileReadError(ResourceLoadData* loadData);
 
 			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew TextureResource()); }
-		private:
-			unsigned short m_currentID;
 		};
+
+        class DDSTextureResourceHandler : public ResourceEventHandler
+        {
+        public:
+			DDSTextureResourceHandler() { m_readCompleteMT = true; m_allCompleteMT = true;}
+
+			virtual bool preRead(std::shared_ptr<Resource> res) { return true; }
+			virtual bool readComplete(ResourceLoadData* loadData);
+			virtual bool allComplete(ResourceLoadData* loadData) { return true; }
+
+            virtual bool fileReadError(ResourceLoadData* loadData) { return false; }
+
+			virtual std::shared_ptr<Resource> createResource(u32, u64) { return std::shared_ptr<Resource>(CrNew TextureResource()); }
+        };
 	}
 }

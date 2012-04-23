@@ -6,6 +6,7 @@ AppendStructuredBuffer<PhotonRay> OutRays : register(u1);
 cbuffer FrustumInfo : register(b1)
 {
 	float3 corners[8];
+	float3 intensity;
 };
 
 float3 DepthToPos(float depth, float2 uv)
@@ -139,7 +140,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 		discard;
 	}
 
-	float3 color = ColorSpec.Sample(Point, uv).xyz;
+	float3 color = ColorSpec.Sample(Point, uv).xyz * intensity;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 position = DepthToPos(depth, uv);
 	//position = floor(position / 2.f) * 2.f;
@@ -151,9 +152,10 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	{
 		//sample direction based on RSM texel world space
 		//float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
-		float3 dir = Random.SampleLevel(Point, + Seed + rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
+		float4 random = Random.SampleLevel(Point, + Seed + rndUvBase + .7319542945134f * i, 1.f);
+		float3 dir = random.xyz * 2.f - 1.f;
 
-		dir = dot(dir, normal) > 0 ? dir : -dir;
+		dir = dot(dir, normal) >= 0.f ? dir : -dir;
 
 		float power = 1.0f / RAYS_PER_TEXEL;
 
@@ -166,6 +168,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			PhotonRay pr;
 			
 			pr.dir = normalize(dir);
+
 			float3 rayColor = color * power * dot(pr.dir, normal);
 			pr.dir *= firstOut;
 
@@ -173,7 +176,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 			pr.color = encodedColor;
 			//pr.dir = dir;
 			//Just move out the ray a bit
-			pr.origin = position + normal * 0.f + max(0.f, lastIn) * pr.dir;
+			pr.origin = position;// + normal * 0.f + max(0.f, lastIn) * pr.dir;
 			//pr.power = color * power * dot(pr.dir, normal);
 			OutRays.Append(pr);
 

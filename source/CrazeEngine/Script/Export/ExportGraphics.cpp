@@ -24,6 +24,16 @@ Vec3 getCamPos(Camera* pCam)
 {
 	return pCam->GetPosition();
 }
+
+void setCamDir(Camera* cam, const Vec3& dir)
+{
+    cam->SetDirection(dir);
+}
+Vec3 getCamDir(Camera* cam)
+{
+    return cam->GetDirection();
+}
+
 Vec3 camUnproject(Camera* pCam, const Vector2& v)
 {
 	Vector2 res = gpDevice->GetViewPort();
@@ -84,7 +94,8 @@ void craze_open_graphics(lua_State* L)
 		class_<Camera, Camera*>("Camera")
 			.def("setProjection", &Camera::SetProjection)
 			.def("unproject", &camUnproject)
-			.property("pos", &getCamPos, &setCamPos),
+			.property("pos", &getCamPos, &setCamPos)
+            .property("direction", &getCamDir, &setCamDir),
 			//.property("pos", tag_function<Vec3()>(&Camera::GetPosition), tag_function<void(const Vec3&)>(&Camera::SetPosition))
 			//.property("lookAt", &Camera::GetDirection, &Camera::SetDirection)
 			//.property("up", &Camera::GetUp, &Camera::SetUp),

@@ -55,11 +55,13 @@ Application::~Application()
 {
 }
 
+bool useFullScreen = true;
+
 bool Application::Initialize(int argc, const char *argv[])
 {
 
-	unsigned int resX = 640;
-	unsigned int resY = 360;
+	unsigned int resX = useFullScreen ? 1920 : 640;
+	unsigned int resY = useFullScreen ? 1080 : 360;
 
 	gpApplication = this;
 
@@ -115,7 +117,7 @@ bool Application::Initialize(int argc, const char *argv[])
 	gFileDataLoader.addLocation(".");
 	gResMgr.addDataLoader(&gFileDataLoader);
 	
-	if (!VCreateWindow(resX, resY, true))
+	if (!VCreateWindow(resX, resY, !useFullScreen))
 	{
 		LOGMSG("Error while creating window", LOGTYPE_CRITICAL);
 		return false;

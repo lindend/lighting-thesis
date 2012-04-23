@@ -46,28 +46,42 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 	}
 
 	PhotonRay r = Rays[dispatchId.x];
-	
-	float2 relZ = findRelZ(r.origin.z, r.dir.z);
-	float2 clampRelZ = float2(clamp(relZ.x, 0.f, LVCellSize.w), clamp(relZ.y, 0.f, LVCellSize.w));
-	int numZ = ceil(abs(clampRelZ.y - clampRelZ.x));
 
-	float2 lvSpace0 = floor(toLVSpaceBase0(r.origin.xy));
-	float2 lvSpace1 = floor(toLVSpaceBase0(r.dir.xy));
-	
-	//lvSpace will contain 0 if the point is inside the LV,
-	float2 insideLV = lvSpace0 * lvSpace1;
+	float3 intersectStartDist = (LVStart - r.origin) / r.dir;
+	float3 intersectEndDist = (LVEnd - r.origin) / r.dir;
+	float3 minIntersect = max(0.f, min(intersectStartDist, intersectEndDist));
+	float3 maxIntersect = min(1.f, max(intersectStartDist, intersectEndDist));
+
+	float tMin = min(min(minIntersect.x, minIntersect.y), minIntersect.z);
+	float tMax = max(max(maxIntersect.x, maxIntersect.y), maxIntersect.z);
+
+	//The distance the ray needs to travel to reach a new slice
+	float zCellDist = LVCellSize.z / abs(r.dir.z);
+	float nextZSlice = intersectStartDist.z % zCellDist;
 
 	uint color = r.color;
-	if (max(insideLV.x, insideLV.y) <= 0.f)
+	float t = tMin;
+	uint firstIndex = 0;
+	[unroll]
+	for (int i = 0; i < 16; ++i)
 	{
-		[unroll(16)]
-		for (int i = 0; i < 16; ++i)
+		if (t < tMax)
 		{
-			if (i < numZ)
-			{
-				r.color = color | (((i + (uint)clampRelZ.x) & 0xFF) << 24);
-				OutRays.Append(r);
-			}
+			float tNext = min(t + nextZSlice, tMax);
+			nextZSlice = zCellDist;
+
+			PhotonRay tr;
+			tr.origin = r.origin + r.dir * t;
+			tr.dir = r.origin + r.dir * tNext;
+			
+			//Find the index by calculating the average position of the line segment,
+			//and use that position to determine z-index
+			float averageZ = (tr.origin.z + tr.dir.z) * 0.5f;
+			uint idx = (uint)floor((averageZ - LVStart.z) / LVCellSize.z);
+			tr.color = color | ((idx & 0xFF) << 24);
+			OutRays.Append(tr);
+
+			t = tNext;
 		}
 	}
 }

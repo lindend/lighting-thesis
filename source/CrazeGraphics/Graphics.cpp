@@ -37,6 +37,7 @@ using namespace Craze::Graphics2;
 
 ModelResourceHandler gModelResHandler;
 TextureResourceHandler gTexResHandler;
+DDSTextureResourceHandler gDDSTexResHandler;
 
 VertexShaderResourceHandler gVSResHandler;
 PixelShaderResourceHandler gPSResHandler;
@@ -151,9 +152,11 @@ bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int 
 #endif
 
 	gResMgr.setResourceHandling(hash32(".crm"), &gModelResHandler);
+
+    gResMgr.setResourceHandling(hash32(".dds"), &gDDSTexResHandler);
+
 	gResMgr.setResourceHandling(hash32(".png"), &gTexResHandler);
 	gResMgr.setResourceHandling(hash32(".bmp"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".dds"), &gTexResHandler);
 	gResMgr.setResourceHandling(hash32(".exr"), &gTexResHandler);
 	gResMgr.setResourceHandling(hash32(".hdr"), &gTexResHandler);
 	gResMgr.setResourceHandling(hash32(".gif"), &gTexResHandler);

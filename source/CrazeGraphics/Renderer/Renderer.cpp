@@ -114,10 +114,11 @@ void Renderer::Initialize()
 	smDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	smDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	smDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	smDesc.MinLOD = -D3D11_FLOAT32_MAX;
+	smDesc.MinLOD = 0.f;
 	smDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	smDesc.MaxAnisotropy = 16;
 	smDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    smDesc.MipLODBias = 0.f;
 	gpDevice->GetDevice()->CreateSamplerState(&smDesc, &m_pSamplerState);
 	gpDevice->GetDeviceContext()->PSSetSamplers(0, 1, &m_pSamplerState);
 	gpDevice->GetDeviceContext()->VSSetSamplers(0, 1, &m_pSamplerState);
@@ -236,8 +237,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		first = true;
 	} else
 	{
-		//rx += 0.0265437564657f;
-		//rz += 0.013540938358f;
+		rx += 0.0265437564657f;
+		rz += 0.013540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}

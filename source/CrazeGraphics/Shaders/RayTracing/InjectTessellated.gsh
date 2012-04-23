@@ -36,20 +36,18 @@ void main(point INPUT input[1], inout LineStream<OUTPUT> output)
 	OUTPUT output0;
 	OUTPUT output1;
 	
-	output0.dir = output1.dir = input[0].dir;
 	uint rtIdx = (asuint(input[0].dir.w) >> 24) & 0xFF;
-	output0.rtIdx = rtIdx;
-	output1.rtIdx = rtIdx;
+	output0.rtIdx = output1.rtIdx = rtIdx;
+	output0.dir = output1.dir = input[0].dir;
 
 	//input[0].end -= input[0].dir.xyz * 100.f;
 
-	float zPos0 = calcZPos(input[0].begin.z, output0.rtIdx);
-	float zPos1 = calcZPos(input[0].end.z, output1.rtIdx);
+	float zPos0 = calcZPos(input[0].begin.z, rtIdx);
+	float zPos1 = calcZPos(input[0].end.z, rtIdx);
 
 	output0.pos = float4(input[0].begin.xy, zPos0, 1.f);
 	output1.pos = float4(input[0].end.xy, zPos1, 1.f);
 
-	//Append the points in opposite order for rasterization that is better suited to our purposes (does not matter if using antialiasing though)
 	output.Append(output1);
 	output.Append(output0);
 	output.RestartStrip();
