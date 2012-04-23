@@ -117,6 +117,30 @@ function round(num, idp)
   return math.floor(num * mult + 0.5) / mult
 end
 
+game.loadFile("cameraValues.lua")
+currentPosition = 1
+
+tmr = {}
+
+function startReferenceGrab()
+	if currentPosition >= #benchmarkCameraData then
+		return
+	end
+
+	level.scene.camera.pos = Vector3(benchmarkCameraData[currentPosition].pos)
+	level.scene.camera.direction = Vector3(benchmarkCameraData[currentPosition].dir)
+
+	tmr = setTimer(takeScreenshot, 2)
+end
+
+function takeScreenshot()
+	print("Capturing screenshot at " .. currentPosition)
+	graphics.captureScreenShot("screenshot" .. currentPosition .. ".png")
+	currentPosition = currentPosition + 1
+	
+	tmr = setTimer(startReferenceGrab, 0.01)
+end
+
 
 fpsLabel = ui.Label("FPS: ", 580, 10, 60, 30)
 fpsUpd = game.beginUpdate(	function(delta)
@@ -159,6 +183,7 @@ keyActions = {
 		[108] = function() useIndirect = not useIndirect; graphics.useIndirectLighting(useIndirect) end,
 		[107] = function() useDirect = not useDirect; graphics.useDirectLighting(useDirect) end,
 		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end,
+		[112] = function() currentPosition = 1; startReferenceGrab() end,
 		[113] = function() graphics.captureScreenShot("screenshot.png") end,
 		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end
 	 }
