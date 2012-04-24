@@ -66,7 +66,7 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 		color += sideWeights[5] * LightVolumeBack.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
-	return color * 3.74f;
+	return color;
 }
 #endif
 float4 main(float2 uv : TEXCOORD0) : SV_Target0
@@ -86,7 +86,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 
 	//return cell.xyzx;
 
-	float lightScale = 0.06f;
+	float lightScale = .5f;
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * lightScale;
 	if (uv.x > 0.f)
