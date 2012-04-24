@@ -233,14 +233,14 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	if (!first)
 	{
 		dirlight = pScene->addLight(createDirectionalLight(Vector3(0.2, -1.f, 0.2f), Vector3::ONE));
-		spotLight = pScene->addLight(createSpotLight(Vector3(-100.f, 5.f, 0.f), Vector3::LEFT, 0.3f, 100000.f, Vector3::ONE));
+		//spotLight = pScene->addLight(createSpotLight(Vector3(-100.f, 25.f, 0.f), Vector3::LEFT, 0.3f, 100000.f, Vector3::ONE));
 		first = true;
 	} else
 	{
 		rx += 0.0265437564657f;
 		rz += 0.013540938358f;
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
-		light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
+		//light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}
 
 	pScene->update();
