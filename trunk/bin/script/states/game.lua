@@ -98,11 +98,31 @@ function followPath(obj, path, speed)
 end
 
 cubeman = nil
+dirlight = nil
+spotlight = nil
+lightAnimator = nil
+
 function onLoaded()
+	dirlight = level.scene:addDirectionalLight(v3(0.2, -1, 0.2), v3(1, 1, 1))
+	--spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.3, 100000, v3(1, 1, 1))
+	lightAnimator = game.beginUpdate(animLights)
+
 	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
 									component.mesh{file="cubeman.crm"}})
 	level:build()
 	--followPath(cubeman, cmPath, 100)
+end
+
+rx = 0.5
+rz = 0.2
+rspot = 0
+function animLights(delta)
+	--dirlight.direction = math.normalize(v3(math.sin(rx) * 0.3, -1, math.sin(rz) * 0.3))
+	--spotlight.direction = math.normalize(v3(math.sin(rspot), 0, math.cos(rspot)))
+	rx = rx + 0.943247785 * delta
+	rz = rz + 0.549334545 * delta
+	rspot = rspot + 0.97 * delta
+	return true
 end
 
 function onMouseDown(pos, button, isDown)
@@ -123,7 +143,10 @@ currentPosition = 1
 tmr = {}
 
 function startReferenceGrab()
-	if currentPosition >= #benchmarkCameraData then
+	--spotlight:remove()
+	game.stopUpdate(lightAnimator)
+	dirlight.direction = math.normalize(v3(60, -325, 87))
+	if currentPosition > #benchmarkCameraData then
 		return
 	end
 
@@ -138,7 +161,7 @@ function takeScreenshot()
 	graphics.captureScreenShot("screenshot" .. currentPosition .. ".png")
 	currentPosition = currentPosition + 1
 	
-	tmr = setTimer(startReferenceGrab, 0.01)
+	tmr = setTimer(startReferenceGrab, 0.5)
 end
 
 
@@ -225,3 +248,44 @@ function updateProfGUI(delta)
 end
 
 guiUpd = game.beginUpdate(updateProfGUI)
+
+
+--[[
+############################################
+			DEBUG POSITION TOOL
+############################################
+]]--
+
+storedPositions = {}
+
+function addPosition()
+	print("Debug location added")
+	storedPositions[#storedPositions + 1] = {pos=level.scene.camera.pos, dir=level.scene.camera.direction}
+end
+
+function printPositions()
+	print("Printing positions")
+
+	luaPositions = io.open("positions.lua", "w+")
+	maxPositions = io.open("positions.txt", "w+")
+
+	maxPositions:write(string.format("%i\n", #storedPositions))
+	for i = 1,#storedPositions do
+		position = storedPositions[i].pos
+		direction = storedPositions[i].dir
+		luaPositions:write(string.format("  {pos = {x= %f , y= %f , z = %f }, dir = {x= %f , y= %f , z= %f }},\n", position.x, position.y, position.z, direction.x, direction.y, direction.z))
+		maxPositions:write(string.format("%i %i %i %i %i %i\n", position.x, position.y, position.z, direction.x * 10000, direction.y * 10000, direction.z * 10000))
+	end
+	luaPositions:close()
+	maxPositions:close()
+end
+
+posDbgKeyListener = event.keyboard.Listener(function(kc, ks)
+												if ks == 0 then
+													if kc == 102 then
+														addPosition()
+													elseif kc == 103 then
+														printPositions()
+													end
+												end
+											end)

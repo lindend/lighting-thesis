@@ -57,7 +57,7 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 
 	//The distance the ray needs to travel to reach a new slice
 	float zCellDist = LVCellSize.z / abs(r.dir.z);
-	float nextZSlice = intersectStartDist.z % zCellDist;
+	float nextZSlice = abs(intersectStartDist.z % zCellDist);
 
 	uint color = r.color;
 	float t = tMin;
@@ -71,8 +71,8 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 			nextZSlice = zCellDist;
 
 			PhotonRay tr;
-			tr.origin = r.origin + r.dir * t;
-			tr.dir = r.origin + r.dir * tNext;
+			tr.origin = r.origin;// + r.dir * t;
+			tr.dir = r.dir;//r.origin + r.dir * tNext;
 			
 			//Find the index by calculating the average position of the line segment,
 			//and use that position to determine z-index

@@ -73,7 +73,7 @@ namespace Craze
 			DirectionalLight* getDirectionalLight(HLIGHT l);
 
 			void removePointLight(HLIGHT light);
-			void remoteSpotLight(HLIGHT light);
+			void removeSpotLight(HLIGHT light);
 			void removeDirectionalLight(HLIGHT light);
 
 			void clearLights();

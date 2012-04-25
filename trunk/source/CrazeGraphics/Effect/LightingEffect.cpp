@@ -49,5 +49,11 @@ void LightingEffect::doLighting(const SpotLight& l, const Matrix4& lightViewProj
 	gpDevice->SetShader(m_vs->m_shader);
 	gpDevice->SetShader(m_spotLight->m_shader);
 
+	auto srv = shadowMap ? shadowMap->GetResourceView() : nullptr;
+	gpDevice->GetDeviceContext()->PSSetShaderResources(7, 1, &srv);
+
 	gpDevice->GetDeviceContext()->Draw(3, 0);
+
+	srv = nullptr;
+	gpDevice->GetDeviceContext()->PSSetShaderResources(7, 1, &srv);
 }

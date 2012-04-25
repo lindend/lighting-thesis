@@ -131,7 +131,7 @@ uint touint(float v)
 	return 0xFF & (uint)(v * 255.f);
 }
 
-/*#define RAYS_PER_TEXEL 1
+#define RAYS_PER_TEXEL 1
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
@@ -152,7 +152,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	{
 		//sample direction based on RSM texel world space
 		//float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
-		float4 random = Random.SampleLevel(Point, + Seed + rndUvBase + .7319542945134f * i, 1.f);
+		float4 random = Random.SampleLevel(Point, Seed + rndUvBase + .7319542945134f * i, 1.f);
 		float3 dir = random.xyz * 2.f - 1.f;
 
 		dir = dot(dir, normal) >= 0.f ? dir : -dir;
@@ -184,119 +184,6 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 		//failed frustum check
 	}
 	//end of ray per texel iterator
-
-	return 1.f.xxxx;
-}
-*/
-
-float side(float3 v0, float3 v1, float3 ref, float3 p)
-{
-	float3 e = v1 - v0;
-	float3 up = cross(e, ref - v0);
-	float3 perp = cross(up, e);
-	return dot(ref - v0, p - v0);
-}
-
-float3 randomInQuad(float3 v0, float3 v1, float3 v2, float3 v3, float4 random)
-{
-	float3 e0 = v1 - v0;
-	float3 e1 = v2 - v0;
-	float3 e2 = v3 - v0;
-	float a0 = length(cross(e0, e1)) * 0.5f;
-	float a1 = length(cross(e1, e2)) * 0.5f;
-
-	float invAtot = 1.f / (a0 + a1);
-	a0 *= invAtot;
-
-	//Check if triangle a1 got selected
-	if (random.z > a0)
-	{
-		v1 = v2;
-		v2 = v3;
-	}
-
-	float3 p3 = v2 + v1 - v0;
-	float3 x = v0 + (v1 - v0) * random.x + (v2 - v0) * random.y;
-	if (side(v1, v2, v0, x) <= 0.f)
-	{
-		x = v0 - (x - p3);
-	}
-	return x;
-}
-
-#define RAYS_PER_TEXEL 1
-
-float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
-{
-	float3 normal = NormalRough.Sample(Point, uv).xyz;
-	if (dot(normal, normal) < 0.5f)
-	{
-		discard;
-	}
-
-	float3 color = ColorSpec.Sample(Point, uv).xyz;
-	float depth = Depth.Sample(Point, uv).x;
-	float3 position = DepthToPos(depth, uv);
-	float2 rndUvBase = position.xz * position.y;
-
-	float3 lvSize = LVCellSize.xyz * LVCellSize.w;
-
-	float sideWeights[6];
-
-	for (int i = 1; i < 6; ++i)
-	{
-		uint4 sideIdx = indices[i];
-		float3 v0 = corners[sideIdx.x];
-		float3 v1 = corners[sideIdx.y];
-		float3 v2 = corners[sideIdx.z];
-		float3 v3 = corners[sideIdx.w];
-
-		float3 sideNormal = cross(v1 - v0, v3 - v0);
-
-		float3 tv0 = clampToHemisphere(v0 - position, normal);
-		float3 tv1 = clampToHemisphere(v1 - position, normal);
-		float3 tv2 = clampToHemisphere(v2 - position, normal);
-		float3 tv3 = clampToHemisphere(v3 - position, normal);
-
-		float3 p0 = tv0 + (tv1 - tv0) * .5f;
-		float3 p1 = tv1 + (tv2 - tv1) * .5f;
-		float3 p2 = tv2 + (tv3 - tv2) * .5f;
-		float3 p3 = tv3 + (tv0 - tv3) * .5f;
-
-		float a = acos(dot(p0, p2));
-		float b = acos(dot(p1, p3));
-
-		float solidAngle = 4.f * asin(sin(a * .5f) * sin(b * .5f));
-
-		float power = solidAngle / (2.0f * 3.14159265358979f);
-
-		if (power > 0.00001f)
-		{
-			//float4 random = Random.SampleLevel(Point, Seed + uv + i * 0.010543245653456324f, 0.f);
-			float4 random = Random.SampleLevel(Point, + Seed + rndUvBase + .7319542945134f * i, 1.f);
-			//Emit the photon!
-			PhotonRay pr;
-			
-			float3 rndL0 = v0 + (v1 - v0) * random.x;
-			float3 rndL1 = v2 + (v3 - v0) * random.x;
-
-			float3 target = randomInQuad(v0, v1, v2, v3, random);
-			pr.dir = normalize(target - position);
-			if (dot(pr.dir, normal) > 0.f)
-			{
-				//Just move out the ray a bit
-				pr.origin = position;// + normal * 50.f;
-
-
-				float3 rayColor = color * power * dot(pr.dir, normal);
-				uint encodedColor = touint(rayColor.r) | (touint(rayColor.g) << 8) | (touint(rayColor.b) << 16);
-				pr.color = encodedColor;
-
-				OutRays.Append(pr);
-			}
-		}
-	}
-
 
 	return 1.f.xxxx;
 }
