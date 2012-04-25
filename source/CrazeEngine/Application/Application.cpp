@@ -117,7 +117,7 @@ bool Application::Initialize(int argc, const char *argv[])
 	gFileDataLoader.addLocation(".");
 	gResMgr.addDataLoader(&gFileDataLoader);
 	
-	if (!VCreateWindow(resX, resY, !useFullScreen))
+	if (!VCreateWindow(resX, resY, !useFullScreen || true))
 	{
 		LOGMSG("Error while creating window", LOGTYPE_CRITICAL);
 		return false;

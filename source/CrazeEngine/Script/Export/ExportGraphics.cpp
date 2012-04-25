@@ -12,6 +12,8 @@
 #include "Graphics.h"
 #include "GPUProfiler/GPUProfiler.h"
 
+#include "LightWrappers.h"
+
 using namespace luabind;
 using namespace Craze;
 using namespace Craze::Graphics2;
@@ -78,36 +80,69 @@ const std::vector<TimingBlock>& getProfile()
 	}
 }
 
+ScriptDirectionalLight* addDirLight(Scene* scene, const Vec3& dir, const Vec3& color)
+{
+    return new ScriptDirectionalLight(scene->addLight(createDirectionalLight(dir, color)), scene);
+}
+
+ScriptSpotLight* addSpotLight(Scene* scene, const Vec3& pos, const Vec3& dir, float angle, float range, const Vec3& color)
+{
+    return new ScriptSpotLight(scene->addLight(createSpotLight(pos, dir, angle, range, color)), scene);
+}
+
+
 void craze_open_graphics(lua_State* L)
 {
 	luabind::
 	module(L, "graphics")
 	[
 		class_<Scene, Scene*>("Scene")
-			.def_readonly("camera", &Scene::getCamera),
+			.def_readonly("camera", &Scene::getCamera)
+            .def("addDirectionalLight", &addDirLight)
+            .def("addSpotLight", &addSpotLight)
+        ,
 
+        class_<ScriptDirectionalLight>("DirectionalLight")
+            .property("direction", &ScriptDirectionalLight::getDirection, &ScriptDirectionalLight::setDirection)
+            .property("color", &ScriptDirectionalLight::getColor, &ScriptDirectionalLight::setColor)
+            .def("remove", &ScriptDirectionalLight::remove)
+        ,
+
+        class_<ScriptSpotLight>("SpotLight")
+            .property("direction", &ScriptSpotLight::getDirection, &ScriptSpotLight::setDirection)
+            .property("color", &ScriptSpotLight::getColor, &ScriptSpotLight::setColor)
+            .property("position", &ScriptSpotLight::getPosition, &ScriptSpotLight::setPosition)
+            .property("angle", &ScriptSpotLight::getAngle, &ScriptSpotLight::setAngle)
+            .property("range", &ScriptSpotLight::getRange, &ScriptSpotLight::setRange)
+            .def("remove", &ScriptSpotLight::remove)
+        ,
 		class_<TimingBlock>("TimingBlock")
 			.def_readonly("name", &TimingBlock::name)
 			.def_readonly("level", &TimingBlock::level)
-			.def_readonly("time", &TimingBlock::time),
+			.def_readonly("time", &TimingBlock::time)
+        ,
 			
 		class_<Camera, Camera*>("Camera")
 			.def("setProjection", &Camera::SetProjection)
 			.def("unproject", &camUnproject)
 			.property("pos", &getCamPos, &setCamPos)
-            .property("direction", &getCamDir, &setCamDir),
+            .property("direction", &getCamDir, &setCamDir)
 			//.property("pos", tag_function<Vec3()>(&Camera::GetPosition), tag_function<void(const Vec3&)>(&Camera::SetPosition))
 			//.property("lookAt", &Camera::GetDirection, &Camera::SetDirection)
-			//.property("up", &Camera::GetUp, &Camera::SetUp),
+			//.property("up", &Camera::GetUp, &Camera::SetUp)
+        ,
 
 		class_<ICameraController>("CameraController"),
 		class_<FreeFlyCamera, ICameraController*>("FreeFlyCamera")
 			.def(constructor<>())
-			.property("speed", &FreeFlyCamera::GetSpeed, &FreeFlyCamera::SetSpeed),
+			.property("speed", &FreeFlyCamera::GetSpeed, &FreeFlyCamera::SetSpeed)
+        ,
+
 		def("useIndirectLighting", &useIndirect),
 		def("useDirectLighting", &useDirect),
 		def("drawRays", &drawRays),
 		def("useShadows", &useShadows),
+
 		def("captureScreenShot", &takeScreenshot),
 		def("getTimings", &getProfile, return_stl_iterator)
 	];

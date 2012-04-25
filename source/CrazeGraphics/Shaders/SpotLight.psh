@@ -22,7 +22,16 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	float3 normal = normRough.xyz;
 	float roughness = normRough.w;
 
+	float4 lightProjSpace = mul(float4(wpos, 1.f), LightViewProj);
+	lightProjSpace.xyz /= lightProjSpace.w;
+
+	lightProjSpace.xy = lightProjSpace.xy * 0.5f + 0.5f;
+	lightProjSpace.y = 1.f - lightProjSpace.y;
+
+	float shadowDepth = ShadowMap.Sample(BilinearBorder, lightProjSpace.xy).x;
+	float shadowFactor = shadowDepth + 0.0001f > lightProjSpace.z ? 1.f : 0.f;
+
 	float shading = saturate(dot(dir, normal));// * smoothstep(LightRange, 0.f, distance(LightPos, wpos));// + 0.03f;
 	
-	return float4(color.xyz * shading * LightColor, 1.f);
+	return float4(color.xyz * shading * LightColor * shadowFactor, 1.f);
 }

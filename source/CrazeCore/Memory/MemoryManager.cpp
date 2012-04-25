@@ -183,6 +183,7 @@ void MemoryManager::Shutdown()
 	m_IsInited = false;
 
 #ifdef CRAZE_BOOKMARK_MEMORY
+    return;
 	for (auto i = m_Allocations.begin(); i != m_Allocations.end(); ++i)
 	{
 		std::stringstream sstream;

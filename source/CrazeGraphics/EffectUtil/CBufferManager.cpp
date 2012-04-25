@@ -118,7 +118,7 @@ void CBufferManager::SetLight(const CBPerLight& data)
 void CBufferManager::SetLight(const SpotLight& light, float texelSize)
 {
 	CBPerLight data;
-	data.lightViewProj = Matrix4::CreateView(light.pos, light.direction + light.pos, Vector3::UP) * Matrix4::CreatePerspectiveFov(light.angle, 1.f, 1.f, light.range);
+	data.lightViewProj = Matrix4::CreateView(light.pos, light.direction + light.pos, Vector3::UP) * Matrix4::CreatePerspectiveFov(light.angle * 2.f, 1.f, 3.f, light.range);
 	data.lightWorld = Matrix4::CreateFromRightUpForward(Cross(light.direction, Vector3::UP), Vector3::UP, light.direction);
 	data.lightAngle = light.angle;
 	data.lightColor = light.color;

@@ -53,7 +53,7 @@ namespace Craze
 
 			void drawShadowMaps(Scene* scene);
 			void drawGBuffers(Scene* scene);
-			void drawLights(SpotLightArray spotLights);
+			void drawLights(SpotLightArray spotLights, Scene* scene);
 
 			LightVolumeInjector m_lightVolumeInjector;
 

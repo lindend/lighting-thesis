@@ -91,7 +91,7 @@ SpotLight* Scene::getSpotLight(HLIGHT light)
 	return &m_spotLights[*light].light;
 }
 
-void Scene::remoteSpotLight(HLIGHT light)
+void Scene::removeSpotLight(HLIGHT light)
 {
 	m_spotLights[*light] = m_spotLights[m_numSpotLights - 1];
 	*m_spotLights[*light].handle = *light;
@@ -111,6 +111,10 @@ HLIGHT Scene::addLight(const DirectionalLight& l)
 DirectionalLight* Scene::getDirectionalLight(HLIGHT light)
 {
 	return &m_dirLights[*light].light;
+}
+void Scene::removeDirectionalLight(HLIGHT light)
+{
+
 }
 
 ModelNode* Scene::addModel(std::shared_ptr<const Model> model, NODEFLAGS flags)

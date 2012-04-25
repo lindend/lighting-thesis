@@ -83,7 +83,12 @@ bool ScriptManager::RunScript(const std::string& name, const char* pBuffer, int 
 	lua_setfenv(L, -2);
 	try
 	{
-		lua_call(L, 0, 0);
+		if (lua_pcall(L, 0, 0, 0) == LUA_ERRRUN)
+	    {
+		    const std::string err = lua_tostring(L, -1);
+		    LOG_ERROR("Error while loading lua script: " + err);
+		    return false;
+	    }
 	} catch (luabind::error& err)
 	{
 		LOG_ERROR(std::string("Error while running script: ") + err.what());

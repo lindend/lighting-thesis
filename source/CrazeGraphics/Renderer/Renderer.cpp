@@ -77,7 +77,7 @@ void Renderer::Initialize()
 	m_GBuffers[2] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_COLOR_LINEAR, "GBuffer indirect illumination");
 
 	m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);
-	const int shadowMapRes = 4096;
+	const int shadowMapRes = 1024;
 	m_pShadowMap = RenderTarget::Create2D(gpDevice, shadowMapRes, shadowMapRes, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
 	m_pShadowDS = DepthStencil::Create2D(gpDevice, shadowMapRes, shadowMapRes, DEPTHSTENCIL_FORMAT_D24S8);
 
@@ -225,7 +225,8 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 	shadowScene.clear();
 
 	//hax
-	static bool first = false;
+	/*
+    static bool first = false;
 	static float rx = 0.5f;
 	static float rz = 0.2f;
 	static HLIGHT dirlight;
@@ -242,6 +243,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 		DirectionalLight* light = pScene->getDirectionalLight(dirlight);
 		//light->dir = Normalize(Vector3(Sin(rx) * 0.3f, -1.f, Sin(rz) * 0.3f));
 	}
+    */
 
 	pScene->update();
 
@@ -340,7 +342,7 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 			gFxLighting.doLighting(light, lightViewProj, gUseShadows ? m_pShadowMap : nullptr);
 		}
 
-		drawLights(pScene->getVisibleSpotLights(viewProj));
+		drawLights(pScene->getVisibleSpotLights(viewProj), pScene);
 	}
 	gpGraphics->m_profiler->endBlock(lightProf);
 	
@@ -409,18 +411,20 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
 
 }
 
-void Renderer::drawLights(SpotLightArray spotLights)
+void Renderer::drawLights(SpotLightArray spotLights, Scene* scene)
 {
+    float bf[] = {1.f, 1.f, 1.f, 1.f};
 	for (int i = 0; i < spotLights.numLights; ++i)
 	{
 		const SpotLight& light = spotLights.spotLights[i];
-		Matrix4 lightViewProj = Matrix4::CreateView(light.pos, light.pos + light.direction, Vector3::UP) * Matrix4::CreatePerspectiveFov(1.f, light.angle, 1.f, 10000.f);
-		/*	
+		Matrix4 lightViewProj = Matrix4::CreateView(light.pos, light.pos + light.direction, Vector3::UP) * Matrix4::CreatePerspectiveFov(light.angle * 2.f, 1.f, 3.f, light.range);
+		
 		if (gUseShadows)
 		{
+            static DrawList shadowScene;
 			PIXMARKER(L"Render shadow map");			
 			shadowScene.clear();
-			pScene->buildDrawList(&shadowScene, lightViewProj);
+			scene->buildDrawList(&shadowScene, lightViewProj);
 
 			gpDevice->GetDeviceContext()->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
 
@@ -428,7 +432,7 @@ void Renderer::drawLights(SpotLightArray spotLights)
 			gpDevice->GetDeviceContext()->ClearDepthStencilView(m_pShadowDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
 			gpDevice->SetRenderTarget(m_pShadowMap, m_pShadowDS);
 
-			gpDevice->GetCbuffers()->SetLight(light, lightViewProj, light.dir * -1000.f);
+            gpDevice->GetCbuffers()->SetLight(light);
 
 			gFxShadow.set();
 
@@ -437,7 +441,7 @@ void Renderer::drawLights(SpotLightArray spotLights)
 				gFxShadow.setObjectProperties(*i->second.m_transform, *i->second.m_material);
 				i->second.m_mesh->draw();
 			}
-		}*/
+		}
 
 		ID3D11ShaderResourceView* pSRVs[4] = { m_GBuffers[0]->GetResourceView(), m_GBuffers[1]->GetResourceView(), m_GBuffers[2]->GetResourceView(), gpDevice->GetDefaultDepthSRV() };
 		gpDevice->SetRenderTarget(m_pOutputTarget, nullptr);
@@ -445,7 +449,7 @@ void Renderer::drawLights(SpotLightArray spotLights)
 			
 		const float bf[4] = {1.f, 1.f, 1.f, 1.f};
 		gpDevice->GetDeviceContext()->OMSetBlendState(m_pLightBS, bf, 0xFFFFFFFF);
-		gFxLighting.doLighting(light, lightViewProj, nullptr);
+		gFxLighting.doLighting(light, lightViewProj, gUseShadows ? m_pShadowMap : nullptr);
 	}
 }
 

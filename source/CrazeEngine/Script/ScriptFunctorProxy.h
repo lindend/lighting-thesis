@@ -24,7 +24,11 @@ namespace Craze
 
 		void Call(int numArgs)
 		{
-			lua_call(L, numArgs, 0);
+            if (lua_pcall(L, numArgs, 0, 0) == LUA_ERRRUN)
+	        {
+		        const std::string err = lua_tostring(L, -1);
+		        LOG_ERROR("Error while running lua script callback: " + err);
+	        }
 		}
 		void PushFunct()
 		{

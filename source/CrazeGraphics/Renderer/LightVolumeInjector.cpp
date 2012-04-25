@@ -167,7 +167,8 @@ Camera findSMCamera(const SpotLight& l, Scene* scene)
 
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 {
-	return m_toTestRays;
+    return m_tessellatedRays;
+    return m_toTestRays;
 }
 
 template<typename T> void findSMCams(T lights, int numLights, Scene* scene, Camera* outCams)
