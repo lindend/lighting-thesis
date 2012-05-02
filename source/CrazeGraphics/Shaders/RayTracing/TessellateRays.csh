@@ -62,8 +62,8 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 	uint color = r.color;
 	float t = tMin;
 	uint firstIndex = 0;
-	[unroll]
-	for (int i = 0; i < 16; ++i)
+	//[unroll(32)]
+	for (int i = 0; i < LVCellSize.w; ++i)
 	{
 		if (t < tMax)
 		{

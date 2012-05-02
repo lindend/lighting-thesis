@@ -3,6 +3,8 @@
 
 #include "Memory/MemoryManager.h"
 
+#include "PIXHelper.h"
+
 using namespace Craze::Graphics2;
 
 Block allocBlock(ID3D11Device* device)
@@ -75,6 +77,7 @@ void Frame::endBlock(int blockId)
 
 const std::vector<TimingBlock>* Frame::getTimings()
 {
+    PIXMARKER(L"GPU profiler get timings");
 	if (m_current == 0)
 	{
 		return nullptr;

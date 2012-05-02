@@ -15,7 +15,7 @@ namespace Craze
 		class IEffect
 		{
 		public:
-			IEffect() : m_vs(0), m_gs(0), m_ps(0), m_byteCode(0), m_inputLayout(0) {}
+            explicit IEffect(const D3D11_INPUT_ELEMENT_DESC* layout = nullptr, int count = -1);
 			virtual ~IEffect() { destroy(); }
 
 			virtual void setObjectProperties(const Matrix4& world, const Material& material) { }
@@ -27,13 +27,15 @@ namespace Craze
 			void destroy();
 			void reset();
 
-			bool initialize(const char* vsFile, const char* psFile, const char* gsFile = 0);
+			bool initialize(const char* vsFile, const char* psFile, const char* gsFile = nullptr);
 
 		protected:
 
-			virtual const D3D11_INPUT_ELEMENT_DESC* getLayout(int& count);
+			const D3D11_INPUT_ELEMENT_DESC* getLayout(int& count);
 
 			ID3DBlob* m_byteCode;
+            const D3D11_INPUT_ELEMENT_DESC* m_layoutDescription;
+            int m_layoutDescriptionCount;
 			ID3D11InputLayout* m_inputLayout;
 
 			std::shared_ptr<const VertexShaderResource> m_vs;

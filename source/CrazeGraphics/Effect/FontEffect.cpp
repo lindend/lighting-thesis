@@ -8,6 +8,9 @@
 using namespace Craze::Graphics2;
 using namespace Craze;
 
+FontEffect::FontEffect() : IEffect(FontVertex::FontVertexDesc, 4)
+{
+}
 
 void FontEffect::setObjectProperties(const Matrix4& world, const Material& material)
 {
