@@ -10,6 +10,20 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
+IEffect::IEffect(const D3D11_INPUT_ELEMENT_DESC* layout, int layoutDescriptionCount) : m_vs(nullptr), m_gs(nullptr), m_ps(nullptr), m_byteCode(nullptr), m_inputLayout(nullptr)
+{
+    if (layout)
+    {
+        assert(layoutDescriptionCount > 0);
+
+        m_layoutDescription = layout;
+        m_layoutDescriptionCount = layoutDescriptionCount;
+    } else
+    {
+        m_layoutDescription = VertexStreams::getStreamLayout(m_layoutDescriptionCount);
+    }
+}
+
 void IEffect::destroy()
 {
 	m_vs = nullptr;
@@ -47,7 +61,8 @@ void IEffect::reset()
 
 const D3D11_INPUT_ELEMENT_DESC* IEffect::getLayout(int& count)
 {
-	return VertexStreams::getStreamLayout(count);
+    count = m_layoutDescriptionCount;
+	return m_layoutDescription;
 }
 
 bool IEffect::initialize(const char* vsFile, const char* psFile, const char* gsFile)

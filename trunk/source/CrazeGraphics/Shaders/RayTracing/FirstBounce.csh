@@ -1,7 +1,7 @@
 #include "globals.incl"
 #include "RayTracing/PhotonRay.incl"
 
-AppendStructuredBuffer<PhotonRay> OutRays : register(u1);
+AppendStructuredBuffer<PhotonRay> OutRays : register(u0);
 
 cbuffer FrustumInfo : register(b1)
 {
@@ -58,7 +58,7 @@ float3 calcFrustumNormal(int frustumIndex)
 	return normalize(cross(v1 - v0, v2 - v0));
 }
 
-bool rayIntersectsFrustum1(float3 rayOrigin, float3 rayDir, out float maxEnter, out float minExit)
+bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir, out float maxEnter, out float minExit)
 {
 	maxEnter = -213321456621321122131.0f;
 	minExit = 1315677621313213321.0f;
@@ -90,100 +90,63 @@ bool rayIntersectsFrustum1(float3 rayOrigin, float3 rayDir, out float maxEnter, 
 	return maxEnter < minExit && minExit > 0.f;
 }
 
-bool rayIntersectsLV(float3 o, float3 d)
-{
-	float3 invDir = rcp(d);
-	float3 tBegin = (LVStart - o) * invDir;
-	float3 tEnd = (LVEnd - o) * invDir;
-	 
-	float3 tEnter = min(tBegin, tEnd);
-	float3 tExit = max(tBegin, tEnd);
-	float tMaxEnter = max(tEnter.x, max(tEnter.y, tEnter.z));
-	float tMinExit = min(tExit.x, min(tExit.y, tExit.z));
-	return tMaxEnter < tMinExit;
-}
-
-float3 toPSpace(float3 v, float w = 1.f)
-{
-	float4 ps = mul(float4(v, w), ViewProj);
-	ps.xyz /= ps.w;
-	return ps.xyz;
-}
-bool rayIntersectsFrustum(float3 psOrigin, float3 o, float3 d)
-{
-	float3 dir = toPSpace(d, 0.f);
-	float3 toMin = float3(-1.f, -1.f, 0.f) - psOrigin;
-	float3 toMax = float3(1.f, 1.f, 1.f) - psOrigin;
-	float3 tMins = toMin / dir;
-	float3 tMaxs = toMax / dir;
-
-	float3 dirSign = sign(dir);
-	float3 posDirMask = max(0.f, dirSign);
-	float3 negDirMask = max(0.f, -dirSign);
-	float3 enters = posDirMask * tMins + negDirMask * tMaxs;
-	float3 exits = negDirMask * tMins + posDirMask * tMaxs;
-
-	return max(enters.x, max(enters.y, enters.z)) <= min(exits.x, min(exits.y, exits.z));
-}
-
 uint touint(float v)
 {
 	return 0xFF & (uint)(v * 255.f);
 }
 
 #define RAYS_PER_TEXEL 1
-float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
+[numthreads(16, 16, 1)]
+void main(uint3 dispatchId : SV_DispatchThreadID)
 {
-	float3 normal = NormalRough.Sample(Point, uv).xyz;
+	float3 normal = NormalRough[dispatchId.xy].xyz;
+	//Check if this sample has a valid normal, ignore it if not.
 	if (dot(normal, normal) < 0.5f)
 	{
-		discard;
+		return;
 	}
 
-	float3 color = ColorSpec.Sample(Point, uv).xyz * intensity;
-	float depth = Depth.Sample(Point, uv).x;
+	float width, height;
+	ColorSpec.GetDimensions(width, height);
+	width = height = 128.f;
+	float2 uv = dispatchId.xy / float2(width, height);
+
+	float3 color = ColorSpec[dispatchId.xy].xyz * intensity;
+	float depth = Depth[dispatchId.xy].x;
 	float3 position = DepthToPos(depth, uv);
-	//position = floor(position / 2.f) * 2.f;
-	float3 psPos = toPSpace(position);
 
 	float2 rndUvBase = position.xz * position.y;// / 10.f;//floor(frac(position.xz * 0.001f) * 128.f) / 128.f;
 
 	for(int i = 0; i < RAYS_PER_TEXEL; ++i)
 	{
 		//sample direction based on RSM texel world space
-		//float3 dir = Random.SampleLevel(Point, rndUvBase + .7319542945134f * i, 1.f).xyz * 2.f - 1.f;
-		float4 random = Random.SampleLevel(Point, Seed + rndUvBase + .7319542945134f * i, 1.f);
+		float4 random = Random[(dispatchId.xy + 5 * i + Seed * 1000.f) % 512];
 		float3 dir = random.xyz * 2.f - 1.f;
 
+		//Check if the random direction is pointing away from the surface. Reverse it if it doesn't.
 		dir = dot(dir, normal) >= 0.f ? dir : -dir;
 
+		//Scale the power based on how many rays for every pixel that are used.
 		float power = 1.0f / RAYS_PER_TEXEL;
 
 		float lastIn, firstOut;
-		if (rayIntersectsFrustum1(position, dir, lastIn, firstOut))
-		//if (rayIntersectsLV(position, dir))
-		//if(rayIntersectsFrustum(psPos.xyz, position, dir))
+		if (rayIntersectsFrustum(position, dir, lastIn, firstOut))
 		{
-			//no rejection, so let us emit photon
 			PhotonRay pr;
 			
 			pr.dir = normalize(dir);
 
 			float3 rayColor = color * power * dot(pr.dir, normal);
-			pr.dir *= firstOut;
+			//pr.dir *= firstOut;
 
+			//Encode the color to A8R8G8B8 so it fits into 24 bits
 			uint encodedColor = touint(rayColor.r) | (touint(rayColor.g) << 8) | (touint(rayColor.b) << 16);
 			pr.color = encodedColor;
 			//pr.dir = dir;
 			//Just move out the ray a bit
 			pr.origin = position;// + normal * 0.f + max(0.f, lastIn) * pr.dir;
-			//pr.power = color * power * dot(pr.dir, normal);
 			OutRays.Append(pr);
 
 		}
-		//failed frustum check
 	}
-	//end of ray per texel iterator
-
-	return 1.f.xxxx;
 }

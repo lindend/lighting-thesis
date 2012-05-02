@@ -8,8 +8,8 @@ namespace Craze
 	{
 		class Device;
 		class Texture;
-		class SpotLight;
-		class DirectionalLight;
+		struct SpotLight;
+		struct DirectionalLight;
 		class RenderTarget;
 
 		class LightAccumulationEffect : public IEffect

@@ -194,6 +194,7 @@
     <ClCompile Include="Effect\IEffect.cpp" />
     <ClCompile Include="Effect\LightingEffect.cpp" />
     <ClCompile Include="Effect\LightVolumeEffects.cpp" />
+    <ClCompile Include="Font\FontVertex.cpp" />
     <ClCompile Include="GPUProfiler\Frame.cpp" />
     <ClCompile Include="GPUProfiler\GPUProfiler.cpp" />
     <ClCompile Include="LayoutManager.cpp" />
@@ -272,7 +273,9 @@
       <FileType>Document</FileType>
     </None>
     <PixelShaders Include="Shaders\RayTracing\DrawRay.psh" />
-    <PixelShaders Include="Shaders\RayTracing\FirstBounce.psh" />
+    <None Include="Shaders\RayTracing\FirstBounce.csh">
+      <FileType>Document</FileType>
+    </None>
     <PixelShaders Include="Shaders\RayTracing\MergeLVs.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeRaysCM.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeSH.psh" />

@@ -19,11 +19,10 @@ namespace Craze
 		class SceneNode;
 		class UserInterface;
 		class Device;
-		class SpotLight;
-		class DirectionalLight;
+		struct SpotLight;
+		struct DirectionalLight;
 		class Graphics;
 		class DrawRays;
-		struct Light;
 
 		class Renderer
 		{
@@ -55,6 +54,8 @@ namespace Craze
 			void drawGBuffers(Scene* scene);
 			void drawLights(SpotLightArray spotLights, Scene* scene);
 
+            std::shared_ptr<RenderTarget>* buildLightVolumes(Scene* scene, const DirectionalLight* dirLights, int numDirLights);
+
 			LightVolumeInjector m_lightVolumeInjector;
 
 			static const int NumGBuffers = 3;
@@ -63,6 +64,9 @@ namespace Craze
 
 			std::shared_ptr<RenderTarget> m_pShadowMap;
 			std::shared_ptr<DepthStencil> m_pShadowDS;
+
+			std::shared_ptr<RenderTarget> m_RSMs[2];
+			std::shared_ptr<DepthStencil> m_RSMDS;
 
 			std::shared_ptr<Mesh> m_pScreenQuad;
 

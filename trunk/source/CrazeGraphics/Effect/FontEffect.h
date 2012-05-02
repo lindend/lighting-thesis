@@ -10,7 +10,7 @@ namespace Craze
 		class FontEffect : public IEffect
 		{
 		public:
-
+            FontEffect();
 			bool initialize() { return IEffect::initialize("Font.vsh", "Font.psh", "Font.gsh"); }
 
 			void set() { IEffect::set(); }

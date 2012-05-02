@@ -37,11 +37,19 @@ void CBufferManager::Initialize(Device* pDevice)
 
 void CBufferManager::ResetBuffers()
 {
-	m_pDevice->GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pPerObject);
+    m_pDevice->GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pPerObject);
 	m_pDevice->GetDeviceContext()->PSSetConstantBuffers(0, 1, &m_pPerObject);
+	m_pDevice->GetDeviceContext()->GSSetConstantBuffers(0, 1, &m_pPerObject);
+	m_pDevice->GetDeviceContext()->CSSetConstantBuffers(0, 1, &m_pPerObject);
+	m_pDevice->GetDeviceContext()->HSSetConstantBuffers(0, 1, &m_pPerObject);
+	m_pDevice->GetDeviceContext()->DSSetConstantBuffers(0, 1, &m_pPerObject);
 
 	m_pDevice->GetDeviceContext()->VSSetConstantBuffers(2, 1, &m_pPerLight);
 	m_pDevice->GetDeviceContext()->PSSetConstantBuffers(2, 1, &m_pPerLight);
+	m_pDevice->GetDeviceContext()->GSSetConstantBuffers(2, 1, &m_pPerLight);
+	m_pDevice->GetDeviceContext()->CSSetConstantBuffers(2, 1, &m_pPerLight);
+	m_pDevice->GetDeviceContext()->HSSetConstantBuffers(2, 1, &m_pPerLight);
+	m_pDevice->GetDeviceContext()->DSSetConstantBuffers(2, 1, &m_pPerLight);
 
 	m_pDevice->GetDeviceContext()->VSSetConstantBuffers(3, 1, &m_pPerFrame);
 	m_pDevice->GetDeviceContext()->PSSetConstantBuffers(3, 1, &m_pPerFrame);

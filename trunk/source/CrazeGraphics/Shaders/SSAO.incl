@@ -6,11 +6,10 @@ static float GetRandom(float2 uv)
 
 static float3 GetPosition(float2 uv)
 {
-	return NormalRough.Sample(PointBorder, uv).rgb;
-	/*float depth = Depth.Sample(PointBorder, uv).r;
+	float depth = Depth.Sample(PointBorder, uv).r;
 
 	float4 worldPos = mul(float4(float2(uv.x, 1.f - uv.y) * 2.f - 1.f, depth, 1.0f), InvViewProj);
-	return (worldPos / worldPos.w).xyz;*/
+	return worldPos.xyz / worldPos.w;
 }
 
 float CalcAO(float3 pos, float depth, float2 screenUv, float3 normal)
@@ -23,8 +22,8 @@ float CalcAO(float3 pos, float depth, float2 screenUv, float3 normal)
 		float3(-1.0f, 1.0f, 1.0f), float3(-1.0f, -1.0f, 1.0f)
 	};
 	
-	const float3 random = Random.Sample(Point, screenUv * 10.f * pos.z).xyz;
-	const float radius = 1.f / pos.z;
+	const float3 random = Random.SampleLevel(Point, screenUv * 2.f * pos.z, 0.f).xyz;
+	const float radius = 4.f / pos.z;
 	
 	float occlusion = 0.0f;
 
@@ -51,7 +50,7 @@ float CalcAO(float3 pos, float depth, float2 screenUv, float3 normal)
 									dot(normal, diff2),
 									dot(normal, diff3)) * rsqrt(occl);
 		                                   
-		occlusion += dot(max(0.f.xxxx, dp), 5.f / (1.f + occl));
+		occlusion += dot(max(0.f.xxxx, dp), 100.f / (1.f + occl));
 	}
 
 // Approximately 92 instruction slots used
