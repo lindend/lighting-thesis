@@ -7,6 +7,7 @@ cbuffer FrustumInfo : register(b1)
 {
 	float3 corners[8];
 	float3 intensity;
+	float lightDynamicity;
 };
 
 float3 DepthToPos(float depth, float2 uv)
@@ -137,11 +138,12 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
 			pr.dir = normalize(dir);
 
 			float3 rayColor = color * power * dot(pr.dir, normal);
-			//pr.dir *= firstOut;
+			pr.dir *= firstOut;
 
 			//Encode the color to A8R8G8B8 so it fits into 24 bits
 			uint encodedColor = touint(rayColor.r) | (touint(rayColor.g) << 8) | (touint(rayColor.b) << 16);
 			pr.color = encodedColor;
+			pr.dynamicity = lightDynamicity;
 			//pr.dir = dir;
 			//Just move out the ray a bit
 			pr.origin = position;// + normal * 0.f + max(0.f, lastIn) * pr.dir;

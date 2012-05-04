@@ -27,7 +27,6 @@
 
 #include "PIXHelper.h"
 
-
 using namespace Craze;
 using namespace Craze::Graphics2;
 
@@ -56,15 +55,19 @@ bool LightVolumeInjector::initialize()
 		}
 	}
 
-    //The random texture contains uniformly distributed directions on the hemisphere in the RGB channels. In the A channel is a
-    //random number.
+    /*
+    The random texture contains uniformly distributed directions on the hemisphere in the RGB channels. In the A channel is a
+    random number.
+    */
     m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.png")));
 
     //Initialize the buffers
-	m_frustumInfoCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 9);
+	m_frustumInfoCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 10);
+    m_kdSceneInfoCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 2);
 
-	m_rayBuffer = UAVBuffer::Create(gpDevice, sizeof(float) * 7, MaxPhotonRays, true, "To test rays");
-	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 7, MaxPhotonRays * 16, true, "Collided rays");
+	m_rayBuffer = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Ray buffer");
+    m_tracedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Traced rays");
+	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays * 16, true, "Tessellated rays");
 
     unsigned int args[] = { 0, 1, 0, 0};
 	m_argBuffer = SRVBuffer::CreateRawArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
@@ -77,19 +80,24 @@ bool LightVolumeInjector::initialize()
 
     /*
     Create the blend state to be used for when rasterizing the rays into the light volumes.
-    This is a simple additive blend state.
+    This is a simple additive blend state, except that the alpha channel picks the maximum
+    alpha value. The reason for the alpha channel doing so is that the light dynamicity is 
+    stored in this value and we want the most dynamic light to set the pace for the others.
+    
     */
 	CD3D11_BLEND_DESC bDesc;
 	bDesc.IndependentBlendEnable = false;
 	bDesc.AlphaToCoverageEnable = false;
 	bDesc.RenderTarget[0].BlendEnable = true;
+    bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
 	bDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-	bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	
+    bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_MAX;
 	bDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 	if (FAILED(gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_addBS)))
     {
         return false;
@@ -98,8 +106,12 @@ bool LightVolumeInjector::initialize()
     /*
     The blend state for when merging the light volumes is using additive blending scaled with alpha.
     */
-	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
+
+    bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+    bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 	if (FAILED(gpDevice->GetDevice()->CreateBlendState(&bDesc, &m_mergeBS)))
     {
         return false;
@@ -165,7 +177,7 @@ bool LightVolumeInjector::initEffects()
 
 bool LightVolumeInjector::initGeometry()
 {
-    //Hard coded collision geometry!
+    //Hard coded collision geometry! 
 	std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
     if (!triMesh)
     {
@@ -181,14 +193,25 @@ bool LightVolumeInjector::initGeometry()
 		tris[i] = verts[indices[i]].position;
 	}
 	setTriangles(tris, meshData->GetNumIndices() / 3);
-	delete [] tris;
+	//delete [] tris;
     return true;
 }
 
 void LightVolumeInjector::setTriangles(const Vec3* tris, int numTris)
 {
-	m_triangleBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(float) * 3 * 3, numTris, tris, false, "Triangle buffer");
-	m_numTriangles = numTris;
+    m_geometryBB = CrNew BoundingBox();
+    for (int i = 0; i < numTris * 3; ++i)
+    {
+        m_geometryBB->IncludePoint(tris[i]);
+    }
+    m_kdTree.Create((const DefaultTriangle*)tris, numTris, *m_geometryBB);
+
+    unsigned int numKdNodes, numKdTris;
+    const kdNode* nodes = m_kdTree.GetKdNodes(numKdNodes);
+    const DefaultTriangle* triangles = m_kdTree.GetTriangles(numKdTris);
+
+	m_triangleBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(DefaultTriangle), numKdTris, triangles, false, "LV Triangle buffer");
+    m_kdTreeBuffer = SRVBuffer::CreateStructured(gpDevice, sizeof(kdNode), numKdNodes, nodes, false, "LV Kd nodes");
 }
 
 std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
@@ -222,7 +245,7 @@ void expand(const Vector3* vs, Vector3* vout, int i0, int i1, int i2, int i3, fl
 	vout[i3] = vout[i3] + d2 * len;
 }
 
-void LightVolumeInjector::addLight(const Vec3& color, float movementFactor, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> RSM[2], std::shared_ptr<DepthStencil> RSMdepth, Camera* cam)
+void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> RSM[2], std::shared_ptr<DepthStencil> RSMdepth, Camera* cam)
 {
     if (!m_random.get())
 	{
@@ -259,6 +282,7 @@ void LightVolumeInjector::addLight(const Vec3& color, float movementFactor, cons
 		cb[i] = corners[i].v;
 	}
     cb[8] = color;
+    cb[8].W() = lightDynamicity;
 	cb.Unmap();
 	gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_frustumInfoCBuffer);
 
@@ -313,12 +337,22 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::buildLightingVolumes()
 void LightVolumeInjector::traceRays()
 {
 	PIXMARKER(L"Trace rays");
-	ID3D11ShaderResourceView* triSrv = m_triangleBuffer->GetSRV();
-	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 1, &triSrv);
 
-	ID3D11UnorderedAccessView* UAV = m_rayBuffer->GetUAV();
-	u32 initCount = -1;
+    ID3D11UnorderedAccessView* UAV = m_tracedRays->GetAppendConsumeUAV();
+	u32 initCount = 0;
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &UAV, &initCount);
+
+    ID3D11ShaderResourceView* srvs[] = { m_triangleBuffer->GetSRV(), m_kdTreeBuffer->GetSRV(), m_rayBuffer->GetSRV() };
+	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 3, srvs);
+
+    /*
+    Send the cbuffer containing the bounding box of the scene to the constant buffer slot 1
+    */
+    CBufferHelper cb(gpDevice, m_kdSceneInfoCBuffer);
+    cb[0] = m_geometryBB->m_Min.v;
+    cb[1] = m_geometryBB->m_Max.v;
+    cb.Unmap();
+    gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_kdSceneInfoCBuffer);
 
 	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
     /*
@@ -330,12 +364,14 @@ void LightVolumeInjector::traceRays()
 	gpDevice->GetDeviceContext()->Dispatch(MaxPhotonRays / 128, 1, 1);
 
 	UAV = nullptr;
+    ZeroMemory(srvs, sizeof(void*) * 3);
+    gpDevice->GetDeviceContext()->CSSetShaderResources(0, 3, srvs);
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &UAV, &initCount);
 }
 void LightVolumeInjector::tessellateRays()
 {
 	PIXMARKER(L"Tessellate rays");
-	ID3D11UnorderedAccessView* UAVs[] = { m_rayBuffer->GetUAV(), m_tessellatedRays->GetAppendConsumeUAV() };
+	ID3D11UnorderedAccessView* UAVs[] = { m_tracedRays->GetUAV(), m_tessellatedRays->GetAppendConsumeUAV() };
 	u32 initCounts[] = { -1, 0 };
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
 
@@ -361,20 +397,30 @@ void LightVolumeInjector::injectToLV()
 
 	m_fxInjectRays->set();
 
-	//Prepare the argument buffer for the indirect call by copying the number of rays
+	/*
+    Prepare the argument buffer for the indirect call by copying the number of rays in the
+    tessellated rays buffer to the vertex count per primitive field of the arg buffer. The
+    number of instances field has already been set to 1.
+    */
 	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, m_tessellatedRays->GetAppendConsumeUAV());
 
+    //Clear the vertex buffer, index buffer and input assembly (on a second thought, not sure if this is necessary).
 	ID3D11Buffer* vs = nullptr;
 	unsigned int stride = 0;
 	unsigned int offset = 0;
 	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
+    dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+    dc->IASetInputLayout(nullptr);
 
 	ID3D11ShaderResourceView* srv = m_tessellatedRays->GetSRV();
 	dc->VSSetShaderResources(0, 1, &srv);
 
 	gpDevice->SetRenderTargets(m_lightVolumes[m_activeLightVolume], CRAZE_NUM_LV, nullptr);
 
-	//Draw the rays
+	/*
+    Draw the rays using the arg buffer, the rays are expanded into lines in the geometry
+    shader and we send them as points until then.
+    */
 	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
@@ -406,6 +452,7 @@ void LightVolumeInjector::mergeToTarget()
 	
 	gpDevice->SetRenderTargets(m_lightVolumes[m_activeLightVolume], CRAZE_NUM_LV, nullptr);
 	gpDevice->GetDeviceContext()->PSSetShaderResources(0, CRAZE_NUM_LV, srvs);
+    //Draw a screen quad for each slice in the light volume
 	gpDevice->GetDeviceContext()->DrawInstanced(3, LightVolumeResolution, 0, 0);
 	m_fxMergeLV->reset();
 
@@ -418,6 +465,7 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 {
 	LightVolumeInfo lvinfo;
 	
+    //Hard coded range of 2000 units.
 	float zSlice = 2000.f;
 	
 	lvinfo.start = cam->GetPosition();
@@ -426,7 +474,11 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 	Vector3 corners[8];
 	cam->GetFrustumCorners(2.f, zSlice, corners);
 	
-
+    /*
+    Find the size of the light volume by finding the maximum distance between two
+    corners in the frustum. Also keep track of the minimum coordinates of the corners
+    in every channel to be able to determine where the light volume should start.
+    */
 	float size = 0.f;
 	Vector3 minCorner = corners[0];
 	for (int i = 0; i < 8; ++i)
@@ -443,6 +495,10 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 	lvinfo.start = minCorner;
 	lvinfo.end = lvinfo.start + Vector3(size);
 
+    /*
+    Snap the start position to a multiple of the cell size. Not doing so results in very
+    visible artifacts when the light volume moves.
+    */
 	Vector3 cellStart = Floor(lvinfo.start / cellSize);
 	Vector3 snapStart = cellStart * cellSize;
 	lvinfo.start = snapStart;

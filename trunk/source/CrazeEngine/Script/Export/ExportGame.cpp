@@ -96,6 +96,7 @@ ScriptUpdater* beginUpdate(object const& f)
 		return pUpd;
 	}
 	luaL_error(f.interpreter(), "Argument to beginUpdate must be of type function");
+    return nullptr;
 }
 
 void stopUpdate(ScriptUpdater* pUpd)

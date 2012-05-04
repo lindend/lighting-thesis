@@ -265,6 +265,7 @@
     <PixelShaders Include="Shaders\IndirectLighting.psh" />
     <PixelShaders Include="Shaders\PosMap.psh" />
     <None Include="Shaders\RayTracing\CMSides.incl" />
+    <None Include="Shaders\RayTracing\CullRaysHZ.csh" />
     <None Include="Shaders\RayTracing\LineTess.tess" />
     <None Include="Shaders\RayTracing\PhotonRay.incl" />
     <None Include="Shaders\RayTracing\RayTrace.csh" />

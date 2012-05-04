@@ -31,7 +31,7 @@ ShortStack create()
 	s.numElems = 0;
 	return s;
 }
-void push(ShortStack& st, kdNode n, float tMin, float tMax, unsigned idx)
+void push(ShortStack& st, kdNode n, float tMin, float tMax, unsigned int idx)
 {
 	st.top = (st.top + 1) % STACKSIZE;
 	st.numElems = Min<unsigned short>(STACKSIZE, st.numElems + 1);

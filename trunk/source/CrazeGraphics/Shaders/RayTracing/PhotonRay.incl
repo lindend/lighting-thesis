@@ -6,7 +6,7 @@ struct PhotonRay
 	float3 dir;
 	uint color;
 	float3 origin;
-	//float density; //According to ISPM, examine!
+	float dynamicity;
 };
 
 #endif

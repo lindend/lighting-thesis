@@ -4,6 +4,19 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 using namespace Craze::Graphics2::kdInternal;
+namespace Craze
+{
+	namespace Graphics2
+	{
+		namespace kdInternal
+		{
+			const float Cost_Trav = 20.f;
+			const float Cost_Test = 20.f;
+			const unsigned int TerminateNumTris = 10;
+			const unsigned int TerminateDepth = 15;
+        }
+    }
+}
 
 float cost(float PL, float PR, unsigned int NL, unsigned int NR)
 {

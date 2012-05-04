@@ -26,7 +26,7 @@ VS_OUT main(uint idx : SV_VertexID)
 	output.begin.xy = toLVSpace(ray.origin.xy);
 	output.end.xy = toLVSpace(ray.dir.xy);
 
-	output.dir.xyz = normalize(ray.dir - ray.origin);
+	output.dir.xyz = normalize(ray.dir - ray.origin) * ray.dynamicity;
 	output.dir.w = asfloat(ray.color);
 
 	return output;
