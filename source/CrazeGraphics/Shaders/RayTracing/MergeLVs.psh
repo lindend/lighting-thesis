@@ -19,30 +19,29 @@ Texture3D Back	: register(t5);
 
 PS_OUT main(float3 uv : TEXCOORD)
 {
-	float Alpha = 0.95f;
-	
 	float w, h, d;
 	Right.GetDimensions(w, h, d);
 	uv.z = uv.z * rcp(d) + 0.5f * rcp(d);
 
 	float3 cellOffset = (OldLVStart - LVStart) / (LVCellSize.xyz * LVCellSize.w);
-	cellOffset.y = 1.f - cellOffset.y;
+	cellOffset.y = -cellOffset.y;
 	float3 newUv = uv;
 
-	if(newUv.x < 0.f || newUv.x > 1.f || newUv.y < 0.f || newUv.y > 1.f)// || newUv.z < 0.f || newUv.z > 1.f)
-	{
-		//Alpha = .5f;
-	}
 	newUv -= cellOffset;
-	//newUv = saturate(newUv);
+
+	if(newUv.x < 0.f || newUv.x > 1.f || newUv.y < 0.f || newUv.y > 1.f || newUv.z < 0.f || newUv.z > 1.f)
+	{
+	}
 
 	PS_OUT output;
-	output.Right = float4(Right	.Sample(Point, newUv).rgb, Alpha);
-	output.Left	 = float4(Left	.Sample(Point, newUv).rgb, Alpha);
-	output.Top	 = float4(Top	.Sample(Point, newUv).rgb, Alpha);
-	output.Bot	 = float4(Bot	.Sample(Point, newUv).rgb, Alpha);
-	output.Front = float4(Front .Sample(Point, newUv).rgb, Alpha);
-	output.Back	 = float4(Back	.Sample(Point, newUv).rgb, Alpha);
+	output.Right = Right.Sample(Point, newUv);
+	output.Left	 = Left .Sample(Point, newUv);
+	output.Top	 = Top  .Sample(Point, newUv);
+	output.Bot	 = Bot  .Sample(Point, newUv);
+	output.Front = Front.Sample(Point, newUv);
+	output.Back	 = Back .Sample(Point, newUv);
+	
+	//newUv = saturate(newUv);
 
 	return output;
 }

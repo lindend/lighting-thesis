@@ -25,11 +25,6 @@ namespace Craze
 	{
 		namespace kdInternal
 		{
-			const float Cost_Trav = 20.f;
-			const float Cost_Test = 20.f;
-			const unsigned int TerminateNumTris = 10;
-			const unsigned int TerminateDepth = 15;
-
 			//This code is using the algorithm http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.61.7996&rep=rep1&type=pdf
 
 

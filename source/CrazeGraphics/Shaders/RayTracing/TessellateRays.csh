@@ -47,8 +47,10 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 
 	PhotonRay r = Rays[dispatchId.x];
 
-	float3 intersectStartDist = (LVStart - r.origin) / r.dir;
-	float3 intersectEndDist = (LVEnd - r.origin) / r.dir;
+	float3 rayDelta = r.dir - r.origin;
+
+	float3 intersectStartDist = (LVStart - r.origin) / rayDelta;
+	float3 intersectEndDist = (LVEnd - r.origin) / rayDelta;
 	float3 minIntersect = max(0.f, min(intersectStartDist, intersectEndDist));
 	float3 maxIntersect = min(1.f, max(intersectStartDist, intersectEndDist));
 
@@ -56,7 +58,7 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 	float tMax = max(max(maxIntersect.x, maxIntersect.y), maxIntersect.z);
 
 	//The distance the ray needs to travel to reach a new slice
-	float zCellDist = LVCellSize.z / abs(r.dir.z);
+	float zCellDist = LVCellSize.z / abs(rayDelta);
 	float nextZSlice = abs(intersectStartDist.z % zCellDist);
 
 	uint color = r.color;
@@ -71,8 +73,12 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 			nextZSlice = zCellDist;
 
 			PhotonRay tr;
-			tr.origin = r.origin;// + r.dir * t;
-			tr.dir = r.dir;//r.origin + r.dir * tNext;
+			tr.origin = r.origin;
+			tr.dir = r.dir;
+
+			tr.origin = r.origin + rayDelta * t;
+			tr.dir = r.origin + rayDelta * tNext;
+			tr.dynamicity = r.dynamicity;
 			
 			//Find the index by calculating the average position of the line segment,
 			//and use that position to determine z-index

@@ -499,7 +499,36 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 1.f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            m_lightVolumeInjector.addLight(light.color, 0.02f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+        }
+
+        //No visibility test is active, so IDENTITY is usable
+        const SpotLightArray spotlights = scene->getVisibleSpotLights(Matrix4::IDENTITY);
+        for (int i = 0; i < spotlights.numLights; ++i)
+        {
+            const SpotLight& light = spotlights.spotLights[i];
+            Camera dlCam = findSMCamera(light, scene);
+            Matrix4 lightViewProj = dlCam.GetView() * dlCam.GetProjection();//Matrix4::CreateView(light.dir * -2000.f, Vector3::ZERO, Vector3::UP) * Matrix4::CreateOrtho(2000.f, 2000.f, 1.f, 10000.f);
+
+            {
+                PIXMARKER(L"Create RSM");
+                shadowScene.clear();
+                scene->buildDrawList(&shadowScene, lightViewProj);
+
+                gpDevice->SetRenderTargets(m_RSMs, 2, m_RSMDS->GetDepthStencilView());
+                gpDevice->GetDeviceContext()->ClearDepthStencilView(m_RSMDS->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.f, 0);
+
+                gFxGBuffer.set(&dlCam);
+
+                for (auto i = shadowScene.begin(); i != shadowScene.end(); ++i)
+                {
+                    gFxGBuffer.setObjectProperties(*i->second.m_transform, *i->second.m_material);
+                    i->second.m_mesh->draw();
+                }
+            }
+            gpDevice->SetRenderTarget(nullptr, nullptr);
+            m_lightVolumeInjector.addLight(light.color, 0.2f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+
         }
 
 

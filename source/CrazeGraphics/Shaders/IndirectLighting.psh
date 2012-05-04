@@ -88,7 +88,7 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 
 	float lightScale = .07f;
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
-	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 150.f), normal) * lightScale;
+	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 450.f), normal) * lightScale;
 	if (uv.x > 0.f)
 	{
 		float fr = length(lightAtNormal) / length(light);

@@ -4,6 +4,8 @@
 #include <D3D11.h>
 
 #include "Texture/Texture.h"
+#include "kdTree/kdTree.h"
+
 /*
 Controls what technique should be used for storing the light in the light volumes.
 If CRAZE_USE_SH_LV is defined, spherical harmonics will be used. This uses only
@@ -58,17 +60,24 @@ namespace Craze
 
 			bool initialize();
 
+            /*
+            Should be called between frame start and the first call to addLight. This
+            function swaps the active light volume and clears it and prepares the
+            system for a new frame.
+            */
             void beginFrame();
             /*
             Performs the first bounce step on the reflective shadow maps passed to the function.
 
             Input:
                 color - The color of the light source.
-                movementFactor - A factor between 0 and 1 indicating how fast the light source moves.
+                lightDynamicity -A factor between 0 and 1 indicating how fast the light source changes.
                                  This is used to control how much the previous frames should contribute to
                                  the lighting. A high factor means that the light moves fast and that previous
                                  light should be taken less into account. A low factor means that the light
                                  can be interpolated over a longer time which gives smoother lighting.
+                                 The value should in practice probably always be >= 0.03 unless the light source
+                                 is completely static.
                 lightViewProj - The view x proj matrix for the light that is being added.
                 RSM - The reflective shadow maps.
                 RSMdepth - The depth stencil of the reflective shadow maps.
@@ -76,7 +85,7 @@ namespace Craze
             State change:
                 The rays calculated by the first bounce shader are added to a buffer containing all of the rays for this frame.
             */
-            void addLight(const Vec3& color, float movementFactor, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> RSM[2], std::shared_ptr<DepthStencil> RSMdepth, Camera* camera);
+            void addLight(const Vec3& color, float lightDynamicity, const Matrix4& lightViewProj, std::shared_ptr<RenderTarget> RSM[2], std::shared_ptr<DepthStencil> RSMdepth, Camera* camera);
 
             /*
             Uses the rays from all calls to addLight and traces them against the scene geometry. Then,
@@ -145,14 +154,17 @@ namespace Craze
             int m_numLights;
 
             //Geometry that the ray tracer tests against.
-			int m_numTriangles;
 			std::shared_ptr<SRVBuffer> m_triangleBuffer;
+            std::shared_ptr<SRVBuffer> m_kdTreeBuffer;
+            kdTree<> m_kdTree;
+            BoundingBox* m_geometryBB;
 
             /*
-            The buffer that contains all the rays before they are tessellated. The rays from the first bounce
-            are stored in this buffer. When ray tracing occurs, this buffer is modified in place.            
+            The buffer that contains all the rays before they are traced against the scene geometry.        
             */
 			std::shared_ptr<UAVBuffer> m_rayBuffer;
+            //In this buffer, all rays that have been ray traced are stored
+            std::shared_ptr<UAVBuffer> m_tracedRays;
             //The buffer where all of the tessellated rays are stored.
 			std::shared_ptr<UAVBuffer> m_tessellatedRays;
 
@@ -170,6 +182,7 @@ namespace Craze
 
             TexturePtr m_random;
 			ID3D11Buffer* m_frustumInfoCBuffer;
+            ID3D11Buffer* m_kdSceneInfoCBuffer;
 
             //Additive blend state, used when rendering the rays into the light volume
 			ID3D11BlendState* m_addBS;

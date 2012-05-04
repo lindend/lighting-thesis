@@ -104,7 +104,7 @@ lightAnimator = nil
 
 function onLoaded()
 	dirlight = level.scene:addDirectionalLight(v3(0.2, -1, 0.2), v3(1, 1, 1))
-	--spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.3, 100000, v3(1, 1, 1))
+	spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.3, 100000, v3(1, 1, 1))
 	lightAnimator = game.beginUpdate(animLights)
 
 	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
@@ -118,10 +118,10 @@ rz = 0.2
 rspot = 0
 function animLights(delta)
 	--dirlight.direction = math.normalize(v3(math.sin(rx) * 0.3, -1, math.sin(rz) * 0.3))
-	--spotlight.direction = math.normalize(v3(math.sin(rspot), 0, math.cos(rspot)))
+	spotlight.direction = math.normalize(v3(math.sin(rspot), 0, math.cos(rspot)))
 	rx = rx + 0.943247785 * delta
 	rz = rz + 0.549334545 * delta
-	rspot = rspot + 0.97 * delta
+	rspot = rspot + 0.37 * delta
 	return true
 end
 

@@ -22,13 +22,15 @@ PS_OUT main(nointerpolation float4 direction : DIRECTION)
 {
 	PS_OUT output; 
 	float3 color = parseColor(direction.w);
+	float dynamicity = length(direction.xyz);
+	direction.xyz /= dynamicity;
 
-	output.Right =	float4(pow(max(0.f, dot(CMSides[0], direction.xyz)), 1.f) * color, 0.f);
-	output.Left =	float4(pow(max(0.f, dot(CMSides[1], direction.xyz)), 1.f) * color, 0.f);
-	output.Top =	float4(pow(max(0.f, dot(CMSides[2], direction.xyz)), 1.f) * color, 0.f);
-	output.Bot =	float4(pow(max(0.f, dot(CMSides[3], direction.xyz)), 1.f) * color, 0.f);
-	output.Front =	float4(pow(max(0.f, dot(CMSides[4], direction.xyz)), 1.f) * color, 0.f);
-	output.Back =	float4(pow(max(0.f, dot(CMSides[5], direction.xyz)), 1.f) * color, 0.f);
+	output.Right =	float4(pow(max(0.f, dot(CMSides[0], direction.xyz)), 1.f) * color, dynamicity);
+	output.Left =	float4(pow(max(0.f, dot(CMSides[1], direction.xyz)), 1.f) * color, dynamicity);
+	output.Top =	float4(pow(max(0.f, dot(CMSides[2], direction.xyz)), 1.f) * color, dynamicity);
+	output.Bot =	float4(pow(max(0.f, dot(CMSides[3], direction.xyz)), 1.f) * color, dynamicity);
+	output.Front =	float4(pow(max(0.f, dot(CMSides[4], direction.xyz)), 1.f) * color, dynamicity);
+	output.Back =	float4(pow(max(0.f, dot(CMSides[5], direction.xyz)), 1.f) * color, dynamicity);
 	//output.Right =	float4(max(0.f, -direction.x) * color, 0.f);
 	//output.Left =	float4(max(0.f,  direction.x) * color, 0.f);
 	//output.Top =	float4(max(0.f,  direction.y) * color, 0.f);
