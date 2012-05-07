@@ -128,16 +128,20 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
 		dir = dot(dir, normal) >= 0.f ? dir : -dir;
 
 		//Scale the power based on how many rays for every pixel that are used.
-		float power = 1.0f / RAYS_PER_TEXEL;
+		float power = .3f / RAYS_PER_TEXEL;
+
+		float avgPower = (color.r + color.g + color.b) * 0.33333f;
 
 		float lastIn, firstOut;
-		if (rayIntersectsFrustum(position, dir, lastIn, firstOut))
+		if (rayIntersectsFrustum(position, dir, lastIn, firstOut) && random.a < avgPower)
 		{
 			PhotonRay pr;
 			
 			pr.dir = normalize(dir);
 
 			float3 rayColor = color * power * dot(pr.dir, normal);
+			rayColor /= avgPower;
+
 			pr.dir *= firstOut;
 
 			//Encode the color to A8R8G8B8 so it fits into 24 bits
