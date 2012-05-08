@@ -55,7 +55,7 @@ Application::~Application()
 {
 }
 
-bool useFullScreen = false;
+bool useFullScreen = true;
 
 bool Application::Initialize(int argc, const char *argv[])
 {

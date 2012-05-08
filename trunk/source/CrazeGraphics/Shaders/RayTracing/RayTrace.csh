@@ -62,41 +62,6 @@ bool rayAABBTest(PhotonRay r, float3 aabbMin, float3 aabbMax, out float tMaxEnte
 	tMinExit = min(tExit.x, min(tExit.y, tExit.z));
 	return tMaxEnter < tMinExit;
 }
-/*
-ShortStack create()
-{
-	ShortStack s;
-	s.top = 0;
-	s.numElems = 0;
-	s.elems[0] = (StackItem)0;
-	s.elems[1] = (StackItem)0;
-	s.elems[2] = (StackItem)0;
-	return s;
-}
-
-void push(ShortStack st, kdNode n, float tMin, float tMax, uint idx)
-{
-	st.top = (st.top + 1) % STACKSIZE;
-	st.numElems = min(STACKSIZE, st.numElems + 1);
-	st.elems[st.top].n = n;
-	st.elems[st.top].tMin = tMin;
-	st.elems[st.top].tMax = tMax;
-	st.elems[st.top].idx = idx;
-}
-bool isEmpty(ShortStack st)
-{
-	return st.numElems == 0;
-}
-void pop(inout ShortStack st, out kdNode n, out float tMin, out float tMax, out uint idx)
-{
-	n = st.elems[st.top].n;
-	tMin = st.elems[st.top].tMin;
-	tMax = st.elems[st.top].tMax;
-	idx = st.elems[st.top].idx;
-	st.numElems--;
-	st.top = (st.top - 1) % STACKSIZE;
-}
-*/
 bool isLeaf(kdNode n)
 {
 	return n.flags & 1;
@@ -179,7 +144,7 @@ float kdTreeRayTrace(PhotonRay r)
 			tMin =    elems[top].tMin;
 			tMax =    elems[top].tMax;
 			nodeIdx = elems[top].idx;
-			numElems--;
+			--numElems;
 			top = (top - 1) % STACKSIZE;
 
 			pushDown = false;

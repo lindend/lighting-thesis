@@ -139,7 +139,7 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
 			
 			pr.dir = normalize(dir);
 
-			float3 rayColor = color * power * dot(pr.dir, normal);
+			float3 rayColor = color * power;// * dot(pr.dir, normal);
 			rayColor /= avgPower;
 
 			pr.dir *= firstOut;

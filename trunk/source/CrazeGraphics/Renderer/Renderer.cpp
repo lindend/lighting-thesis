@@ -72,9 +72,9 @@ void Renderer::Initialize()
     Vector2 viewPort = gpDevice->GetViewPort();
 
     int vpx = (int)viewPort.x, vpy = (int)viewPort.y;
-    m_GBuffers[0] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_COLOR_LINEAR, "GBuffer color specular");
+    m_GBuffers[0] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "GBuffer color specular");
     //Create the normal specular rendertarget
-    m_GBuffers[1] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_VECTOR4, "GBuffer normal roughness");
+    m_GBuffers[1] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "GBuffer normal roughness");
     m_GBuffers[2] = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_COLOR_LINEAR, "GBuffer indirect illumination");
 
     m_pOutputTarget = RenderTarget::Create2D(gpDevice, vpx, vpy, 1, TEXTURE_FORMAT_HALFVECTOR4, "Output target", true);

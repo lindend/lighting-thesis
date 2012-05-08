@@ -82,8 +82,7 @@ bool LightVolumeInjector::initialize()
     Create the blend state to be used for when rasterizing the rays into the light volumes.
     This is a simple additive blend state, except that the alpha channel picks the maximum
     alpha value. The reason for the alpha channel doing so is that the light dynamicity is 
-    stored in this value and we want the most dynamic light to set the pace for the others.
-    
+    stored in this value and we want the most dynamic light to set the value for the other.
     */
 	CD3D11_BLEND_DESC bDesc;
 	bDesc.IndependentBlendEnable = false;
@@ -105,6 +104,8 @@ bool LightVolumeInjector::initialize()
 
     /*
     The blend state for when merging the light volumes is using additive blending scaled with alpha.
+    The resulting alpha should be the alpha used in the new light volume. That alpha value will in
+    turn affect the light dynamicity in the next frame.
     */
 	bDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	bDesc.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;

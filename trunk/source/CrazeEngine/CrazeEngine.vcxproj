@@ -212,6 +212,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraController\FreeFlyCamera.cpp" />
+    <ClCompile Include="CrazeEnginePCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Game\Components\ComponentFactory.cpp" />
     <ClCompile Include="Game\Components\CoreComponents.cpp" />
     <ClCompile Include="Game\Components\GraphicsComponents.cpp" />
@@ -238,7 +241,7 @@
     <ClCompile Include="State\GameStateManger.cpp" />
     <ClCompile Include="Application\Application.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Event\InputEvents.cpp" />
     <ClCompile Include="State\MenuGameState.cpp" />

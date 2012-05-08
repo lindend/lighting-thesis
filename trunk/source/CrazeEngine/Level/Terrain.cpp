@@ -310,7 +310,7 @@ std::shared_ptr<EditableTerrain> EditableTerrain::CreateNewEditable(Graphics2::D
 	pResult->m_EffectiveVertHeight = (vertsPerSegmentSide - 1) * (heightSegments - 1) + vertsPerSegmentSide;
 	pResult->m_EffectiveVertWidth = (vertsPerSegmentSide - 1) * (widthSegments - 1) + vertsPerSegmentSide;
 
-	pResult->m_pDecals = TextureArray::Create(pDevice, decalWidth, decalHeight, 8, 0);
+	pResult->m_pDecals = TextureArray::Create(pDevice, decalWidth, decalHeight, 8, 0, TEXTURE_FORMAT_COLOR);
 
 	//pResult->m_pDecals->LoadTextureIntoSlice(0, Texture::CreateFromFile(pDevice, "Media/ground_decal.png"));
 	//pResult->m_pDecals->LoadTextureIntoSlice(4, Texture::CreateFromFile(pDevice, "Media/rock_decal.png"));

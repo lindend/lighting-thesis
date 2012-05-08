@@ -20,6 +20,14 @@ VS_OUT main(uint idx : SV_VertexID)
 	VS_OUT output;
 
 	PhotonRay ray = Rays[idx];
+	//ray.origin = (float)idx / 10.f;
+	//ray.dir = (float)idx / 10.f + 1000.f;
+	//
+	//uint rtaIdx = idx % 16;
+	//ray.color = rtaIdx << 24;
+	//
+	//ray.dynamicity = 0.02f;
+
 	output.begin = ray.origin;
 	output.end = ray.dir;
 
