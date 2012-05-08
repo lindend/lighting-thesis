@@ -14,7 +14,7 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
-#ifdef _DEBUG
+#if (defined _DEBUG && 0)
 #define CRAZE_DEBUG_SHADERS
 #endif
 

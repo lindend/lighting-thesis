@@ -9,7 +9,7 @@ namespace Craze
 		{
 		public:
 
-			static std::shared_ptr<TextureArray> Create(Device* pDevice, unsigned int width, unsigned int height, unsigned int arraySize, unsigned int mipLevels, TEXTURE_FORMAT format = TEXTURE_FORMAT_COLOR);
+			static std::shared_ptr<TextureArray> Create(Device* pDevice, unsigned int width, unsigned int height, unsigned int arraySize, unsigned int mipLevels, TEXTURE_FORMAT format);
 
 			bool LoadTextureIntoSlice(unsigned int slice, std::shared_ptr<Texture> pTexture);
 

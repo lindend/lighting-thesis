@@ -153,7 +153,7 @@ function startReferenceGrab()
 	level.scene.camera.pos = Vector3(benchmarkCameraData[currentPosition].pos)
 	level.scene.camera.direction = Vector3(benchmarkCameraData[currentPosition].dir)
 
-	tmr = setTimer(takeScreenshot, 2)
+	tmr = setTimer(takeScreenshot, 10)
 end
 
 function takeScreenshot()
