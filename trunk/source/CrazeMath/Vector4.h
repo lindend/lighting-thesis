@@ -13,6 +13,16 @@ namespace Craze
 
 	struct CRAZEMATH_EXP Vec4
 	{
+        static Vec4 make(float x, float y, float z, float w)
+        {
+            Vec4 v;
+            v.x = x;
+            v.y = y;
+            v.z = z;
+            v.w = w;
+            return v;
+        }
+
 		float x;
 		float y;
 		float z;

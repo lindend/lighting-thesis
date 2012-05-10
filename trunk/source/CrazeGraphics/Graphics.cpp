@@ -154,11 +154,11 @@ bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int 
 		return false;
 	}
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	gFileDataLoader.addLocation("../source/CrazeGraphics/Shaders/");
-#else
-	gFileDataLoader.addLocation("Shaders/");
-#endif
+//#else
+//	gFileDataLoader.addLocation("Shaders/");
+//#endif
 
 	gResMgr.setResourceHandling(hash32(".crm"), &gModelResHandler);
 

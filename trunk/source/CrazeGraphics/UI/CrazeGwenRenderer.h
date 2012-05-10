@@ -24,7 +24,7 @@ namespace Craze
 
 		struct UIQuadInstance
 		{
-			UIQuadInstance(const Vector4 &pos, const Vector4 &uv, unsigned int color) : pos(pos), uv(uv), color(color)
+			UIQuadInstance(const Vec4 &pos, const Vec4 &uv, unsigned int color) : pos(pos), uv(uv), color(color)
 			{
 			}
 

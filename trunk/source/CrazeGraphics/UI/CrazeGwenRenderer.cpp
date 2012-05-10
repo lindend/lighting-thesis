@@ -171,7 +171,7 @@ void CrazeGwenRenderer::SetDrawColor(Gwen::Color color)
 void CrazeGwenRenderer::DrawFilledRect(Gwen::Rect rect)
 {
 	Translate(rect);
-	AddQuad(UIQuadInstance(Vector4(rect.x, rect.y, rect.w, rect.h), Vector4(0.f, 0.f, 0.f, 0.f), m_ActiveColor));
+	AddQuad(UIQuadInstance(Vec4::make(rect.x, rect.y, rect.w, rect.h), Vec4::make(0.f, 0.f, 0.f, 0.f), m_ActiveColor));
 }
 
 void CrazeGwenRenderer::StartClip()
