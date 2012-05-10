@@ -132,6 +132,14 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
 
 		float avgPower = (color.r + color.g + color.b) * 0.33333f;
 
+
+		/*PhotonRay pr;
+		pr.dir = dir;
+		pr.color = touint(color.r) | (touint(color.g) << 8) | (touint(color.b) << 16)
+		pr.dynamicity = lightDynamicity;
+		pr.origin = position;
+		OutRays.Append(pr);*/
+
 		float lastIn, firstOut;
 		if (rayIntersectsFrustum(position, dir, lastIn, firstOut) && random.a < avgPower)
 		{
@@ -150,6 +158,9 @@ void main(uint3 dispatchId : SV_DispatchThreadID)
 			pr.dynamicity = lightDynamicity;
 			//pr.dir = dir;
 			//Just move out the ray a bit
+
+			//pr.origin = position + normalize(dir) * 0.0f;
+
 			pr.origin = position;// + normal * 0.f + max(0.f, lastIn) * pr.dir;
 			OutRays.Append(pr);
 
