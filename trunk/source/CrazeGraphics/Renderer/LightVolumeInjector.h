@@ -136,6 +136,8 @@ namespace Craze
             */
 			void mergeToTarget();
 
+            void copyRaysToVertexBuffer();
+
             bool initEffects();
             bool initGeometry();
 
@@ -167,6 +169,9 @@ namespace Craze
             std::shared_ptr<UAVBuffer> m_tracedRays;
             //The buffer where all of the tessellated rays are stored.
 			std::shared_ptr<UAVBuffer> m_tessellatedRays;
+
+            std::shared_ptr<GeometryBuffer> m_rayVertices;
+            std::shared_ptr<SRVBuffer> m_rayCountBuffer;
 
             //An argument buffer for the call to DrawInstancedIndirect when rendering the rays into the light volume
             std::shared_ptr<SRVBuffer> m_argBuffer;

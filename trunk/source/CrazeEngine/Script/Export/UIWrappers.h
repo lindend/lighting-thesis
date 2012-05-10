@@ -82,7 +82,7 @@ namespace Craze
 		luabind::object m_CallBack;
 	};
 
-	class Label : public Base, Gwen::Controls::Label
+	class Label : public Base, public Gwen::Controls::Label
 	{
 		GWENBASE;
 	public:

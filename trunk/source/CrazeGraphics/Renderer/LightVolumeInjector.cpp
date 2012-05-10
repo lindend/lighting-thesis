@@ -30,11 +30,13 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
+//VS_OUT main(float3 origin : ORIGIN, uint color : COLOR, float3 end : ENDPOINT, float dynamicity : DYNAMICITY)
 const D3D11_INPUT_ELEMENT_DESC RayBufferElementDesc[] = 
 {
-	{"DIR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-    {"COLOR",  0, DXGI_FORMAT_R32_UINT,        0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	{"ORIGIN", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"ORIGIN",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    {"COLOR",      0, DXGI_FORMAT_R32_UINT,        0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	{"ENDPOINT",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    {"DYNAMICITY", 0, DXGI_FORMAT_R32_FLOAT,       0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 };
 
 bool LightVolumeInjector::initialize()
@@ -67,7 +69,11 @@ bool LightVolumeInjector::initialize()
 
 	m_rayBuffer = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Ray buffer");
     m_tracedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Traced rays");
-	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays * 16, true, "Tessellated rays");
+	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays * 8, true, "Tessellated rays");
+
+    m_rayVertices = GeometryBuffer::Create(gpDevice, GeometryBuffer::VERTEX, nullptr, sizeof(float) * 8, MaxPhotonRays * 8, true, "Ray vertices");
+
+   // m_rayCountBuffer = SRVBuffer::CreateRaw(gpDevice, DXGI_FORMAT_R32_UINT, 4, nullptr, "Ray count buffer");
 
     unsigned int args[] = { 0, 1, 0, 0};
 	m_argBuffer = SRVBuffer::CreateRawArg(gpDevice, sizeof(unsigned int) * 4, args, "LVInjectRays arg buffer");
@@ -144,11 +150,11 @@ bool LightVolumeInjector::initialize()
 
 bool LightVolumeInjector::initEffects()
 {
-	m_fxInjectRays.reset(new IEffect(RayBufferElementDesc, 2));
+	m_fxInjectRays.reset(new IEffect(RayBufferElementDesc, 4));
 	m_fxMergeLV.reset(new IEffect());
 
     //Check if spherical harmonics or cube maps should be used for storing the light and select the appropriate shader.
-	if (!m_fxInjectRays->initialize("RayTracing/InjectTessellated.vsh",
+	if (!m_fxInjectRays->initialize("RayTracing/InjectTessellatedVB.vsh",
 #ifdef CRAZE_USE_SH_LV
 		"RayTracing/RasterizeSH.psh",
 #else
@@ -253,6 +259,8 @@ void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, con
 		return;
 	}
 
+    GPU_PROFILE("Add light");
+
 	Vector3 corners[8];
 	cam->GetFrustumCorners(1.f, 2000.f, corners);
 
@@ -285,28 +293,32 @@ void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, con
     cb[8] = color;
     cb[8].W() = lightDynamicity;
 	cb.Unmap();
-	gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_frustumInfoCBuffer);
-
-	gpDevice->GetDeviceContext()->CSSetShader(m_firstBounceCS->m_shader, nullptr, 0);
-
-    //Send the inverse view x projection matrix of the light source to a constant buffer
-	CBPerLight cbLight;
-	cbLight.lightViewProj = lightViewProj.GetInverse();
-	gpDevice->GetCbuffers()->SetLight(cbLight);
-
-    //Set the UAV, reset the counter if this is the first light
-	ID3D11RenderTargetView* rtv = nullptr;
-	ID3D11UnorderedAccessView* uav = m_rayBuffer->GetAppendConsumeUAV();
-	unsigned int initCount = m_numLights++ == 0 ? 0 : -1;
-	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
 	
-	ID3D11ShaderResourceView* srvs[] = { RSM[0]->GetResourceView(), RSM[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
-	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 4, srvs);
-    //Each thread group is 16x16 in size at the moment.
-    gpDevice->GetDeviceContext()->Dispatch(RSM[0]->GetWidth() / 16, RSM[0]->GetHeight() / 16, 1);
+    {
+        GPU_PROFILE("First bounce CS");
+        gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_frustumInfoCBuffer);
+
+	    gpDevice->GetDeviceContext()->CSSetShader(m_firstBounceCS->m_shader, nullptr, 0);
+
+        //Send the inverse view x projection matrix of the light source to a constant buffer
+	    CBPerLight cbLight;
+	    cbLight.lightViewProj = lightViewProj.GetInverse();
+	    gpDevice->GetCbuffers()->SetLight(cbLight);
+
+        //Set the UAV, reset the counter if this is the first light
+	    ID3D11RenderTargetView* rtv = nullptr;
+	    ID3D11UnorderedAccessView* uav = m_rayBuffer->GetAppendConsumeUAV();
+	    unsigned int initCount = m_numLights++ == 0 ? 0 : -1;
+	    gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
 	
+	    ID3D11ShaderResourceView* srvs[] = { RSM[0]->GetResourceView(), RSM[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
+	    gpDevice->GetDeviceContext()->CSSetShaderResources(0, 4, srvs);
+        //Each thread group is 16x16 in size at the moment.
+        gpDevice->GetDeviceContext()->Dispatch(RSM[0]->GetWidth() / 16, RSM[0]->GetHeight() / 16, 1);
+
 	ZeroMemory(srvs, sizeof(void*) * 4);
 	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 4, srvs);
+    }
 }
 
 std::shared_ptr<RenderTarget>* LightVolumeInjector::buildLightingVolumes()
@@ -314,6 +326,8 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::buildLightingVolumes()
 	PIXMARKER(L"Build lighting volumes");
 
 	MEM_AUTO_MARK_STACK;
+
+    int bvProf = gpGraphics->m_profiler->beginBlock("Build LV");
 
     int prof;
 	prof = gpGraphics->m_profiler->beginBlock("Trace rays");
@@ -332,12 +346,16 @@ std::shared_ptr<RenderTarget>* LightVolumeInjector::buildLightingVolumes()
 	mergeToTarget();
 	gpGraphics->m_profiler->endBlock(prof);
 
+    gpGraphics->m_profiler->endBlock(bvProf);
+
 	return m_lightVolumes[m_activeLightVolume];
 }
 
 void LightVolumeInjector::traceRays()
 {
 	PIXMARKER(L"Trace rays");
+
+    //gpDevice->GetDeviceContext()->CopyStructureCount(m_rayCountBuffer->GetBuffer(), 0, m_rayBuffer->GetUAV());
 
     ID3D11UnorderedAccessView* UAV = m_tracedRays->GetAppendConsumeUAV();
 	u32 initCount = 0;
@@ -353,6 +371,8 @@ void LightVolumeInjector::traceRays()
     cb[0] = m_geometryBB->m_Min.v;
     cb[1] = m_geometryBB->m_Max.v;
     cb.Unmap();
+    gpDevice->GetDeviceContext()->CopyStructureCount(m_kdSceneInfoCBuffer, 12, m_rayBuffer->GetAppendConsumeUAV());
+
     gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_kdSceneInfoCBuffer);
 
 	gpDevice->GetDeviceContext()->CSSetShader(m_rayTraceCS->m_shader, nullptr, 0);
@@ -375,7 +395,7 @@ void LightVolumeInjector::tessellateRays()
 	ID3D11UnorderedAccessView* UAVs[] = { m_tracedRays->GetUAV(), m_tessellatedRays->GetAppendConsumeUAV() };
 	u32 initCounts[] = { -1, 0 };
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
-
+    
 	gpDevice->GetDeviceContext()->CSSetShader(m_tessellateCS->m_shader, nullptr, 0);
     /*
     The same note as for the traceRays dispatch call applies here.
@@ -386,55 +406,67 @@ void LightVolumeInjector::tessellateRays()
 	gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 2, UAVs, initCounts);
 }
 
+void LightVolumeInjector::copyRaysToVertexBuffer()
+{
+    gpDevice->GetDeviceContext()->CopyResource(m_rayVertices->GetBuffer(), m_tessellatedRays->GetBuffer());
+}
+
 void LightVolumeInjector::injectToLV()
 {
 	PIXMARKER(L"Inject rays to light volume");
-
+    
+    {
+        GPU_PROFILE("Copy rays to VB");
+        copyRaysToVertexBuffer();
+    }
+  
     auto dc = gpDevice->GetDeviceContext();
 
 	float bf[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	dc->OMSetBlendState(m_addBS, bf, 0xFFFFFFFF);
 	dc->RSSetState(m_AALinesRS);
-
 	m_fxInjectRays->set();
 
-	/*
-    Prepare the argument buffer for the indirect call by copying the number of rays in the
-    tessellated rays buffer to the vertex count per primitive field of the arg buffer. The
-    number of instances field has already been set to 1.
-    */
-	dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, m_tessellatedRays->GetAppendConsumeUAV());
+    {
+        GPU_PROFILE("Rasterize");
+	    /*
+        Prepare the argument buffer for the indirect call by copying the number of rays in the
+        tessellated rays buffer to the vertex count per primitive field of the arg buffer. The
+        number of instances field has already been set to 1.
+        */
+	    dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, m_tessellatedRays->GetAppendConsumeUAV());
+    
+        //Clear the vertex buffer, index buffer and input assembly (on a second thought, not sure if this is necessary).
+	    ID3D11Buffer* vs = m_rayVertices->GetBuffer();
+	    unsigned int stride = sizeof(float) * 8;
+	    unsigned int offset = 0;
+	    dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
+        dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+        //dc->IASetInputLayout(nullptr);
 
-    //Clear the vertex buffer, index buffer and input assembly (on a second thought, not sure if this is necessary).
-	ID3D11Buffer* vs = nullptr;
-	unsigned int stride = 0;
-	unsigned int offset = 0;
-	dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
-    dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
-    dc->IASetInputLayout(nullptr);
+	    ID3D11ShaderResourceView* srv = m_tessellatedRays->GetSRV();
+	    //dc->VSSetShaderResources(0, 1, &srv);
+	    gpDevice->SetRenderTargets(m_lightVolumes[m_activeLightVolume], CRAZE_NUM_LV, nullptr);
 
-	ID3D11ShaderResourceView* srv = m_tessellatedRays->GetSRV();
-	dc->VSSetShaderResources(0, 1, &srv);
+	    /*
+        Draw the rays using the arg buffer, the rays are expanded into lines in the geometry
+        shader and we send them as points until then.
+        */
+	    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	    //dc->DrawInstanced(20, 1, 0, 0);
+        dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
-	gpDevice->SetRenderTargets(m_lightVolumes[m_activeLightVolume], CRAZE_NUM_LV, nullptr);
+	    srv = nullptr;
+	    dc->VSSetShaderResources(0, 1, &srv);
 
-	/*
-    Draw the rays using the arg buffer, the rays are expanded into lines in the geometry
-    shader and we send them as points until then.
-    */
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
-
-	srv = nullptr;
-	dc->VSSetShaderResources(0, 1, &srv);
-
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
-    m_fxInjectRays->reset();
+        m_fxInjectRays->reset();
 
-	dc->RSSetState(nullptr);
+	    dc->RSSetState(nullptr);
 
-	dc->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+	    dc->OMSetBlendState(nullptr, bf, 0xFFFFFFFF);
+    }
 }
 
 void LightVolumeInjector::mergeToTarget()

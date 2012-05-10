@@ -22,8 +22,10 @@ namespace Craze
 
 			const std::vector<TimingBlock>* getTimings();
 		private:
+            int m_prevFrame;
 			int m_currentFrame;
 			Frame* m_frames;
+            const std::vector<TimingBlock>** m_timings;
 		};
 	}
 }

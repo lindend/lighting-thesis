@@ -55,13 +55,13 @@ Application::~Application()
 {
 }
 
-bool useFullScreen = true;
+bool useFullScreen = false;
 
 bool Application::Initialize(int argc, const char *argv[])
 {
 
-	unsigned int resX = useFullScreen ? 1920 : 640;
-	unsigned int resY = useFullScreen ? 1080 : 360;
+	unsigned int resX = useFullScreen ? 1920 : 960;
+	unsigned int resY = useFullScreen ? 1080 : 540;
 
 	gpApplication = this;
 

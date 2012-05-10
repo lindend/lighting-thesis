@@ -71,6 +71,15 @@ namespace Craze
 	}
 }
 
+GPUProfileHelper::GPUProfileHelper(const char* name)
+{
+    m_prof = gpGraphics->m_profiler->beginBlock(name);
+}
+GPUProfileHelper::~GPUProfileHelper()
+{
+    gpGraphics->m_profiler->endBlock(m_prof);
+}
+
 Graphics::Graphics()
 {
 	m_pScene = nullptr;
