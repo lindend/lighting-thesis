@@ -69,9 +69,9 @@ bool LightVolumeInjector::initialize()
 
 	m_rayBuffer = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Ray buffer");
     m_tracedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Traced rays");
-	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays * 8, true, "Tessellated rays");
+	m_tessellatedRays = UAVBuffer::Create(gpDevice, sizeof(float) * 8, MaxPhotonRays, true, "Tessellated rays");
 
-    m_rayVertices = GeometryBuffer::Create(gpDevice, GeometryBuffer::VERTEX, nullptr, sizeof(float) * 8, MaxPhotonRays * 8, true, "Ray vertices");
+    m_rayVertices = GeometryBuffer::Create(gpDevice, GeometryBuffer::VERTEX, nullptr, sizeof(float) * 8, MaxPhotonRays, true, "Ray vertices");
 
    // m_rayCountBuffer = SRVBuffer::CreateRaw(gpDevice, DXGI_FORMAT_R32_UINT, 4, nullptr, "Ray count buffer");
 
@@ -152,6 +152,7 @@ bool LightVolumeInjector::initEffects()
 {
 	m_fxInjectRays.reset(new IEffect(RayBufferElementDesc, 4));
 	m_fxMergeLV.reset(new IEffect());
+    m_firstBounceFx.reset(new IEffect());
 
     //Check if spherical harmonics or cube maps should be used for storing the light and select the appropriate shader.
 	if (!m_fxInjectRays->initialize("RayTracing/InjectTessellatedVB.vsh",
@@ -166,6 +167,11 @@ bool LightVolumeInjector::initEffects()
     }
 
 	if (!m_fxMergeLV->initialize("RayTracing/MergeLVs.vsh", "RayTracing/MergeLVs.psh", "RayTracing/MergeLVs.gsh"))
+    {
+        return false;
+    }
+
+    if (!m_firstBounceFx->initialize("ScreenQuad.vsh", "RayTracing/FirstBounce.psh"))
     {
         return false;
     }
@@ -295,10 +301,12 @@ void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, con
 	cb.Unmap();
 	
     {
-        GPU_PROFILE("First bounce CS");
-        gpDevice->GetDeviceContext()->CSSetConstantBuffers(1, 1, &m_frustumInfoCBuffer);
+        GPU_PROFILE("First bounce PS");
+        m_firstBounceFx->set();
 
-	    gpDevice->GetDeviceContext()->CSSetShader(m_firstBounceCS->m_shader, nullptr, 0);
+        gpDevice->GetDeviceContext()->PSSetConstantBuffers(1, 1, &m_frustumInfoCBuffer);
+
+	    //gpDevice->GetDeviceContext()->CSSetShader(m_firstBounceCS->m_shader, nullptr, 0);
 
         //Send the inverse view x projection matrix of the light source to a constant buffer
 	    CBPerLight cbLight;
@@ -309,22 +317,34 @@ void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, con
 	    ID3D11RenderTargetView* rtv = nullptr;
 	    ID3D11UnorderedAccessView* uav = m_rayBuffer->GetAppendConsumeUAV();
 	    unsigned int initCount = m_numLights++ == 0 ? 0 : -1;
-	    gpDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, &uav, &initCount);
+
+        D3D11_VIEWPORT vp;
+        vp.Height = RSM[0]->GetHeight();
+        vp.Width = RSM[0]->GetWidth();
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        vp.MinDepth = 0.f;
+        vp.MaxDepth = 1.f;
+        gpDevice->GetDeviceContext()->RSSetViewports(1, &vp);
+	    gpDevice->GetDeviceContext()->OMSetRenderTargetsAndUnorderedAccessViews(1, &rtv, nullptr, 1, 1, &uav, &initCount);
 	
 	    ID3D11ShaderResourceView* srvs[] = { RSM[0]->GetResourceView(), RSM[1]->GetResourceView(), m_random.get()->GetResourceView(), RSMdepth->GetSRV() };
-	    gpDevice->GetDeviceContext()->CSSetShaderResources(0, 4, srvs);
+	    gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
+        gpDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        gpDevice->GetDeviceContext()->Draw(3, 0);
         //Each thread group is 16x16 in size at the moment.
-        gpDevice->GetDeviceContext()->Dispatch(RSM[0]->GetWidth() / 16, RSM[0]->GetHeight() / 16, 1);
+        //gpDevice->GetDeviceContext()->Dispatch(RSM[0]->GetWidth() / 16, RSM[0]->GetHeight() / 16, 1);
 
-	ZeroMemory(srvs, sizeof(void*) * 4);
-	gpDevice->GetDeviceContext()->CSSetShaderResources(0, 4, srvs);
+	    ZeroMemory(srvs, sizeof(void*) * 4);
+	    gpDevice->GetDeviceContext()->PSSetShaderResources(0, 4, srvs);
+        gpDevice->SetRenderTarget(nullptr);
     }
 }
 
 std::shared_ptr<RenderTarget>* LightVolumeInjector::buildLightingVolumes()
 {
 	PIXMARKER(L"Build lighting volumes");
-
+    //return m_lightVolumes[m_activeLightVolume];
 	MEM_AUTO_MARK_STACK;
 
     int bvProf = gpGraphics->m_profiler->beginBlock("Build LV");
@@ -419,7 +439,7 @@ void LightVolumeInjector::injectToLV()
         GPU_PROFILE("Copy rays to VB");
         copyRaysToVertexBuffer();
     }
-  
+
     auto dc = gpDevice->GetDeviceContext();
 
 	float bf[] = { 1.0f, 1.0f, 1.0f, 1.0f };
