@@ -4,7 +4,13 @@
 RWStructuredBuffer<PhotonRay> Rays : register(u0);
 AppendStructuredBuffer<PhotonRay> OutRays : register(u1);
 
-
+cbuffer KDSceneInfo : register(b1)
+{
+	float3 SceneBBMin : packoffset(c0);
+	uint NumRays :      packoffset(c0.w);	
+	float3 SceneBBMax : packoffset(c1);
+	
+};
 
 float2 toLVSpaceBase0(float2 pos)
 {
@@ -38,9 +44,7 @@ float3 parseColor(float v)
 [numthreads(256, 1, 1)]
 void main(uint3 dispatchId : SV_DispatchThreadId)
 {
-	uint numRays, stride;
-	Rays.GetDimensions(numRays, stride);
-	if (dispatchId.x >= numRays)
+	if (dispatchId.x >= NumRays)
 	{
 		return;
 	}
@@ -65,6 +69,7 @@ void main(uint3 dispatchId : SV_DispatchThreadId)
 	float t = tMin;
 	uint firstIndex = 0;
 	//[unroll(32)]
+
 	for (int i = 0; i < LVCellSize.w; ++i)
 	{
 		if (t < tMax)

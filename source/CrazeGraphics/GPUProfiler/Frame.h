@@ -32,6 +32,7 @@ namespace Craze
 			int beginBlock(const char* name);
 			void endBlock(int block);
 
+            void buildTimings();
 			const std::vector<TimingBlock>* getTimings();
 
 		private:

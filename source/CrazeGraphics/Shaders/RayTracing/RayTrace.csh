@@ -36,7 +36,7 @@ struct ShortStack
 cbuffer KDSceneInfo : register(b1)
 {
 	float3 SceneBBMin : packoffset(c0);
-	
+	uint NumRays :      packoffset(c0.w);	
 	float3 SceneBBMax : packoffset(c1);
 	
 };
@@ -260,10 +260,7 @@ float bruteIntersect(PhotonRay r)
 [numthreads(GROUPSIZE, 1, 1)]
 void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, uint3 threadId : SV_GroupThreadId, uint groupIdx : SV_GroupIndex)
 {
-	uint numRays, stride;
-	Rays.GetDimensions(numRays, stride);
-
-	if (dispatchId.x < numRays)
+	if (dispatchId.x < NumRays)
 	{
 		PhotonRay r = Rays[dispatchId.x];
 

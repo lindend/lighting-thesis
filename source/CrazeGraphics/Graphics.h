@@ -4,6 +4,8 @@
 #define SAFE_RELEASE(x) if(x) { (x)->Release(); (x) = NULL; }
 #endif
 
+#define GPU_PROFILE(name) GPUProfileHelper local__gpu__profile__helper(name)
+
 namespace Craze
 {
 	namespace Graphics2
@@ -49,6 +51,7 @@ namespace Craze
 			bool UseESM;
 		};
 
+
 		bool InitGraphics(HWND hWnd, unsigned int width, unsigned int height);
 		void ShutdownGraphics();
 
@@ -78,5 +81,15 @@ namespace Craze
 		extern bool gDrawRays;
 		extern bool gSaveScreenShot;
 		extern std::string gScreenShotPath;
+
+        class GPUProfileHelper
+        {
+        public:
+            GPUProfileHelper(const char* name);
+            ~GPUProfileHelper();
+        private:
+            int m_prof;
+
+        };
 	}
 }

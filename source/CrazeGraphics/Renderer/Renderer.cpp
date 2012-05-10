@@ -473,6 +473,7 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
 
     PIXMARKER(L"Build lighting volumes");
     int generateLightVolumeProfiling = gpGraphics->m_profiler->beginBlock("Create lighting volumes");
+    int prof = gpGraphics->m_profiler->beginBlock("Generate rays (dir lights)");
     if (gUseIndirectLighting)
     {
         m_lightVolumeInjector.beginFrame();
@@ -501,7 +502,9 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
             gpDevice->SetRenderTarget(nullptr, nullptr);
             m_lightVolumeInjector.addLight(light.color, 0.02f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
+        gpGraphics->m_profiler->endBlock(prof);
 
+        prof = gpGraphics->m_profiler->beginBlock("Generate rays (spot lights)");
         //No visibility test is active, so IDENTITY is usable
         const SpotLightArray spotlights = scene->getVisibleSpotLights(Matrix4::IDENTITY);
         for (int i = 0; i < spotlights.numLights; ++i)
@@ -530,7 +533,7 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
             m_lightVolumeInjector.addLight(light.color, 0.2f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
 
         }
-
+        gpGraphics->m_profiler->endBlock(prof);
 
         lightVolumes = m_lightVolumeInjector.buildLightingVolumes();
     }

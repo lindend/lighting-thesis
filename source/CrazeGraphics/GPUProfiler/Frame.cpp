@@ -7,6 +7,8 @@
 
 using namespace Craze::Graphics2;
 
+#define DO_GPU_PROFILE 1
+
 Block allocBlock(ID3D11Device* device)
 {
 	Block b;
@@ -41,19 +43,25 @@ Frame::~Frame()
 
 void Frame::begin(ID3D11DeviceContext* dc)
 {
+#if DO_GPU_PROFILE
 	m_current = 0;
 	m_dc = dc;
+    m_level = 0;
 
 	m_dc->Begin(m_disjoint);
+#endif
 }
 
 void Frame::end()
 {
+#if DO_GPU_PROFILE
 	m_dc->End(m_disjoint);
+#endif
 }
 
 int Frame::beginBlock(const char* name)
 {
+#if DO_GPU_PROFILE
 	int blockId = m_current++;
 	if (blockId >= m_blocks.size())
 	{
@@ -67,20 +75,28 @@ int Frame::beginBlock(const char* name)
 	block.level = m_level++;
 	m_dc->End(block.start);
 	return blockId;
+#endif
+    return 0;
 }
 
 void Frame::endBlock(int blockId)
 {
+#if DO_GPU_PROFILE
 	m_dc->End(m_blocks[blockId].end);
+    //while (m_dc->GetData(m_blocks[blockId].end, nullptr, 0, 0) == S_FALSE);
 	--m_level;
+#endif
 }
 
-const std::vector<TimingBlock>* Frame::getTimings()
+void Frame::buildTimings()
 {
+#if DO_GPU_PROFILE
     PIXMARKER(L"GPU profiler get timings");
+    m_timings.resize(0);
+
 	if (m_current == 0)
 	{
-		return nullptr;
+		return;
 	}
 
 	while (m_dc->GetData(m_disjoint, nullptr, 0, 0) == S_FALSE)
@@ -91,12 +107,12 @@ const std::vector<TimingBlock>* Frame::getTimings()
 	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
 	if (m_dc->GetData(m_disjoint, &disjoint, sizeof(disjoint), 0) != S_OK)
 	{
-		return nullptr;
+		return;
 	}
 
 	if (disjoint.Disjoint)
 	{
-		return nullptr;
+		return;
 	}
 
 	m_timings.resize(m_current);
@@ -116,5 +132,10 @@ const std::vector<TimingBlock>* Frame::getTimings()
 
 		m_timings[i] = t;
 	}
-	return &m_timings;
+#endif
+}
+
+const std::vector<TimingBlock>* Frame::getTimings()
+{
+    return &m_timings;
 }

@@ -232,19 +232,31 @@ profGUI = {}
 function updateProfGUI(delta)
 	timings = graphics.getTimings()
 	y = 5
+	local idx = 0
 	for b in timings do
-		lbl = profGUI[b.name]
+		lbl = profGUI[idx]
 		if lbl == nil then
 			lbl =  ui.Label("", 10 + b.level * 10, y, 500, 20)
 			lbl:setParent(profGUIWnd)
-			profGUI[b.name] = lbl
+			profGUI[idx] = lbl
 		end
-
+		idx = idx + 1
 		lbl:setText(string.format("%s - %.2f ms", b.name, b.time))
+		lbl:setPosition(10 + b.level * 10, y, 500, 20)
 
 		y = y + 20
 	end
 	return true
+end
+
+function printProfiling()
+	timings = graphics.getTimings()
+	profilingOutput = io.open("gpu_profiling.txt", "w+")
+	for b in timings do
+		print(b.time)
+		profilingOutput:write(b.time, "\n")
+	end
+	profilingOutput:close()
 end
 
 guiUpd = game.beginUpdate(updateProfGUI)
@@ -286,6 +298,8 @@ posDbgKeyListener = event.keyboard.Listener(function(kc, ks)
 														addPosition()
 													elseif kc == 103 then
 														printPositions()
+													elseif kc == 104 then
+														printProfiling()
 													end
 												end
 											end)
