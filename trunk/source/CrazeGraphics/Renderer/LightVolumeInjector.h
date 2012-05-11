@@ -141,8 +141,9 @@ namespace Craze
             bool initEffects();
             bool initGeometry();
 
-			static const int LightVolumeResolution = 16;
-			static const int MaxPhotonRays = 128 * 128 * 8;
+			static const int LightVolumeResolution;
+			static const int MaxPhotonRays;
+            static const float MinDynamicity;
 
             //Two sets of light volumes
 			std::shared_ptr<RenderTarget> m_lightVolumes[2][CRAZE_NUM_LV];
