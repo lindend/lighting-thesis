@@ -30,6 +30,10 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
+const int LightVolumeInjector::LightVolumeResolution = 16;
+const int LightVolumeInjector::MaxPhotonRays = 128 * 128 * 8;
+const float LightVolumeInjector::MinDynamicity = 0.01f;
+
 //VS_OUT main(float3 origin : ORIGIN, uint color : COLOR, float3 end : ENDPOINT, float dynamicity : DYNAMICITY)
 const D3D11_INPUT_ELEMENT_DESC RayBufferElementDesc[] = 
 {
@@ -52,7 +56,7 @@ bool LightVolumeInjector::initialize()
 		for (int i = 0; i < CRAZE_NUM_LV; ++i)
 		{
 			m_lightVolumes[j][i] = RenderTarget::Create3D(gpDevice, LightVolumeResolution, LightVolumeResolution, LightVolumeResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "Light volume");
-			float black[] = { 0.f, 0.f, 0.f, 0.f};
+			float black[] = { 0.f, 0.f, 0.f, MinDynamicity};
 			gpDevice->GetDeviceContext()->ClearRenderTargetView(m_lightVolumes[j][i]->GetRenderTargetView(), black);
 		}
 	}
@@ -155,7 +159,7 @@ bool LightVolumeInjector::initEffects()
     m_firstBounceFx.reset(new IEffect());
 
     //Check if spherical harmonics or cube maps should be used for storing the light and select the appropriate shader.
-	if (!m_fxInjectRays->initialize("RayTracing/InjectTessellatedVB.vsh",
+	if (!m_fxInjectRays->initialize("RayTracing/InjectTessellated.vsh",
 #ifdef CRAZE_USE_SH_LV
 		"RayTracing/RasterizeSH.psh",
 #else
@@ -235,7 +239,7 @@ std::shared_ptr<UAVBuffer> LightVolumeInjector::getCollidedRays()
 void LightVolumeInjector::beginFrame()
 {
     //Swap the active light volume and clear it to black
-    float black[] = { 0.f, 0.f, 0.f, 0.f };
+    float black[] = { 0.f, 0.f, 0.f, MinDynamicity };
 	m_activeLightVolume = (m_activeLightVolume + 1) % 2;
 	for (int i = 0; i < CRAZE_NUM_LV; ++i)
 	{
@@ -436,8 +440,8 @@ void LightVolumeInjector::injectToLV()
 	PIXMARKER(L"Inject rays to light volume");
     
     {
-        GPU_PROFILE("Copy rays to VB");
-        copyRaysToVertexBuffer();
+        //GPU_PROFILE("Copy rays to VB");
+        //copyRaysToVertexBuffer();
     }
 
     auto dc = gpDevice->GetDeviceContext();
@@ -448,7 +452,7 @@ void LightVolumeInjector::injectToLV()
 	m_fxInjectRays->set();
 
     {
-        GPU_PROFILE("Rasterize");
+        //GPU_PROFILE("Rasterize");
 	    /*
         Prepare the argument buffer for the indirect call by copying the number of rays in the
         tessellated rays buffer to the vertex count per primitive field of the arg buffer. The
@@ -457,7 +461,7 @@ void LightVolumeInjector::injectToLV()
 	    dc->CopyStructureCount(m_argBuffer->GetBuffer(), 0, m_tessellatedRays->GetAppendConsumeUAV());
     
         //Clear the vertex buffer, index buffer and input assembly (on a second thought, not sure if this is necessary).
-	    ID3D11Buffer* vs = m_rayVertices->GetBuffer();
+	    ID3D11Buffer* vs = nullptr;//m_rayVertices->GetBuffer();
 	    unsigned int stride = sizeof(float) * 8;
 	    unsigned int offset = 0;
 	    dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
@@ -465,7 +469,7 @@ void LightVolumeInjector::injectToLV()
         //dc->IASetInputLayout(nullptr);
 
 	    ID3D11ShaderResourceView* srv = m_tessellatedRays->GetSRV();
-	    //dc->VSSetShaderResources(0, 1, &srv);
+	    dc->VSSetShaderResources(0, 1, &srv);
 	    gpDevice->SetRenderTargets(m_lightVolumes[m_activeLightVolume], CRAZE_NUM_LV, nullptr);
 
 	    /*

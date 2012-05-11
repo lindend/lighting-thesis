@@ -106,7 +106,7 @@ float4 main(float2 uv : TEXCOORD) : SV_Target0
 		discard;
 	}
 
-	float3 color = ColorSpec.Sample(Point, uv).xyz * intensity * 10.f;
+	float3 color = ColorSpec.Sample(Point, uv).xyz * intensity;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 position = DepthToPos(depth, uv);
 
@@ -125,10 +125,11 @@ float4 main(float2 uv : TEXCOORD) : SV_Target0
 		float power = .3f / RAYS_PER_TEXEL;
 
 		dir = normalize(dir);
+		//float avgPower = max(color.r, max(color.g, color.b)) * 0.33333f;
 		float avgPower = (color.r + color.g + color.b) * 0.33333f;
 
 		float lastIn, firstOut;
-		if (random.a < avgPower * dot(dir, normal) && rayIntersectsFrustum(position, dir, lastIn, firstOut))
+		if (random.a < avgPower && rayIntersectsFrustum(position, dir, lastIn, firstOut))
 		{
 			PhotonRay pr;
 			
