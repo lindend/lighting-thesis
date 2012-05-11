@@ -14,7 +14,7 @@ float3 DepthToPos(float depth, float2 uv)
 
 float3 cellFromPos(float3 worldPos)
 {
-	float3 localPos = (worldPos - LVStart) / (LVCellSize.w * LVCellSize.xyz);
+	float3 localPos = (worldPos - LVStart) / ((LVCellSize.w) * LVCellSize.xyz);
 	//localPos.z *= LVCellSize.w;
 	localPos.y = 1.f - localPos.y;
 	return localPos;
@@ -83,13 +83,12 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	{
 		discard;
 	}
-
-	cell.z += 1.f / LVCellSize.w;
+	cell.z += 0.5f / LVCellSize.w;
 
 	//return pow(abs(((pos.x) % (LVCellSize.x)) / LVCellSize.x), 1.f);
 	//return floor(cell.xyzx * LVCellSize.w) / LVCellSize.w;
 
-	float lightScale = .05f;
+	float lightScale = .04f;
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 10.f), normal) * lightScale;
 	if (uv.x > 0.f)
