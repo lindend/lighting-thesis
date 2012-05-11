@@ -25,12 +25,12 @@ PS_OUT main(nointerpolation float4 direction : DIRECTION)
 	float dynamicity = length(direction.xyz);
 	float3 dir = normalize(direction.xyz);
 
-	output.Right =	float4(max(0.f, dot(CMSides[0], dir)) * color, dynamicity);
-	output.Left =	float4(max(0.f, dot(CMSides[1], dir)) * color, dynamicity);
-	output.Top =	float4(max(0.f, dot(CMSides[2], dir)) * color, dynamicity);
-	output.Bot =	float4(max(0.f, dot(CMSides[3], dir)) * color, dynamicity);
-	output.Front =	float4(max(0.f, dot(CMSides[4], dir)) * color, dynamicity);
-	output.Back =	float4(max(0.f, dot(CMSides[5], dir)) * color, dynamicity);
+	output.Right =	float4(saturate(dot(CMSides[0], dir)) * color, dynamicity);
+	output.Left =	float4(saturate(dot(CMSides[1], dir)) * color, dynamicity);
+	output.Top =	float4(saturate(dot(CMSides[2], dir)) * color, dynamicity);
+	output.Bot =	float4(saturate(dot(CMSides[3], dir)) * color, dynamicity);
+	output.Front =	float4(saturate(dot(CMSides[4], dir)) * color, dynamicity);
+	output.Back =	float4(saturate(dot(CMSides[5], dir)) * color, dynamicity);
 	//output.Right =	float4(max(0.f, -direction.x) * color, 0.f);
 	//output.Left =	float4(max(0.f,  direction.x) * color, 0.f);
 	//output.Top =	float4(max(0.f,  direction.y) * color, 0.f);

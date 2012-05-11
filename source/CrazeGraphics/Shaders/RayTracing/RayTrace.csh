@@ -264,16 +264,18 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 	{
 		PhotonRay r = Rays[dispatchId.x];
 
-
 		float closest = length(r.dir);
 		r.dir /= closest;
-		//closest = INFINITY;
 
 		closest = min(closest, kdTreeRayTrace(r));
 		//closest = min(closest, bruteCachedIntersect(r, groupIdx));
 		//closest = min(closest, bruteIntersect(r));
-	
+
+		float3 originOffset = r.dir * 150.0f;
+
 		r.dir = r.origin + r.dir * closest;
+		r.origin +=originOffset;
+
 		OutRays.Append(r);
 		//Rays[dispatchId.x].dir = r.origin + r.dir * closest;
 	}
