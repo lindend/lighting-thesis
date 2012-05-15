@@ -1,6 +1,6 @@
 resource.addFileLocation("Library/")
 resource.addFileLocation("Sponza/")
-resource.addFileLocation("Cornell/")
+resource.addFileLocation("content/")
 
 gameName = "GAME OF DOOMZ"
 

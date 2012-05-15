@@ -274,7 +274,7 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		float3 originOffset = r.dir * 150.0f;
 
 		r.dir = r.origin + r.dir * closest;
-		r.origin +=originOffset;
+		//r.origin +=originOffset;
 
 		OutRays.Append(r);
 		//Rays[dispatchId.x].dir = r.origin + r.dir * closest;

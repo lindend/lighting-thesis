@@ -6,6 +6,11 @@ float3 DepthToPos(float depth, float2 uv)
 	return worldPos.xyz / worldPos.w;
 }
 
+float schlick(float r0, float cosv)
+{
+	return r0 + (1.f - r0) * pow(1.f - cosv, 5.f);
+}
+
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
 	float4 color = ColorSpec.Sample(Point, uv);
@@ -29,6 +34,15 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 	float shadowFactor = shadowDepth + 0.001f > lightProjSpace.z ? 1.f : 0.f;
 
 	float shading = saturate(dot(normalize(LightDir), normalize(-normal)));// + 0.03f;
-	
-	return float4(color.xyz * (shading * shadowFactor) * 2.4f, 1.f);
+	//color = pow(abs(frac(wpos.x / LVCellSize.x)), 1.f);
+	float3 v = normalize(CameraPos - wpos);
+	float3 l = normalize(-LightDir);
+	float3 h = normalize(l + v);
+
+	float m = 100.f;
+	float cSpec = 0.04f;
+	const float3 specular = 0.f;//(m + 2.0f) / 8.0f * schlick(cSpec, saturate(dot(normal, v))) * pow(saturate(dot(h, normal)), m);
+	//float specular = pow(saturate(dot(h, normal)), 100.f);
+
+	return float4((color.xyz * shading * 2.3f + specular) * shadowFactor, 1.f);
 }

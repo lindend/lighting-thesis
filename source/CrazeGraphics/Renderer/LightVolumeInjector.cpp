@@ -180,11 +180,10 @@ bool LightVolumeInjector::initEffects()
         return false;
     }
 
-    m_firstBounceCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/FirstBounce.csh");
     m_rayTraceCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/RayTrace.csh");
 	m_tessellateCS = EffectHelper::LoadShaderFromResource<ComputeShaderResource>("RayTracing/TessellateRays.csh");
 
-    if (!m_firstBounceCS || !m_rayTraceCS || !m_tessellateCS)
+    if (!m_rayTraceCS || !m_tessellateCS)
     {
         return false;
     }
@@ -281,7 +280,7 @@ void LightVolumeInjector::addLight(const Vec3& color, float lightDynamicity, con
     */
 	Vector3 cornerAdjustment[8];
 	ZeroMemory(cornerAdjustment, sizeof(Vector3) * 8);
-	float len = 600.f;
+	float len = 60.f;
     //Move the corners away from each other.
 	expand(corners, cornerAdjustment, 0, 1, 3, 4, len);
 	expand(corners, cornerAdjustment, 2, 1, 3, 6, len);

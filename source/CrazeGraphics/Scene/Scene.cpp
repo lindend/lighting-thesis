@@ -165,13 +165,13 @@ void Scene::buildDrawList(DrawList* drawList, const Matrix4& viewProj) const
 	{
 	    const ModelNode* model = m_models[i];
 
-	    if (Intersection::IsInside(viewProj, model->getBoundingBox(), &depth))
+	    if (Intersection::IsInside(viewProj, model->getBoundingBox(), &depth) || true)
 	    {
             const u32 maxIdx = model->getNumMeshes() + model->getFirstMesh();
 
             for (u32 j = model->getFirstMesh(); j < maxIdx; ++j)
             {
-                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth))
+                if (Intersection::IsInside(viewProj, m_meshBBs[j], &depth) || true)
                 {
                     const MeshItem& mi = m_meshes[j];
 					//if (mi.material.m_decal.get() != NULL)

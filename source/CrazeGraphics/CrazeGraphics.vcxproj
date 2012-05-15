@@ -274,9 +274,6 @@
       <FileType>Document</FileType>
     </None>
     <PixelShaders Include="Shaders\RayTracing\DrawRay.psh" />
-    <None Include="Shaders\RayTracing\FirstBounce.csh">
-      <FileType>Document</FileType>
-    </None>
     <PixelShaders Include="Shaders\RayTracing\FirstBounce.psh" />
     <PixelShaders Include="Shaders\RayTracing\MergeLVs.psh" />
     <PixelShaders Include="Shaders\RayTracing\RasterizeRaysCM.psh" />

@@ -3,6 +3,7 @@ struct GS_INPUT
 	float3 color : COLOR0;
 	float4 begin : POSITION0;
 	float4 end : POSITION1;
+	float3 dir : DIRECTION;
 };
 
 struct GS_OUTPUT
@@ -24,6 +25,12 @@ void main(point GS_INPUT input[1], inout LineStream<GS_OUTPUT> stream)
 	output1.uv = 1.f;
 	
 	stream.Append(output0);
-	stream.Append(output1);
+	if (input[0].dir.y < 0.f || true)
+	{
+		stream.Append(output1);
+	} else
+	{
+		stream.Append(output0);
+	}
 	stream.RestartStrip();
 }

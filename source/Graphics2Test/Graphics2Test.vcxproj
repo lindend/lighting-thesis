@@ -194,6 +194,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\bin\level.lua" />
     <None Include="..\..\bin\script\states\game.lua" />
     <None Include="..\..\bin\script\states\intro.lua" />
     <None Include="..\..\bin\script\states\mainmenu.lua" />
