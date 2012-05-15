@@ -2,5 +2,12 @@
 
 float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 {
-	return ColorSpec.Sample(Point, uv);
+	float4 color = ColorSpec.Sample(Point, uv);
+	return pow(color, 1.f);
+	return color;
+
+	float3 x = max(0.f, color.xyz - 0.004f);
+	x = (x * (6.2f * x + 0.5f)) / (x * (6.2f * x + 1.7f) + 0.06f);
+	//return x.xyzx;
+	return pow(color, 0.45f);
 }

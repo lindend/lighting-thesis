@@ -179,7 +179,7 @@ namespace Craze
 
 			std::shared_ptr<const ComputeShaderResource> m_rayTraceCS;
 			std::shared_ptr<const ComputeShaderResource> m_tessellateCS;
-            std::shared_ptr<const ComputeShaderResource> m_firstBounceCS;
+            //std::shared_ptr<const ComputeShaderResource> m_firstBounceCS;
 
             std::unique_ptr<IEffect> m_firstBounceFx;
             //Vertex, geometry and pixel shader for rendering the rays into the light volume

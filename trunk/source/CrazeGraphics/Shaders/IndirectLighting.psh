@@ -86,12 +86,13 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	}
 	//cell.z += 1.f / LVCellSize.w;
 	//cell.y -= 1.f / LVCellSize.w;
-	//return pow(abs(((pos.x) % (LVCellSize.x)) / LVCellSize.x), 1.f);
+	//return pow(abs(frac(pos.x / LVCellSize.x)), 1.f);
 	//return floor(cell.xyzx * LVCellSize.w) / LVCellSize.w;
 
+	//cell = pow9
 	float lightScale = 0.8f;
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
-	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 10.f), normal) * lightScale;
+	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 350.f), normal) * lightScale;
 	if (uv.x > 0.f)
 	{
 		float fr = length(lightAtNormal) / length(light);
@@ -117,8 +118,9 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	//if (uv.x > 0.5f)
 	{
 		
-		eLight *= 1.f / (floor(splits) / splits);
+		//eLight *= 1.f / (floor(splits) / splits);
 	}*/
-	//color = 1.f;
-	return float4(light * color + eLight * 0.1f, 1.0f);
+	//color = pow(abs(frac(pos.x / LVCellSize.x)), 1.f);
+	//return normal.xyzx * 0.5f + 0.5f;
+	return float4(light * color + eLight * 5.1f, 1.0f);
 }

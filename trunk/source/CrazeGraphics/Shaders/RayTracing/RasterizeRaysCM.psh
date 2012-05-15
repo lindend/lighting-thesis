@@ -22,6 +22,12 @@ PS_OUT main(nointerpolation float4 direction : DIRECTION)
 {
 	PS_OUT output; 
 	float3 color = parseColor(direction.w);
+
+	if (direction.y > 0.f)
+	{
+		//color = 0.f;
+	}
+
 	float dynamicity = length(direction.xyz);
 	float3 dir = normalize(direction.xyz);
 
