@@ -30,7 +30,7 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
-const int LightVolumeInjector::LightVolumeResolution = 16;
+const int LightVolumeInjector::LightVolumeResolution = 32;
 const int LightVolumeInjector::MaxPhotonRays = 128 * 128 * 8;
 const float LightVolumeInjector::MinDynamicity = 0.01f;
 
@@ -135,7 +135,7 @@ bool LightVolumeInjector::initialize()
     probably should investigate more closely.
     */
 	D3D11_RASTERIZER_DESC rsDesc;
-	rsDesc.AntialiasedLineEnable = true;
+	rsDesc.AntialiasedLineEnable = false;
 	rsDesc.CullMode = D3D11_CULL_NONE;
 	rsDesc.DepthBias = 0;
 	rsDesc.DepthBiasClamp = 0.f;

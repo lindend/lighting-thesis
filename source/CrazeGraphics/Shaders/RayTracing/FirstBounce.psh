@@ -96,7 +96,7 @@ uint touint(float v)
 	return 0xFF & (uint)(v * 255.f);
 }
 
-#define RAYS_PER_TEXEL 1
+#define RAYS_PER_TEXEL ceil(LVCellSize.w / 16)
 float4 main(float2 uv : TEXCOORD) : SV_Target0
 {
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
