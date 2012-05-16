@@ -102,6 +102,8 @@ dirlight = nil
 spotlight = nil
 lightAnimator = nil
 
+cube = nil
+
 function onLoaded()
 	dirlight = level.scene:addDirectionalLight(v3(0.2, -1, 0.2), v3(1, 1, 1))
 	--spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.3, 100000, v3(0.01, 0.01, 0.01))
@@ -109,8 +111,16 @@ function onLoaded()
 
 	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
 									component.mesh{file="cubeman.crm"}})
+	cube =  level:add("cube", {component.transform{x=0, y=0, z=0},
+									component.mesh{file="cube.crm"}})
+	cube.transform.pos = cube.transform.pos + v3(1,1,1)*(211.17372 *0.5)
+
 	level:build()
 	--followPath(cubeman, cmPath, 100)
+end
+
+function moveCube(delta)
+	cube.transform.pos = cube.transform.pos + (delta *211.17372)
 end
 
 rx = 0.5
@@ -210,7 +220,13 @@ keyActions = {
 		[111] = function() drawRays = not drawRays; graphics.drawRays(drawRays) end,
 		[112] = function() currentPosition = 1; startReferenceGrab() end,
 		[113] = function() graphics.captureScreenShot("screenshot.png") end,
-		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end
+		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end,
+		[103] = function() moveCube(v3(1, 0, 0)) end,
+		[98] = function() moveCube(v3(-1, 0, 0)) end,
+		[118] = function() moveCube(v3(0, 0, 1)) end,
+		[110] = function() moveCube(v3(0, 0, -1)) end,
+		[102] = function() moveCube(v3(0, 1, 0)) end,
+		[104] = function() moveCube(v3(0, -1, 0)) end
 	 }
 function onKey(kc, ks)
 	if ks == 0 then
