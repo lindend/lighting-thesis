@@ -102,25 +102,37 @@ dirlight = nil
 spotlight = nil
 lightAnimator = nil
 
-cube = nil
+activeShape = nil
+inactiveShape = nil
 
 function onLoaded()
-	dirlight = level.scene:addDirectionalLight(v3(0.2, -1, 0.2), v3(1, 1, 1))
-	--spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.3, 100000, v3(0.01, 0.01, 0.01))
+	dirlight = level.scene:addDirectionalLight(math.normalize(v3(60, -325, 87)), v3(1, 1, 1))
+	spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(0, 0, -1), 0.3, 100000, v3(0.2, 0.2, 0.2))
 	lightAnimator = game.beginUpdate(animLights)
 
 	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
 									component.mesh{file="cubeman.crm"}})
-	cube =  level:add("cube", {component.transform{x=0, y=0, z=0},
+	activeShape =  level:add("sphere", {component.transform{x=0, y=0, z=0},
+									component.mesh{file="sphere.crm"}})
+	inactiveShape =  level:add("cube", {component.transform{x=-100000000000, y=-100000000, z=-10000000000},
 									component.mesh{file="cube.crm"}})
-	cube.transform.pos = cube.transform.pos + v3(1,1,1)*(211.17372 *0.5)
+
+	activeShape.transform.pos = activeShape.transform.pos + v3(1,1,1)*(211.17372 *0.25)
 
 	level:build()
 	--followPath(cubeman, cmPath, 100)
 end
 
 function moveCube(delta)
-	cube.transform.pos = cube.transform.pos + (delta *211.17372)
+	activeShape.transform.pos = activeShape.transform.pos + (delta * 0.5 * 211.17372)
+end
+
+function switchShape()
+	temp = activeShape
+	activeShape = inactiveShape
+	inactiveShape = temp
+	activeShape.transform.pos = inactiveShape.transform.pos
+	inactiveShape.transform.pos = v3(-1000000000, -10000000000, -10000000000)
 end
 
 rx = 0.5
@@ -133,7 +145,7 @@ function animLights(delta)
 	end
 	rx = rx + 0.943247785 * delta
 	rz = rz + 0.549334545 * delta
-	rspot = rspot + 0.37 * delta
+	rspot = rspot + 10.37 * delta
 	return true
 end
 
@@ -221,12 +233,14 @@ keyActions = {
 		[112] = function() currentPosition = 1; startReferenceGrab() end,
 		[113] = function() graphics.captureScreenShot("screenshot.png") end,
 		[105] = function() useShadows = not useShadows; graphics.useShadows(useShadows) end,
-		[103] = function() moveCube(v3(1, 0, 0)) end,
-		[98] = function() moveCube(v3(-1, 0, 0)) end,
-		[118] = function() moveCube(v3(0, 0, 1)) end,
-		[110] = function() moveCube(v3(0, 0, -1)) end,
-		[102] = function() moveCube(v3(0, 1, 0)) end,
-		[104] = function() moveCube(v3(0, -1, 0)) end
+
+		[16] = function() moveCube(v3(1, 0, 0)) end,
+		[17] = function() moveCube(v3(-1, 0, 0)) end,
+		[18] = function() moveCube(v3(0, 0, 1)) end,
+		[19] = function() moveCube(v3(0, 0, -1)) end,
+		[32] = function() moveCube(v3(0, 1, 0)) end,
+		[33] = function() moveCube(v3(0, -1, 0)) end,
+		[109] = switchShape
 	 }
 function onKey(kc, ks)
 	if ks == 0 then

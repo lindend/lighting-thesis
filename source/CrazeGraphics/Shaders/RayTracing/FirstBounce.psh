@@ -96,7 +96,7 @@ uint touint(float v)
 	return 0xFF & (uint)(v * 255.f);
 }
 
-#define RAYS_PER_TEXEL ceil(LVCellSize.w / 16)
+#define RAYS_PER_TEXEL ceil(1 * LVCellSize.w / 16)
 float4 main(float2 uv : TEXCOORD) : SV_Target0
 {
 	float3 normal = NormalRough.Sample(Point, uv).xyz;
@@ -106,7 +106,7 @@ float4 main(float2 uv : TEXCOORD) : SV_Target0
 		discard;
 	}
 
-	float3 color = ColorSpec.Sample(Point, uv).xyz * intensity;
+	float3 color = ColorSpec.Sample(Point, uv).xyz;
 	float depth = Depth.Sample(Point, uv).x;
 	float3 position = DepthToPos(depth, uv);
 
@@ -116,6 +116,7 @@ float4 main(float2 uv : TEXCOORD) : SV_Target0
 	{
 		//sample direction based on RSM texel world space
 		float4 random = Random.SampleLevel(Point, Seed * 5.1402398029834789423f + rndUvBase + .7319542945134f * i, 1.f);
+		random.w = pow(random.w, 2.2f);
 		float3 dir = random.xyz * 2.f - 1.f;
 
 		//Check if the random direction is pointing away from the surface. Reverse it if it doesn't.
@@ -129,15 +130,14 @@ float4 main(float2 uv : TEXCOORD) : SV_Target0
 		float avgPower = (color.r + color.g + color.b) * 0.33333f;
 
 		float lastIn, firstOut;
-		if (random.a < avgPower && rayIntersectsFrustum(position, dir, lastIn, firstOut))
+		if (random.w < avgPower && rayIntersectsFrustum(position, dir, lastIn, firstOut))
 		{
 			PhotonRay pr;
 			
 			pr.dir = dir;
 
 			float3 rayColor = color * power * dot(dir, normal);//;
-			rayColor /= avgPower;
-
+			rayColor *= intensity / avgPower;
 			pr.dir *= firstOut;
 
 			//Encode the color to A8R8G8B8 so it fits into 24 bits

@@ -20,6 +20,8 @@ Craze::KEYCODE Craze::Win32KeyMapper::ConvertKey(unsigned int key)
 		KCM(DOWN, DOWNARROW);
 		KCM(LEFT, LEFTARROW);
 		KCM(RIGHT, RIGHTARROW);
+        KCM(PRIOR, PGUP);
+        KCM(NEXT, PGDOWN);
 		KCC(A);
 		KCC(B);
 		KCC(C);

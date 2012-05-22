@@ -82,7 +82,7 @@ void Renderer::Initialize()
     m_pShadowMap = RenderTarget::Create2D(gpDevice, shadowMapRes, shadowMapRes, 1, TEXTURE_FORMAT_FLOAT, "Shadow map");
     m_pShadowDS = DepthStencil::Create2D(gpDevice, shadowMapRes, shadowMapRes, DEPTHSTENCIL_FORMAT_D24S8);
 
-    const int RSMResolution = 128;
+    const int RSMResolution = 64;
     m_RSMs[0] = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "RSM0");
     m_RSMs[1] = RenderTarget::Create2D(gpDevice, RSMResolution, RSMResolution, 1, TEXTURE_FORMAT_HALFVECTOR4, "RSM0");
     m_RSMDS = DepthStencil::Create2D(gpDevice, RSMResolution, RSMResolution, DEPTHSTENCIL_FORMAT_D24S8);
@@ -216,7 +216,7 @@ void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
     cbuffer.LVCellSize = Vector4(lvInfo.cellSize, lvInfo.numCells);
     cbuffer.OldLVStart = prevStart;
 
-    seed += .0315957429834f;
+    seed += .129387487325678394569873245876f;
     cbuffer.Seed = seed;
     prevStart = lvInfo.start;
 }
@@ -500,7 +500,7 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 0.02f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            m_lightVolumeInjector.addLight(light.color, 0.01f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
         gpGraphics->m_profiler->endBlock(prof);
 

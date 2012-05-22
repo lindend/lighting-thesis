@@ -30,7 +30,7 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
-const int LightVolumeInjector::LightVolumeResolution = 32;
+const int LightVolumeInjector::LightVolumeResolution = 16;
 const int LightVolumeInjector::MaxPhotonRays = 128 * 128 * 8;
 const float LightVolumeInjector::MinDynamicity = 0.01f;
 
@@ -65,7 +65,7 @@ bool LightVolumeInjector::initialize()
     The random texture contains uniformly distributed directions on the hemisphere in the RGB channels. In the A channel is a
     random number.
     */
-    m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.png")));
+    m_random = std::dynamic_pointer_cast<const TextureResource>(gResMgr.loadResource(gFileDataLoader.addFile("random.dds")));
 
     //Initialize the buffers
 	m_frustumInfoCBuffer = EffectHelper::CreateConstantBuffer(gpDevice, sizeof(Vector4) * 10);
@@ -133,6 +133,8 @@ bool LightVolumeInjector::initialize()
     AntialiasedLineEnable is turned on to get a bit additional blur to the light.
     Whether or not this is beneficial to the quality of the lighting is something we
     probably should investigate more closely.
+    UPDATE: Enabling antialiased lines produces some artifacts with the location
+    of the lighting, so we have turned it off.
     */
 	D3D11_RASTERIZER_DESC rsDesc;
 	rsDesc.AntialiasedLineEnable = false;

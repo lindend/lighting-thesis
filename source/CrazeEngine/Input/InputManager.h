@@ -53,6 +53,8 @@ namespace Craze
 		KC_F10,
 		KC_F11,
 		KC_F12,
+        KC_PGUP,
+        KC_PGDOWN,
 	};
 
 	enum MOUSEBUTTON

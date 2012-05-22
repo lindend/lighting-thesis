@@ -39,8 +39,12 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 	float sideWeights[6];
 	for (int i = 0; i < 6; ++i)
 	{
-		sideWeights[i] = saturate(dot(CMSides[i], -normal));
+		sideWeights[i] = pow(saturate(dot(CMSides[i], -normal)), 2.2f);
 	}
+
+	//return float3(max(sideWeights[0], sideWeights[1]),
+	//              max(sideWeights[2], sideWeights[3]),
+	//              max(sideWeights[4], sideWeights[5]));
 	
 	float3 color = 0.f;
 	if (sideWeights[0] > 0.f)
@@ -93,16 +97,14 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float lightScale = 0.8f * pow(LVCellSize.w / 16.f, 3);
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 	float3 lightAtNormal = evalIndirectLightAt(cellFromPos(pos + normal * 350.f), normal) * lightScale;
-	if (uv.x > 0.f)
-	{
-		float fr = length(lightAtNormal) / length(light);
-		fr = fr < 1.f ? fr : 1.f / fr;
-		if (!isnan(fr))
-		{
-			//light *= fr;
-		}
-	}
 
+	float3 lightDelta = light - lightAtNormal;
+	const float tolerance = 0.5f;
+	float deltaLength = max(0.f, length(lightDelta) - tolerance);
+	
+	const float fallOffFactor = 1.5f;
+	//light = light * smoothstep(fallOffFactor, 0.f, deltaLength);
+   
 	//light = pow(light * 0.7f, 2.2f);
 
 	float3 eLight = 0.f;
@@ -122,5 +124,5 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	}*/
 	//color = pow(abs(frac(pos.x / LVCellSize.x)), 1.f);
 	//return normal.xyzx * 0.5f + 0.5f;
-	return float4(light * color + eLight * 5.1f, 1.0f);
+	return float4(max(light, 0.01f) * color + eLight * 5.1f, 1.0f);
 }
