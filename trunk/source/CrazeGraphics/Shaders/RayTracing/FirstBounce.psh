@@ -63,14 +63,12 @@ bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir, out float maxEnter, o
 {
 	maxEnter = -213321456621321122131.0f;
 	minExit = 1315677621313213321.0f;
-	//bool inside[6];
-	bool inside = true;
+	bool intersect = true;
 	for(int i = 0; i < 6; ++i)
 	{
 		float3 frustumN = calcFrustumNormal(i);
 		float frustDotDir = dot(frustumN, rayDir);
 		float signDist = dot(frustumN , corners[indices[i].x] - rayOrigin);
-		inside = inside && (signDist < 0.f || frustDotDir > 0.f);
 		
 		if(abs(frustDotDir) > 0.00001f) //if == 0, ray is parallel to plane so they either always intersect or never does
 		{
@@ -84,11 +82,15 @@ bool rayIntersectsFrustum(float3 rayOrigin, float3 rayDir, out float maxEnter, o
 			{
 				minExit = min(intersection, minExit);
 			}
+		}		
+			
+		if (signDist > 0.f && frustDotDir <= 0.f)
+		{
+			intersect = false;
 		}
 	}
-	//return inside;
 
-	return maxEnter < minExit && minExit > 0.f;
+	return intersect && maxEnter < minExit && minExit > 0.f;
 }
 
 uint touint(float v)
