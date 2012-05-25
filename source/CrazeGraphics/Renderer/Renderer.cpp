@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+#include "Util/Random.h"
+
 #include "Intersection/Frustum.h"
 
 #include "../Graphics.h"
@@ -200,6 +202,7 @@ void Renderer::Shutdown()
 }
 
 float seed = 0.0f;
+float seedY = 0.258743985739485f;
 void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
 {
     const Camera* pCam = pScene->getCamera();
@@ -216,8 +219,10 @@ void Renderer::InitFrame(Scene* pScene, CBPerFrame &cbuffer)
     cbuffer.LVCellSize = Vector4(lvInfo.cellSize, lvInfo.numCells);
     cbuffer.OldLVStart = prevStart;
 
-    seed += .129387487325678394569873245876f;
+    seedY += Random::GetFloat();
+    seed += Random::GetFloat();
     cbuffer.Seed = seed;
+    cbuffer.SeedY = seedY;
     prevStart = lvInfo.start;
 }
 
@@ -530,7 +535,7 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 0.05f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            m_lightVolumeInjector.addLight(light.color, 0.08f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
         gpGraphics->m_profiler->endBlock(prof);
 

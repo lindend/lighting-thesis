@@ -102,6 +102,7 @@ void CBufferManager::SetFrame(const CBPerFrame& data)
 
 	cbuffer[16] = data.OldLVStart;
 	cbuffer[17] = data.Seed;
+    cbuffer[17].Y() = data.SeedY;
 
 	cbuffer.Unmap();
 }

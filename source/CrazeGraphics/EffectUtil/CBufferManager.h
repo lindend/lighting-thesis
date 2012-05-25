@@ -41,6 +41,7 @@ namespace Craze
 
 			Vec3 OldLVStart;
 			float Seed;
+            float SeedY;
 		};
 
 		struct CBPerObject
