@@ -30,7 +30,7 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
-const int LightVolumeInjector::LightVolumeResolution = 16;
+const int LightVolumeInjector::LightVolumeResolution = 32;
 const int LightVolumeInjector::MaxPhotonRays = 128 * 128 * 8;
 const float LightVolumeInjector::MinDynamicity = 0.01f;
 

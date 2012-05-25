@@ -267,7 +267,7 @@ void main(uint3 groupId : SV_GroupId, uint3 dispatchId : SV_DispatchThreadId, ui
 		float closest = length(r.dir);
 		r.dir /= closest;
 
-		closest = min(closest, kdTreeRayTrace(r));
+		closest = min(closest, kdTreeRayTrace(r)) + 10.f;
 		//closest = min(closest, bruteCachedIntersect(r, groupIdx));
 		//closest = min(closest, bruteIntersect(r));
 
