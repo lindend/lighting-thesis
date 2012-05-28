@@ -23,6 +23,11 @@ PS_OUTPUT main(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	output.albedoSpec = Decal.Sample(Bilinear, input.uv);
+	if (output.albedoSpec.a < 0.5f)
+	{
+		discard;
+	}
+
 	output.normalRough = float4(normalize(input.normal), 0.5f);
 	output.lightMap = float4(Lighting.Sample(Bilinear, float3(input.uv, LightMapIndex)).rgb * 0.01f, SkyVisMap.Sample(Bilinear, input.uv).r);
 

@@ -535,7 +535,7 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 0.08f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            m_lightVolumeInjector.addLight(light.color, 0.09f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
         gpGraphics->m_profiler->endBlock(prof);
 

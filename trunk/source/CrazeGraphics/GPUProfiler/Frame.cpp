@@ -83,7 +83,6 @@ void Frame::endBlock(int blockId)
 {
 #if DO_GPU_PROFILE
 	m_dc->End(m_blocks[blockId].end);
-    //while (m_dc->GetData(m_blocks[blockId].end, nullptr, 0, 0) == S_FALSE);
 	--m_level;
 #endif
 }

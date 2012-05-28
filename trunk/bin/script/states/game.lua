@@ -107,7 +107,7 @@ inactiveShape = nil
 
 function onLoaded()
 	dirlight = level.scene:addDirectionalLight(math.normalize(v3(60, -325, 87)), v3(1, 1, 1))
-	spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(0, 0, -1), 0.3, 100000, v3(0.2, 0.2, 0.2))
+	spotlight = level.scene:addSpotLight(v3(-258, 132, 518), v3(-1, 0, 0), 0.2, 100000, v3(0.2, 0.2, 0.2))
 	lightAnimator = game.beginUpdate(animLights)
 
 	cubeman = level:add("cubeman", {component.transform{x=200, y=70, z=0},
@@ -141,7 +141,9 @@ rspot = 0
 function animLights(delta)
 	--dirlight.direction = math.normalize(v3(math.sin(rx) * 0.3, -1, math.sin(rz) * 0.3))
 	if spotlight ~= nil then
-		spotlight.direction = math.normalize(v3(math.sin(rspot), 0, math.cos(rspot)))
+	--	spotlight.direction = math.normalize(v3(math.sin(rspot), 0, math.cos(rspot)))
+		spotlight.position = level.scene.camera.pos
+		spotlight.direction = level.scene.camera.direction
 	end
 	rx = rx + 0.943247785 * delta
 	rz = rz + 0.549334545 * delta
@@ -223,6 +225,13 @@ if showUI then
 	stopDirectionalLightTravel = ui.Label("Y - stop directional light travel", 20, 95, 50, 15)
 	resetDirectionalLightLabel = ui.Label("R - reset directional light", 20, 110, 50, 15)
 end
+
+--[[
+#############################################
+			    KEY BINDINGS
+#############################################
+]]--
+
 
 
 useShadows = true
