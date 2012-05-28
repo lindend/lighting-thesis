@@ -70,8 +70,8 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>zlib.lib;ws2_32.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/zlib/;$(SolutionDir)/lib/assimp/;$(SolutionDir)lib/havok/debug_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;zlib.lib;ws2_32.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/zlib/;$(SolutionDir)/lib/assimp/;$(SolutionDir)/lib/DirectXTex/;$(SolutionDir)/lib/gwen/;$(SolutionDir)lib/havok/debug_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -86,7 +86,7 @@
       <PreprocessorDefinitions>WIN32;NOMINMAX;_CRT_SECURE_NO_WARNINGS;__WXMSW__;NDEBUG;_WINDOWS;CENEW=new;_HAS_ITERATOR_DEBUGGING=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>CrazEd.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -97,13 +97,13 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;assimp.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTex.lib;ws2_32.lib;comctl32.lib;rpcrt4.lib;winmm.lib;advapi32.lib;wsock32.lib;assimp.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/zlib/;$(SolutionDir)/lib/assimp/;$(SolutionDir)lib/havok/release_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)/lib/wx/;$(SolutionDir)/lib/boost/;$(SolutionDir)/lib/zlib/;$(SolutionDir)/lib/assimp/;$(SolutionDir)/lib/DirectXTex/;$(SolutionDir)/lib/gwen/;$(SolutionDir)lib/havok/release_multithreaded;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assets\CrazeModel.cpp" />
+    <ClCompile Include="convertTexture.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

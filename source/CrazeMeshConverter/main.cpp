@@ -11,11 +11,14 @@
 #include "CrazeGraphics/Model.h"
 #include "Util/CrazeHash.h"
 
-
+#include "EventLogger.h"
 
 using namespace std;
 using namespace Craze;
 using namespace Craze::Graphics2;
+
+bool copyTexture(const std::string& output, const std::string& decal, const std::string& alphaMap = "");
+
 
 bool CopyTexture(const std::string& from, const std::string& to)
 {
@@ -48,6 +51,8 @@ bool CopyTexture(const std::string& from, const std::string& to)
 
 int main(int argc, char** argv)
 {
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 	if (argc < 4)
 	{
 		//cmc "D:\Daniel\Imba file.obj" "D:\Test\" "Textures"
@@ -92,6 +97,12 @@ int main(int argc, char** argv)
 		std::string srcTexPath = meshes[i]->m_Material.decalFileName;
 		srcTexPath = file.substr(0, file.find_last_of("/\\")) + "\\" + srcTexPath;
 
+        std::string alphaTexPath = "";
+        if (meshes[i]->m_Material.opacityFileName != "")
+        {
+            alphaTexPath = file.substr(0, file.find_last_of("/\\")) + "\\" + meshes[i]->m_Material.opacityFileName;
+        }
+
 		u64 texId = Craze::hash64(meshes[i]->m_Material.decalFileName.c_str());
 
 		if (savedTextures.find(texId) == savedTextures.end())
@@ -99,7 +110,8 @@ int main(int argc, char** argv)
 			std::stringstream texName;
 			//name << "_" << texId++ << ".jpg";
 			texName << texId;
-			CopyTexture(srcTexPath, (outTexPath / texName.str()).string());
+			copyTexture((outTexPath / texName.str()).string(), srcTexPath, alphaTexPath);
+            //CopyTexture(srcTexPath, (outTexPath / texName.str()).string());
 		}
 
 		meshes[i]->m_Material.decalId = texId;

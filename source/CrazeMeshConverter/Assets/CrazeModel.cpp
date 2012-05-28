@@ -11,6 +11,7 @@ using namespace Craze;
 using namespace Craze::Graphics2;
 
 #include "StrUtil.hpp"
+#include "EventLogger.h"
 
 
 Vec3 aiV3ToCraze(aiVector3D vec)
@@ -100,6 +101,10 @@ std::vector<std::shared_ptr<Craze::Graphics2::MeshData>> loadModelAssimp(const s
 					aiString texture;
 					pMaterial->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture);
 					mat.decalFileName = texture.data;
+
+                    aiString opacityTexture;
+                    pMaterial->Get(AI_MATKEY_TEXTURE(aiTextureType_OPACITY, 0), opacityTexture);
+                    mat.opacityFileName = opacityTexture.data;
 
 					pMaterial->Get(AI_MATKEY_SHININESS, mat.specularFactor);
 				}

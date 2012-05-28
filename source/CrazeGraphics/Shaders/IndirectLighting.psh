@@ -4,6 +4,8 @@
 
 //#define CRAZE_USE_SH_LV
 
+//#define CRAZE_INTERPOLATION_GAMMA_CHEAT
+
 static const SamplerState LVSampler = Bilinear;
 
 float3 DepthToPos(float depth, float2 uv)
@@ -18,6 +20,7 @@ float3 cellFromPos(float3 worldPos)
 	localPos.y = 1.f - localPos.y;
 	return localPos;
 }
+
 #ifdef CRAZE_USE_SH_LV
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 {
@@ -30,22 +33,20 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 	return max(0.f, float3(dot(redSH, sh), dot(greenSH, sh), dot(blueSH, sh)) * 0.3f);
 
 }
-
-
 #else
+
 float3 sampleSide(Texture3D side, float3 cell, float3 normal)
 {
-	const float normalOffsetDist = 100.f;
-	const float gridOffsetFactor = 0.5f / (LVCellSize.x * LVCellSize.w);
+	const float normalOffsetDist = 40.f;
+	const float gridOffsetFactor = 1.f / (LVCellSize.x * LVCellSize.w);
 	float3 color = side.SampleLevel(LVSampler, cell, 0.f).xyz;
 	normal.y = -normal.y;
 	const float outwardColor =  length(side.SampleLevel(LVSampler, cell + normal * normalOffsetDist * gridOffsetFactor, 0.f).xyz);
 
 	float delta = max(0.f, length(color) - outwardColor);
-	//color *= 1.f - smoothstep(0.f, 0.02f, delta);
+	//color *= pow(1.f - smoothstep(0.f, 0.03f, delta), 2.f);
 	return saturate(color);
 }
-
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 { 
 	float p = 1.f;
@@ -55,40 +56,30 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 		sideWeights[i] = pow(saturate(dot(CMSides[i], -normal)), 2.2f);
 	}
 
-	//return float3(max(sideWeights[0], sideWeights[1]),
-	//              max(sideWeights[2], sideWeights[3]),
-	//              max(sideWeights[4], sideWeights[5]));
-	
 	float3 color = 0.f;
 
 	if (sideWeights[0] > 0.f)
 	{
 		color += sideWeights[0] * sampleSide(LightVolumeRight, cell, normal);
-		//color += sideWeights[0] * LightVolumeRight.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if (sideWeights[1] > 0.f)
 	{
 		color += sideWeights[1] * sampleSide(LightVolumeLeft, cell, normal);
-		//color += sideWeights[1] * LightVolumeLeft.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[2] > 0.f)
 	{
 		color += sideWeights[2] * sampleSide(LightVolumeTop, cell, normal);
-		//color += sideWeights[2] * LightVolumeTop.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if(sideWeights[3] > 0.f)
 	{
 		color += sideWeights[3] * sampleSide(LightVolumeBot, cell, normal);
-		//color += sideWeights[3] * LightVolumeBot.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
 	if (sideWeights[4] > 0.f)
 	{
 		color += sideWeights[4] * sampleSide(LightVolumeFront, cell, normal);
-		//color += sideWeights[4] * LightVolumeFront.SampleLevel(LVSampler, cell, 0.f).xyz;
 	} else if(sideWeights[5] > 0.f)
 	{
 		color += sideWeights[5] * sampleSide(LightVolumeBack, cell, normal);
-		//color += sideWeights[5] * LightVolumeBack.SampleLevel(LVSampler, cell, 0.f).xyz;
 	}
 
 	return color;
@@ -111,5 +102,8 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float lightScale = 0.8f * pow(LVCellSize.w / 16.f, 3);
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 
+	#ifdef CRAZE_INTERPOLATION_GAMMA_CHEAT
+	light = pow(light, 2.2f) * 4.f;
+	#endif
 	return float4(max(light, 0.03f) * color, 1.0f);
 }

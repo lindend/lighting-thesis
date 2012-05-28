@@ -19,7 +19,8 @@ namespace Craze
 		{
 			MATERIAL_TYPE type;
 			std::string decalFileName;
-			std::string bumpFileName;
+			std::string opacityFileName;
+            std::string bumpFileName;
 
 			u64 decalId;
 			u64 bumpId;
