@@ -20,13 +20,36 @@ ILuint loadAndConvertImage(const std::string& img)
 		ilDeleteImage(texId);
 		return -1;
 	}
+
     ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
     return texId;
+}
+
+bool hasChannelInfo(uint8_t* data, int channel, int width, int height)
+{
+
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            uint8_t pixelData = data[(x + y * width) * 4 + channel];
+            if (pixelData > 0 && pixelData < 255)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool copyTexture(const std::string& output, const std::string& decal, const std::string& alphaMap)
 {
     ILuint decalId = loadAndConvertImage(decal);
+
+    if (decalId == 0xFFFFFFFF)
+    {
+        return false;
+    }
 
     uint8_t* data = (uint8_t*)ilGetData();
     
@@ -48,7 +71,7 @@ bool copyTexture(const std::string& output, const std::string& decal, const std:
     metadata.mipLevels = 1;
     metadata.miscFlags = 0;
 
-    if (alphaMap != "")
+    if (!hasChannelInfo(data, 3, dxImg.width, dxImg.height) && alphaMap != "")
     {
         ILuint alphaTex = loadAndConvertImage(alphaMap);
 
@@ -62,15 +85,23 @@ bool copyTexture(const std::string& output, const std::string& decal, const std:
 
         uint8_t* alphaData = (uint8_t*)ilGetData();
 
+        int channel = 0;
+
+        if (hasChannelInfo(alphaData, 3, ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)))
+        {
+            channel = 3;
+        }
+
         for (unsigned int y = 0; y < dxImg.height; ++y)
         {
             for (unsigned int x = 0; x < dxImg.width; ++x)
             {
                 unsigned int idx = x * 4 + y * dxImg.rowPitch;
-                data[idx + 3] = alphaData[idx];
+                uint8_t alphaValue = 
+                data[idx + 3] = alphaData[idx + channel];
             }
         }
-
+        ilDeleteImage(alphaTex);
     }
 
     HRESULT hr;
@@ -80,8 +111,11 @@ bool copyTexture(const std::string& output, const std::string& decal, const std:
         char errmsg[255];
         sprintf(errmsg, "Error while flipping image: %x", hr);
         LOG_ERROR(errmsg);
+        ilDeleteImage(decalId);
         return false;
     }
+
+    ilDeleteImage(decalId);
 
     DirectX::ScratchImage mipChain;
     if (FAILED(hr = DirectX::GenerateMipMaps(*flipped.GetImage(0, 0, 0), DirectX::TEX_FILTER_CUBIC, 0, mipChain, false)))
@@ -92,7 +126,6 @@ bool copyTexture(const std::string& output, const std::string& decal, const std:
         return false;
     }
 
-    ilDeleteImage(decalId);
     
     DirectX::ScratchImage compressed;
     if (FAILED(hr = DirectX::Compress(mipChain.GetImages(), mipChain.GetImageCount(), mipChain.GetMetadata(), DXGI_FORMAT_BC3_UNORM_SRGB, DirectX::TEX_COMPRESS_DEFAULT, 0.5f, compressed)))
