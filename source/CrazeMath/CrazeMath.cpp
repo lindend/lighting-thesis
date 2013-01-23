@@ -13,7 +13,10 @@ float Craze::RSqrt(float num)
 
 float Craze::Sqrt(float num)
 {
-	return num * RSqrt(num);//sqrt(num);
+    return sqrt(num);
+    const float rsqrt = RSqrt(num);
+    const float sqrt = num * rsqrt;
+    return sqrt;
 }
 
 float Craze::Square(float a)

@@ -1,9 +1,9 @@
 #include "CrazeGraphicsPCH.h"
 #include "Texture.h"
 
-#include "IL/il.h"
-#include "IL/ilu.h"
-#include "IL/ilut.h"
+//#include "IL/il.h"
+//#include "IL/ilu.h"
+//#include "IL/ilut.h"
 
 #include "EventLogger.h"
 #include "Threading/ThreadUtil.hpp"
@@ -31,6 +31,9 @@ unsigned int getID()
 
 bool TextureResourceHandler::readComplete(ResourceLoadData* data)
 {
+    assert(false);
+    return false;
+    /*
 	std::shared_ptr<TextureResource> res = std::dynamic_pointer_cast<TextureResource>(data->res);
 	assert(res);
 
@@ -47,7 +50,7 @@ bool TextureResourceHandler::readComplete(ResourceLoadData* data)
 
 		return true;
 	}
-	return res->m_texture != nullptr;
+	return res->m_texture != nullptr;*/
 }
 
 bool DDSTextureResourceHandler::readComplete(ResourceLoadData* data)
@@ -108,7 +111,7 @@ Texture::~Texture()
 	SAFE_RELEASE(m_pTexture);
 
 }
-
+/*
 bool CopyIntoMips(char* pDataBuf, size_t bufLen, unsigned int numMips, D3D11_SUBRESOURCE_DATA* pInitData)
 {
 	size_t used = 0;
@@ -263,7 +266,7 @@ Texture* Texture::CreateFromMemory(Craze::Graphics2::Device* pDevice, void* pDat
 
 	return res;
 }
-
+*/
 Texture* Texture::CreateDDSFromMemory(Device* device, void* data, unsigned long dataLength, const char* debugName)
 {
     Texture* result = new Texture();

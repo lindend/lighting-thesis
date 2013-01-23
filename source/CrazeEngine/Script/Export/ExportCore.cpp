@@ -82,6 +82,11 @@ namespace Craze
 	{
 		return (stream << "( " << v.x << " , " << v.y << " , " << v.z << " )");
 	}
+    Vec3 operator/(const Vec3& v, float f)
+    {
+        Vec3 res = { v.x / f, v.y / f, v.z / f};
+        return res;
+    }
 }
 
 Vec3 normalize(Vec3& v)
@@ -90,7 +95,8 @@ Vec3 normalize(Vec3& v)
 }
 float length(Vec3& v)
 {
-	return Length(Vector3(v));
+    float len = Length(Vector3(v));
+	return len;
 }
 
 std::string toString(bool b)
@@ -132,6 +138,7 @@ void craze_open_core(lua_State* L)
 			.def(const_self - other<const Vec3&>())
 			.def(const_self + other<const Vec3&>())
 			.def(const_self * other<float>())
+            .def(const_self / other<float>())
 			.def(other<float>() * const_self)
 			.def(tostring(self)),
 

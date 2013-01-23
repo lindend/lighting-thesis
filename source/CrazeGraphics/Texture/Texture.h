@@ -37,8 +37,8 @@ namespace Craze
 		public:
 			Texture();
 			~Texture();
-			static Texture* CreateFromFile(Device* pDevice, std::string fileName, bool gammaCorrected = true);
-			static Texture* CreateFromMemory(Device* pDevice, void* pData, unsigned long dataLength, bool gammaCorrected = true, const char* pDebugName = nullptr);
+			//static Texture* CreateFromFile(Device* pDevice, std::string fileName, bool gammaCorrected = true);
+			//static Texture* CreateFromMemory(Device* pDevice, void* pData, unsigned long dataLength, bool gammaCorrected = true, const char* pDebugName = nullptr);
 			static Texture* CreateFromData(Device* pDevice, unsigned int width, unsigned int height, TEXTURE_FORMAT format, void* pData, const char* pDebugName);
 			static Texture* CreateDDSFromMemory(Device* device, void* data, unsigned long len, const char* debugName);
 

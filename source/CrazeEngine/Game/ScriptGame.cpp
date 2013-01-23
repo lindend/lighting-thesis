@@ -85,6 +85,21 @@ void changeState()
 	gScriptManager.LoadScript(newState, pData, size, pStateScript, pGameScript->GetEnv());
 	delete [] pData;
 }
+
+void removeUpdateableAt(int idx)
+{
+    assert(idx < updateables.size());
+
+    if (idx + 1 < updateables.size())
+    {
+        memmove(&updateables[idx], &updateables[idx + 1], sizeof(void*) * (updateables.size() - idx - 1));
+        updateables.pop_back();
+    } else
+    {
+        updateables.pop_back();
+    }
+}
+
 void Craze::sgame_update(float delta)
 {
 	lastFps = 1.f / delta;
@@ -106,8 +121,7 @@ void Craze::sgame_update(float delta)
 			++i;
 		} else
 		{
-			updateables[i] = updateables.back();
-			updateables.pop_back();
+			removeUpdateableAt(i);
 		}
 	}
 }
@@ -131,8 +145,7 @@ void Craze::sgame_removeUpdateable(IUpdateable *pUpd)
 	{
 		if (updateables[i] == pUpd)
 		{
-			updateables[i] = updateables.back();
-			updateables.pop_back();
+			removeUpdateableAt(i);
 			return;
 		}
 	}

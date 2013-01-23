@@ -31,7 +31,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 	float shadowDepth = ShadowMap.Sample(BilinearBorder, lightProjSpace.xy).x;
 
-	float shadowFactor = shadowDepth + 0.001f > lightProjSpace.z ? 1.f : 0.f;
+	float shadowFactor = shadowDepth + 0.0001f > lightProjSpace.z ? 1.f : 0.f;
 
 	float shading = saturate(dot(normalize(LightDir), normalize(-normal)));// + 0.03f;
 	//color = pow(abs(frac(wpos.x / LVCellSize.x)), 1.f);
@@ -41,7 +41,7 @@ float4 main(float2 uv : TEXCOORD0, float4 pos : SV_Position) : SV_Target0
 
 	float m = 100.f;
 	float cSpec = 0.04f;
-	const float3 specular = (m + 2.0f) / 8.0f * schlick(cSpec, saturate(dot(normal, v))) * pow(saturate(dot(h, normal)), m);
+	const float3 specular = 0.f;//(m + 2.0f) / 8.0f * schlick(cSpec, saturate(dot(normal, v))) * pow(saturate(dot(h, normal)), m);
 	//float specular = pow(saturate(dot(h, normal)), 100.f);
 
 	return float4((color.xyz * shading + specular) * shadowFactor, 1.f);

@@ -17,7 +17,6 @@
 #include "../Mesh.h"
 #include "Effect/ShadowEffect.h"
 #include "Effect/GBufferEffect.h"
-#include "Effect/LightAccumulationEffect.h"
 #include "Effect/ShadingEffect.h"
 #include "Effect/FontEffect.h"
 #include "Effect/ShadowEffect.h"
@@ -285,8 +284,10 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
     //Thread this...
     pScene->buildDrawList(&mainScene, viewProj);
 
-    float color[] = {0.5f, 0.5f, 0.5f, 0.f};
+    float color[] = {0.0f, 0.7f, 0.9f, 0.f};
     gpDevice->GetDeviceContext()->ClearRenderTargetView(m_GBuffers[0]->GetRenderTargetView(), color);
+    const float black[] = {0.f, 0.f, 0.f, 0.f};
+    gpDevice->GetDeviceContext()->ClearRenderTargetView(m_GBuffers[1]->GetRenderTargetView(), black);
     gpDevice->Clear(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 
     gpDevice->SetRenderTargets(m_GBuffers, NumGBuffers, gpDevice->GetDefaultDepthBuffer());
@@ -313,7 +314,6 @@ void Renderer::RenderScene(Craze::Graphics2::Scene* pScene)
     //gFxCSLighting.run(pCam, pSRVs, m_pOutputTarget->GetUAV(), visibleLights);
 
     //Do the other lights, with shadows
-    float black[] = { 0.f, 0.f, 0.f, 0.f };
     gpDevice->GetDeviceContext()->ClearRenderTargetView(m_pOutputTarget->GetRenderTargetView(), black);
 
     const float bf[4] = {1.f, 1.f, 1.f, 1.f};
@@ -505,7 +505,8 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 0.01f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            const float dynamicity = calculateDynamicity(Vector3::ZERO, light.prevDir, Vector3::ZERO, light.dir);
+            m_lightVolumeInjector.addLight(light.color, dynamicity, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
         gpGraphics->m_profiler->endBlock(prof);
 
@@ -535,8 +536,10 @@ std::shared_ptr<RenderTarget>* Renderer::buildLightVolumes(Scene* scene, const D
                 }
             }
             gpDevice->SetRenderTarget(nullptr, nullptr);
-            m_lightVolumeInjector.addLight(light.color, 0.09f, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
+            const float dynamicity = calculateDynamicity(light.prevPos, light.prevDir, light.pos, light.direction);
+            m_lightVolumeInjector.addLight(light.color, dynamicity, lightViewProj, m_RSMs, m_RSMDS, scene->getCamera());
         }
+
         gpGraphics->m_profiler->endBlock(prof);
 
         lightVolumes = m_lightVolumeInjector.buildLightingVolumes();

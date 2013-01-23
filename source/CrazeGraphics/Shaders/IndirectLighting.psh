@@ -4,9 +4,8 @@
 
 //#define CRAZE_USE_SH_LV
 
-//#define CRAZE_INTERPOLATION_GAMMA_CHEAT
 
-static const SamplerState LVSampler = Bilinear;
+static const SamplerState LVSampler = Point;
 
 float3 DepthToPos(float depth, float2 uv)
 {
@@ -34,19 +33,60 @@ float3 evalIndirectLightAt(float3 cell, float3 normal)
 
 }
 #else
+float3 interpolateGamma(float3 s0, float3 s1, float p)
+{
+	//In order to have a smooth curve, we need to know which is the darkest
+	if (dot(s0, s0) > dot(s1, s1))
+	{
+		float3 tmp = s0;
+		s0 = s1;
+		s1 = tmp;
+		p = 1.f - p;
+	}
+	float3 delta = s1 - s0;
+
+	return s0 + delta * pow(p, 2.2f);
+}
+
+float3 gammaTrilinearSample(Texture3D tex, float3 cell)
+{
+	cell += 0.5f / LVCellSize.w;
+	float3 texCoords = cell * LVCellSize.w;
+	int4 baseUv = int4(texCoords, 0);
+	float3 samples[8];
+	float3 p = 1.f - frac(texCoords);
+	samples[0] = tex.Load(baseUv, -int3(0, 0, 0)).xyz;
+	samples[1] = tex.Load(baseUv, -int3(1, 0, 0)).xyz;
+	samples[2] = tex.Load(baseUv, -int3(0, 1, 0)).xyz;
+	samples[3] = tex.Load(baseUv, -int3(1, 1, 0)).xyz;
+	samples[4] = tex.Load(baseUv, -int3(0, 0, 1)).xyz;
+	samples[5] = tex.Load(baseUv, -int3(1, 0, 1)).xyz;
+	samples[6] = tex.Load(baseUv, -int3(0, 1, 1)).xyz;
+	samples[7] = tex.Load(baseUv, -int3(1, 1, 1)).xyz;
+
+	float3 x0z0 = interpolateGamma(samples[0], samples[1], p.x);
+	float3 x1z0 = interpolateGamma(samples[2], samples[3], p.x);
+	float3 yz0 = interpolateGamma(x0z0, x1z0, p.y);
+	float3 x0z1 = interpolateGamma(samples[4], samples[5], p.x);
+	float3 x1z1 = interpolateGamma(samples[6], samples[7], p.x);
+	float3 yz1 = interpolateGamma(x0z1, x1z1, p.y);
+	return interpolateGamma(yz0, yz1, p.z);
+}
 
 float3 sampleSide(Texture3D side, float3 cell, float3 normal)
 {
 	const float normalOffsetDist = 40.f;
 	const float gridOffsetFactor = 1.f / (LVCellSize.x * LVCellSize.w);
-	float3 color = side.SampleLevel(LVSampler, cell, 0.f).xyz;
+	//float3 color = gammaTrilinearSample(side, cell);
+	float3 color = side.SampleLevel(LVSampler, cell, 0.f);
 	normal.y = -normal.y;
-	const float outwardColor =  length(side.SampleLevel(LVSampler, cell + normal * normalOffsetDist * gridOffsetFactor, 0.f).xyz);
-
+	const float outwardColor = length(side.SampleLevel(LVSampler, cell + normal * normalOffsetDist * gridOffsetFactor, 0.f).xyz);
+	
 	float delta = max(0.f, length(color) - outwardColor);
-	//color *= pow(1.f - smoothstep(0.f, 0.03f, delta), 2.f);
+	//color *= pow(1.f - smoothstep(0.f, 0.02f, delta), 2.f);
 	return saturate(color);
 }
+
 float3 evalIndirectLightAt(float3 cell, float3 normal)
 { 
 	float p = 1.f;
@@ -93,19 +133,24 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target0
 	float depth = Depth.Sample(Point, uv).x;
 	float3 pos = DepthToPos(depth, uv);
 
+	if (dot(normal, normal) < 0.5f)
+	{
+		//return float4(pow(color, 2.2f), 1.f);
+	}
+
 	float3 cell = cellFromPos(pos);
 
-	/*if (max(cell.x, cell.y) > 1.f || min(cell.x, cell.y) < 0.f || cell.z < 0.f)
+	if (max(cell.x, cell.y) > 1.f || min(cell.x, cell.y) < 0.f || cell.z < 0.f || cell.z > 1.f)
 	{
 		discard;
-	}*/
-
-	cell = saturate(cell);
+	}
 	float lightScale = 0.8f * pow(LVCellSize.w / 16.f, 3);
 	float3 light = evalIndirectLightAt(cell, normal) * lightScale;
 
 	#ifdef CRAZE_INTERPOLATION_GAMMA_CHEAT
 	light = pow(light, 2.2f) * 4.f;
 	#endif
-	return float4(max(light, 0.03f) * color, 1.0f);
+	float3 ambient = float3(0.018f, 0.018f, 0.021f);
+	ambient = 0.01f;
+	return float4(max(light, ambient) * color, 1.0f);
 }

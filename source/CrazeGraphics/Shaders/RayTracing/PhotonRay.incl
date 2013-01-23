@@ -1,5 +1,5 @@
 #ifndef PHOTON_RAY_INCL_
-#define PHOTON_RAY_INCL
+#define PHOTON_RAY_INCL_
 
 struct PhotonRay
 {

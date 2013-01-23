@@ -2,6 +2,6 @@ float4 main(float3 col : COLOR0, float uv : TEXCOORD, float4 pos : SV_position) 
 {
 	//if (uv < 0.999f) discard;
 	//return float4(0.f, 1.f, 0.f, 1.f);
-	//return col.xyzx;
+	return col.xyzx;
 	return float4(pow(frac(uv.xxx * 10.f), 4.f) * col, 1.f);
 }

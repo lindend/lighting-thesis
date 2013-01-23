@@ -44,6 +44,9 @@ bool hasChannelInfo(uint8_t* data, int channel, int width, int height)
 
 bool copyTexture(const std::string& output, const std::string& decal, const std::string& alphaMap)
 {
+    ilEnable(IL_ORIGIN_SET);
+    ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+
     ILuint decalId = loadAndConvertImage(decal);
 
     if (decalId == 0xFFFFFFFF)
@@ -105,27 +108,15 @@ bool copyTexture(const std::string& output, const std::string& decal, const std:
     }
 
     HRESULT hr;
-    DirectX::ScratchImage flipped;
-    if (FAILED(DirectX::FlipRotate(dxImg, DirectX::TEX_FR_FLIP_VERTICAL, flipped)))
-    {
-        char errmsg[255];
-        sprintf(errmsg, "Error while flipping image: %x", hr);
-        LOG_ERROR(errmsg);
-        ilDeleteImage(decalId);
-        return false;
-    }
-
-    ilDeleteImage(decalId);
-
     DirectX::ScratchImage mipChain;
-    if (FAILED(hr = DirectX::GenerateMipMaps(*flipped.GetImage(0, 0, 0), DirectX::TEX_FILTER_CUBIC, 0, mipChain, false)))
+    if (FAILED(hr = DirectX::GenerateMipMaps(dxImg, DirectX::TEX_FILTER_CUBIC, 0, mipChain, false)))
     {
         char errmsg[255];
         sprintf(errmsg, "Error while building mip maps: %x", hr);
         LOG_ERROR(errmsg);
         return false;
     }
-
+    ilDeleteImage(decalId);
     
     DirectX::ScratchImage compressed;
     if (FAILED(hr = DirectX::Compress(mipChain.GetImages(), mipChain.GetImageCount(), mipChain.GetMetadata(), DXGI_FORMAT_BC3_UNORM_SRGB, DirectX::TEX_COMPRESS_DEFAULT, 0.5f, compressed)))

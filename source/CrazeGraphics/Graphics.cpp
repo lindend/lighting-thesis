@@ -1,9 +1,6 @@
 #include "CrazeGraphicsPCH.h"
 #include "Graphics.h"
 
-#include "IL/il.h"
-#include "IL/ilu.h"
-
 #include "EventLogger.h"
 #include "Resource/FileDataLoader.h"
 #include "Util/CrazeHash.h"
@@ -15,7 +12,6 @@
 #include "Renderer/Renderer.h"
 #include "Effect/CopyToBackBuffer.h"
 #include "Effect/GBufferEffect.h"
-#include "Effect/LightAccumulationEffect.h"
 #include "Effect/ShadingEffect.h"
 #include "Effect/FontEffect.h"
 #include "Effect/ShadowEffect.h"
@@ -58,7 +54,6 @@ namespace Craze
 
 		FontEffect gFxFont;
 		GBufferEffect gFxGBuffer;
-		LightAccumulationEffect gFxLightAcc;
 		ShadingEffect gFxShading;
 		ShadowEffect gFxShadow;
 		AmbientLighting gFxAmbientLighting;
@@ -116,7 +111,6 @@ void DestroyEffects()
 	gFxCopyToBack.destroy();
 	gFxFont.destroy();
 	gFxGBuffer.destroy();
-	gFxLightAcc.destroy();
 	gFxShading.destroy();
 	gFxShadow.destroy();
 	gFxAmbientLighting.destroy();
@@ -132,15 +126,6 @@ void DestroyEffects()
 bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int height)
 {
 	gpGraphics = new Graphics();
-
-	if (ilGetInteger(IL_VERSION_NUM) < IL_VERSION)
-	{
-		LOG_ERROR("Incorrect version of DevIL.dll found");
-		return false;
-	}
-
-	ilInit();
-	iluInit();
 
 	if (!InitGraphicsDevice(width, height, false, hWnd))
 	{
@@ -164,16 +149,16 @@ bool Craze::Graphics2::InitGraphics(HWND hWnd, unsigned int width, unsigned int 
 
     gResMgr.setResourceHandling(hash32(".dds"), &gDDSTexResHandler);
 
-	gResMgr.setResourceHandling(hash32(".png"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".bmp"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".exr"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".hdr"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".gif"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".jpg"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".psd"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".raw"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".tga"), &gTexResHandler);
-	gResMgr.setResourceHandling(hash32(".tif"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".png"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".bmp"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".exr"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".hdr"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".gif"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".jpg"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".psd"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".raw"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".tga"), &gTexResHandler);
+	//gResMgr.setResourceHandling(hash32(".tif"), &gTexResHandler);
 
 	gResMgr.setResourceHandling(hash32(".vsh"), &gVSResHandler);
 	gResMgr.setResourceHandling(hash32(".psh"), &gPSResHandler);

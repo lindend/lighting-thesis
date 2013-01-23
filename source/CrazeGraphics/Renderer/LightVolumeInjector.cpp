@@ -30,7 +30,7 @@
 using namespace Craze;
 using namespace Craze::Graphics2;
 
-const int LightVolumeInjector::LightVolumeResolution = 32;
+const int LightVolumeInjector::LightVolumeResolution = 16;
 const int LightVolumeInjector::MaxPhotonRays = 128 * 128 * 8;
 const float LightVolumeInjector::MinDynamicity = 0.01f;
 
@@ -196,7 +196,8 @@ bool LightVolumeInjector::initEffects()
 bool LightVolumeInjector::initGeometry()
 {
     //Hard coded collision geometry! 
-	std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("Sponza/sponza_low.crm")));
+	std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("sponza/sponza_low.crm")));
+	//std::shared_ptr<const Model> triMesh = std::dynamic_pointer_cast<const Model>(gResMgr.loadResourceBlocking(gFileDataLoader.addFile("content/terrainCollision.crm")));
     if (!triMesh)
     {
         return false;
@@ -439,11 +440,6 @@ void LightVolumeInjector::copyRaysToVertexBuffer()
 void LightVolumeInjector::injectToLV()
 {
 	PIXMARKER(L"Inject rays to light volume");
-    
-    {
-        //GPU_PROFILE("Copy rays to VB");
-        //copyRaysToVertexBuffer();
-    }
 
     auto dc = gpDevice->GetDeviceContext();
 
@@ -467,7 +463,6 @@ void LightVolumeInjector::injectToLV()
 	    unsigned int offset = 0;
 	    dc->IASetVertexBuffers(0, 1, &vs, &stride, &offset);
         dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
-        //dc->IASetInputLayout(nullptr);
 
 	    ID3D11ShaderResourceView* srv = m_tessellatedRays->GetSRV();
 	    dc->VSSetShaderResources(0, 1, &srv);
@@ -478,7 +473,6 @@ void LightVolumeInjector::injectToLV()
         shader and we send them as points until then.
         */
 	    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	    //dc->DrawInstanced(20, 1, 0, 0);
         dc->DrawInstancedIndirect(m_argBuffer->GetBuffer(), 0);
 
 	    srv = nullptr;
@@ -564,4 +558,21 @@ const LightVolumeInfo LightVolumeInjector::getLVInfo(const Camera* cam) const
 	lvinfo.cellSize = Vector3(cellSize);
 	lvinfo.numCells = LightVolumeResolution;
 	return lvinfo;
+}
+
+float Craze::Graphics2::calculateDynamicity(const Vector3& prevPos, const Vector3& prevDir, const Vector3& pos, const Vector3& dir)
+{
+    Vector3 deltaPos = pos - prevPos;
+    
+    const float minDynamicity = 0.005f;
+
+    //This will have to be adjusted depending on the scene scale
+    float posDynamicity = 1.f - pow(0.99f, Length(deltaPos));
+    float rotDynamicity = 1.f - Dot(Normalize(dir), Normalize(prevDir));
+    rotDynamicity = rotDynamicity * 5.f;
+
+    //Clamp the dynamicity to less than or equal to 1
+    float dynamicity = Min(posDynamicity + rotDynamicity, 1.f);
+
+    return Max(dynamicity, minDynamicity);
 }
