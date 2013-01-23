@@ -198,6 +198,7 @@
     <None Include="..\..\bin\script\states\game.lua" />
     <None Include="..\..\bin\script\states\intro.lua" />
     <None Include="..\..\bin\script\states\mainmenu.lua" />
+    <None Include="utilities.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

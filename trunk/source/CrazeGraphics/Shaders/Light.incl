@@ -35,6 +35,8 @@ struct DirectionalLight
 	float3 dir;
 	float specular;
 	float3 color;
+
+	float3 prevDir;
 };
 
 struct PointLight
@@ -53,6 +55,9 @@ struct SpotLight
 	float angle;
 	float3 color;
 	float specular;
+
+	float3 prevPos;
+	float3 prevDir;
 };
 
 #ifdef CRAZEGFX

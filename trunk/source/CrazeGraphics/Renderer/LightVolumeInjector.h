@@ -200,5 +200,8 @@ namespace Craze
 
 			Renderer* m_renderer;
 		};
+
+        float calculateDynamicity(const Vector3& prevPos, const Vector3& prevDir, const Vector3& pos, const Vector3& dir);
+
 	}
 }

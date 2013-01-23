@@ -39,6 +39,7 @@ void ScriptDirectionalLight::setDirection(const Vec3& dir)
     auto light = getLight();
     if (light)
     {
+        light->prevDir = light->dir;
         light->dir = dir;
     }
 }
@@ -105,6 +106,7 @@ void ScriptSpotLight::setPosition(const Vec3& pos)
     auto light = getLight();
     if (light)
     {
+        light->prevPos = light->pos;
         light->pos = pos;
     }
 }
@@ -113,6 +115,7 @@ void ScriptSpotLight::setDirection(const Vec3& dir)
     auto light = getLight();
     if (light)
     {
+        light->prevDir = light->direction;
         light->direction = dir;
     }
 }

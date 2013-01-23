@@ -4,7 +4,7 @@
 
 using namespace Craze;
 
-FreeFlyCamera::FreeFlyCamera() : m_pCamera(nullptr), m_Speed(400.f)
+FreeFlyCamera::FreeFlyCamera() : m_pCamera(nullptr), m_Speed(100.f)
 {
 	Init();
 }

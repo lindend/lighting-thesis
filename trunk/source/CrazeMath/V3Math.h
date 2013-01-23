@@ -13,7 +13,9 @@ namespace Craze
 	}
 	inline const float Length(const Vector3& v)
 	{
-		return Sqrt(LengthSquared(v));
+        const float sqLen = LengthSquared(v);
+		const float len = Sqrt(sqLen);
+        return len;
 	}
 	inline const float RLength(const Vector3& v)
 	{

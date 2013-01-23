@@ -75,7 +75,7 @@
     </CustomBuildStep>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)/lib/freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;$(SolutionDir)/lib/gwen/gwend_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/gwen/gwend_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,7 +108,7 @@
     </CustomBuildStep>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)/lib/freetype;$(SolutionDir)/lib/cegui;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/DevIL/DevIL.lib;$(SolutionDir)/lib/DevIL/ILU.lib;$(SolutionDir)/lib/gwen/gwen_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>freetype244_D.lib;$(SolutionDir)/lib/gwen/gwen_static.lib;dxguid.lib;d3d11.lib;d3dx11.lib;d3dx9.lib;d3dcompiler.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -138,7 +138,6 @@
     <ClInclude Include="GPUProfiler\GPUProfiler.h" />
     <ClInclude Include="GPUProfiler\TimingBlock.h" />
     <ClInclude Include="LayoutManager.h" />
-    <ClInclude Include="Effect\LightAccumulationEffect.h" />
     <ClInclude Include="Effect\Shaders.h" />
     <ClInclude Include="Effect\ShadingEffect.h" />
     <ClInclude Include="Font\FontManager.h" />
@@ -198,7 +197,6 @@
     <ClCompile Include="GPUProfiler\Frame.cpp" />
     <ClCompile Include="GPUProfiler\GPUProfiler.cpp" />
     <ClCompile Include="LayoutManager.cpp" />
-    <ClCompile Include="Effect\LightAccumulationEffect.cpp" />
     <ClCompile Include="EffectUtil\ShaderResourceHandler.cpp" />
     <ClCompile Include="Effect\ShadingEffect.cpp" />
     <ClCompile Include="Effect\ShadowEffect.cpp" />
@@ -269,6 +267,7 @@
     <None Include="Shaders\RayTracing\LineTess.tess" />
     <None Include="Shaders\RayTracing\PhotonRay.incl" />
     <None Include="Shaders\RayTracing\RayTrace.csh" />
+    <None Include="Shaders\RayTracing\RTKernel.incl" />
     <None Include="Shaders\RayTracing\TessellateRays.csh" />
     <None Include="Shaders\SkyOcclusion.csh">
       <FileType>Document</FileType>
