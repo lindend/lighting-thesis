@@ -1,0 +1,1 @@
+We will examine a system for lighting in scenes.
